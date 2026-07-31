@@ -221,14 +221,18 @@
   td.serial{font-weight:620;white-space:nowrap;font-variant-numeric:tabular-nums;}
   td.serial button,.link-btn{background:none;border:none;color:var(--accent-ink);font-weight:620;cursor:pointer;font-family:inherit;font-size:inherit;padding:0;text-decoration:underline;text-underline-offset:2px;text-align:left;}
   .link-btn:hover{color:var(--accent);}
-  td.prod{max-width:160px;font-size:12px;line-height:1.5;max-height:3em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;cursor:default;}
+  /* 목록 표는 증서 1건 = 1줄로 통일 — 아래 3칸(바우처종류/사유·목적/비고)이 전부 한 줄
+     말줄임이어야 행 높이가 서로 어긋나지 않는다(2줄 클램프였을 때 칸마다 실제 높이가
+     달라 일부 칸 내용이 위쪽에만 뜨는 현상이 있었음). 전체 텍스트는 title 툴팁으로. */
+  td.prod{max-width:150px;font-size:11.5px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;}
   td.date,td.num{white-space:nowrap;font-variant-numeric:tabular-nums;}
   td.num,th.num{text-align:right;}
   td.date{color:var(--ink-2);}
   .mate-no{font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink-2);}
-  .purpose-detail{font-size:12px;line-height:1.5;max-height:3em;color:var(--ink-3);margin-top:2px;max-width:280px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  td.cat-purpose{max-width:280px;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;}
+  .purpose-inline{color:var(--ink-3);}
   .req-by{font-size:12px;color:var(--ink-3);white-space:nowrap;}
-  .remark-cell{max-width:200px;font-size:12px;line-height:1.5;max-height:3em;color:var(--ink-3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;cursor:default;}
+  .remark-cell{max-width:180px;font-size:11.5px;line-height:1.4;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;}
   .badge{display:inline-block;font-size:11px;font-weight:680;letter-spacing:.03em;padding:3px 9px;border-radius:20px;white-space:nowrap;}
   .b-pending{background:var(--pend-soft);color:var(--pend);}
   .b-active{background:var(--fb-soft);color:var(--fb);}

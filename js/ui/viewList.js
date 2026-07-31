@@ -96,7 +96,7 @@ CompApp.viewList = (function () {
         + '<td>' + famBadge(r.fam) + '</td>'
         + '<td class="prod" title="' + esc(prodLabel) + '">' + esc(prodLabel) + '</td>'
         + '<td class="date">' + r.issued + '</td><td class="date">' + r.valid + '</td><td class="date">' + (r.usedDate || '—') + '</td>'
-        + '<td><span class="cat">' + (CAT_LABEL[r.cat] || r.cat) + '</span><div class="purpose-detail">' + esc(r.purpose) + '</div></td>'
+        + '<td class="cat-purpose" title="' + esc((CAT_LABEL[r.cat] || r.cat) + ' — ' + (r.purpose || '')) + '"><span class="cat">' + (CAT_LABEL[r.cat] || r.cat) + '</span> <span class="purpose-inline">' + esc(r.purpose) + '</span></td>'
         + '<td class="req-by">' + esc(r.req || '') + '</td>'
         + '<td class="mate-no">' + esc(r.mate || '—') + '</td>'
         + '<td class="remark-cell" title="' + esc(schema.displayRemark(r.remark)) + '">' + (schema.displayRemark(r.remark) ? esc(schema.displayRemark(r.remark)) : '—') + '</td>'
