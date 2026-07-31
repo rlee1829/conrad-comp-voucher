@@ -80,8 +80,8 @@ CompApp.viewList = (function () {
     var allSel = slice.length > 0 && slice.every(function (r) { return state.selected[r.id]; });
     var head = '<thead><tr>'
       + '<th class="chkcol"><input type="checkbox" id="selAll" ' + (allSel ? 'checked' : '') + '></th>'
-      + th('serial', '증서번호') + '<th>타입</th>' + th('product', '바우처 종류') + th('issued', '발행일') + th('valid', '만료일')
-      + '<th>사유 / 세부목적</th><th>요청자</th><th>Mate 승인</th>' + th('status', '상태') + '<th></th></tr></thead>';
+      + th('serial', '증서번호') + '<th>타입</th>' + th('product', '바우처 종류') + th('issued', '발행일') + th('valid', '만료일') + '<th>사용일</th>'
+      + '<th>사유 / 세부목적</th><th>요청자</th><th>Mate 승인</th><th>비고</th>' + th('status', '상태') + '<th></th></tr></thead>';
     var body = slice.map(function (r) {
       var es = effStatus(r), sel = state.selected[r.id];
       var acts = '';
@@ -91,19 +91,21 @@ CompApp.viewList = (function () {
       if (r.status === 'PENDING' || r.status === 'ACTIVE') acts += '<button data-act="void" data-id="' + r.id + '">취소</button>';
       acts += '<button data-act="edit" data-id="' + r.id + '">수정</button>';
       acts += '<button data-act="clone" data-id="' + r.id + '">복제</button>';
+      var prodLabel = schema.recordProductLabel(r);
       return '<tr class="' + (sel ? 'sel' : '') + '">'
         + '<td class="chkcol"><input type="checkbox" class="rowchk" data-id="' + r.id + '" ' + (sel ? 'checked' : '') + '></td>'
         + '<td class="serial"><button data-act="detail" data-id="' + r.id + '">' + r.serial + '</button></td>'
         + '<td>' + famBadge(r.fam) + '</td>'
-        + '<td class="prod">' + esc(schema.recordProductLabel(r)) + '</td>'
-        + '<td class="date">' + r.issued + '</td><td class="date">' + r.valid + '</td>'
+        + '<td class="prod" title="' + esc(prodLabel) + '">' + esc(prodLabel) + '</td>'
+        + '<td class="date">' + r.issued + '</td><td class="date">' + r.valid + '</td><td class="date">' + (r.usedDate || '—') + '</td>'
         + '<td><span class="cat">' + (CAT_LABEL[r.cat] || r.cat) + '</span><div class="purpose-detail">' + esc(r.purpose) + '</div></td>'
         + '<td class="req-by">' + esc(r.req || '') + '</td>'
         + '<td class="mate-no">' + esc(r.mate || '—') + '</td>'
+        + '<td class="remark-cell" title="' + esc(r.remark || '') + '">' + (r.remark ? esc(r.remark) : '—') + '</td>'
         + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + STATUS_LABEL[es] + '</span></td>'
         + '<td><div class="rowact">' + acts + '</div></td></tr>';
     }).join('');
-    $('listTable').innerHTML = head + '<tbody>' + (slice.length ? body : '<tr><td colspan="11"><div class="empty">표시할 바우처가 없습니다.</div></td></tr>') + '</tbody>';
+    $('listTable').innerHTML = head + '<tbody>' + (slice.length ? body : '<tr><td colspan="13"><div class="empty">표시할 바우처가 없습니다.</div></td></tr>') + '</tbody>';
     renderBulkbar();
     var pg = $('pager');
     if (total <= state.perPage) { pg.innerHTML = '<span class="pinfo">' + total + '건</span>'; }
