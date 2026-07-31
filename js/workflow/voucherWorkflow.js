@@ -120,15 +120,6 @@ CompApp.workflow = (function () {
     if (act === 'use') return useModal([r]);
     if (act === 'extend') return extendModal([r]);
     if (act === 'void') return voidModal([r]);
-    if (act === 'clone') return cloneRecord(r);
-  }
-
-  // G: 직전 발행 복제 — jump to the issue form pre-filled from an existing record (fresh serial/dates).
-  function cloneRecord(r) {
-    CompApp.router.setScope(r.fam);
-    CompApp.router.go('issue');
-    CompApp.viewIssue.prefillFrom(r);
-    toast('발행 폼에 복제됨 · 증서번호·날짜는 새로 지정하세요');
   }
 
   function bulkAction(kind) {

@@ -191,21 +191,7 @@ CompApp.viewIssue = (function () {
 
   function render() { resetForm(); renderProdMenu(); }
 
-  // G: 직전 발행 복제 — pre-fill the (already-reset) form from an existing record, but keep
-  // fresh serial/dates (those were already set by the resetForm() that ran via render()).
-  function prefillFrom(r) {
-    setIssueFam(r.fam);
-    if (CATALOG[r.fam].some(function (p) { return p.id === r.product; })) { $('f-product').value = r.product; onProductChange(); }
-    state.selectedCat = r.cat;
-    document.querySelectorAll('#f-cat button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.cat === r.cat ? 'true' : 'false'); });
-    $('f-purpose').value = r.purpose || '';
-    $('f-remark').value = r.remark || '';
-    if (r.req) $('f-req').value = r.req;
-    if ($('f-amount')) $('f-amount').value = r.amount || 0;
-    blackoutEditor = CompApp.ui.wireBlackoutEditor('f-bo', $('f-blackout-editor'), schema.normalizeBlackoutTags(r), getBlackouts);
-  }
-
   function getBlackoutTags() { return blackoutEditor ? blackoutEditor.getTags() : []; }
 
-  return { render: render, nextSerial: nextSerial, serialPrefix: serialPrefix, prefillFrom: prefillFrom, getBlackoutTags: getBlackoutTags, getBlackouts: getBlackouts };
+  return { render: render, nextSerial: nextSerial, serialPrefix: serialPrefix, getBlackoutTags: getBlackoutTags, getBlackouts: getBlackouts };
 })();

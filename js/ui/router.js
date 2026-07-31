@@ -26,13 +26,12 @@ CompApp.router = (function () {
   function go(v) {
     state.view = v; state.selected = {};
     document.querySelectorAll('.navitem').forEach(function (n) { n.setAttribute('aria-current', n.dataset.view === v ? 'true' : 'false'); });
-    ['overview', 'list', 'issue', 'expiry', 'integrity', 'importexport', 'auditlog'].forEach(function (k) { $('view-' + k).classList.toggle('active', k === v); });
+    ['overview', 'list', 'issue', 'integrity', 'importexport', 'auditlog'].forEach(function (k) { $('view-' + k).classList.toggle('active', k === v); });
     $('scopeSeg').style.display = (v === 'issue') ? 'none' : '';
     var famN = famLabel(state.fam);
     if (v === 'overview') { $('viewTitle').textContent = famN + ' 개요'; $('viewDesc').textContent = '발행일 기간 기준 집계'; CompApp.viewOverview.render(); }
     else if (v === 'list') { $('viewTitle').textContent = famN + ' 바우처 목록'; $('viewDesc').textContent = '정렬·다중선택·기간·종류 필터 지원'; CompApp.viewList.render(); }
     else if (v === 'issue') { if (state.fam !== 'ALL') state.issueFam = state.fam; $('viewTitle').textContent = '새 바우처 발행'; $('viewDesc').textContent = '타입 선택 후 발행 · GM 승인 시 즉시 활성'; CompApp.viewIssue.render(); }
-    else if (v === 'expiry') { $('viewTitle').textContent = famN + ' 만료 대기열'; $('viewDesc').textContent = '만료·임박 활성 바우처'; CompApp.viewExpiry.render(); }
     else if (v === 'integrity') { $('viewTitle').textContent = famN + ' 정합성 점검'; $('viewDesc').textContent = '데이터 이상 여부 자동 점검'; CompApp.viewIntegrity.render(); }
     else if (v === 'importexport') { $('viewTitle').textContent = '가져오기 / 내보내기'; $('viewDesc').textContent = '엑셀 대장 일괄 등록 · 현재 필터 내보내기'; CompApp.viewImportExport.render(); }
     else if (v === 'auditlog') { $('viewTitle').textContent = '감사 로그'; $('viewDesc').textContent = '전체 바우처에 걸친 작업 이력'; CompApp.viewAuditLog.render(); }
@@ -46,20 +45,17 @@ CompApp.router = (function () {
 
   function renderCounts() {
     var records = CompApp.db.cache.records;
-    var daysUntil = CompApp.schema.daysUntil;
     $('sc-all').textContent = records.length;
     $('sc-fb').textContent = records.filter(function (r) { return r.fam === 'FB'; }).length;
     $('sc-rm').textContent = records.filter(function (r) { return r.fam === 'RM'; }).length;
     $('sc-hr').textContent = records.filter(function (r) { return r.fam === 'HR'; }).length;
     $('nav-list-n').textContent = records.filter(famMatch).length;
     $('nav-appr-n').textContent = records.filter(function (r) { return famMatch(r) && r.status === 'PENDING'; }).length;
-    $('nav-exp-n').textContent = records.filter(function (r) { return famMatch(r) && r.status === 'ACTIVE' && daysUntil(r.valid) <= 30; }).length;
     $('nav-integ-n').textContent = CompApp.viewIntegrity.count(famMatch);
   }
 
   function refresh() {
     if (state.view === 'list') CompApp.viewList.render();
-    else if (state.view === 'expiry') CompApp.viewExpiry.render();
     else if (state.view === 'overview') CompApp.viewOverview.render();
     else if (state.view === 'integrity') CompApp.viewIntegrity.render();
     else if (state.view === 'auditlog') CompApp.viewAuditLog.render();

@@ -88,7 +88,6 @@ CompApp.viewList = (function () {
       if (r.status === 'ACTIVE' || r.status === 'EXPIRED') acts += '<button data-act="extend" data-id="' + r.id + '">연장</button>';
       if (r.status === 'PENDING' || r.status === 'ACTIVE') acts += '<button data-act="void" data-id="' + r.id + '">취소</button>';
       acts += '<button data-act="edit" data-id="' + r.id + '">수정</button>';
-      acts += '<button data-act="clone" data-id="' + r.id + '">복제</button>';
       var prodLabel = schema.recordProductLabel(r);
       return '<tr class="' + (sel ? 'sel' : '') + '">'
         + '<td class="chkcol"><input type="checkbox" class="rowchk" data-id="' + r.id + '" ' + (sel ? 'checked' : '') + '></td>'

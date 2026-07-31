@@ -15,7 +15,6 @@
     <div class="navitem" data-view="list" aria-current="true"><span class="ic">▤</span> 바우처 목록 <span class="n" id="nav-list-n"></span></div>
     <div class="navitem" data-view="issue"><span class="ic">＋</span> 새 발행</div>
     <div class="navitem" data-view="approvals"><span class="ic">✓</span> 승인 대기함 <span class="n" id="nav-appr-n"></span></div>
-    <div class="navitem" data-view="expiry"><span class="ic">◔</span> 만료 대기열 <span class="n" id="nav-exp-n"></span></div>
     <div class="navitem" data-view="integrity"><span class="ic">⚠</span> 정합성 점검 <span class="n" id="nav-integ-n"></span></div>
     <div class="navitem" data-view="importexport"><span class="ic">⇅</span> 가져오기/내보내기</div>
     <div class="navitem" data-view="auditlog"><span class="ic">▦</span> 감사 로그</div>
@@ -229,15 +228,6 @@
       </div>
     </section>
 
-    <!-- EXPIRY QUEUE -->
-    <section class="view" id="view-expiry">
-      <div class="panel"><div class="pbody" style="font-size:13px;color:var(--ink-3)">만료일이 지났거나 <b>30일 이내</b>로 임박한 <b>활성</b> 바우처입니다. 만료된 건은 선택 후 [만료 처리]로 상태를 정리하세요.</div></div>
-      <div class="panel">
-        <div class="phead"><h3 id="expTitle">만료 대기</h3><button class="btn btn-danger btn-sm" id="btnExpireSel" type="button">선택 만료 처리</button></div>
-        <div class="pbody" style="padding:0"><div class="tablewrap"><table id="expTable"></table></div></div>
-      </div>
-    </section>
-
     <div class="footnote">
       <b>COMP Voucher Manager</b> — 이 화면은 로컬 브라우저 메모리에만 저장됩니다(새로고침 시 초기화). 담당자 이름·디자인 선택만 이 브라우저에 기억됩니다.
       Supabase 연동 전까지는 이 로컬 모드로 동작하며, 연동 후에는 실시간 공유·영구저장·엑셀 가져오기/내보내기·감사로그가 활성화됩니다.
@@ -285,7 +275,6 @@
 <script src="js/ui/viewOverview.js?v=5"></script>
 <script src="js/ui/viewList.js?v=5"></script>
 <script src="js/ui/viewIssue.js?v=5"></script>
-<script src="js/ui/viewExpiry.js?v=5"></script>
 <script src="js/ui/viewIntegrity.js?v=5"></script>
 <script src="js/ui/viewImportExport.js?v=5"></script>
 <script src="js/ui/viewAuditLog.js?v=5"></script>
