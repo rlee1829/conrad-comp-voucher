@@ -23,9 +23,8 @@ CompApp.viewOverview = (function () {
     $('ov-chips').innerHTML = chips.map(function (d) { return '<div class="chip"><div class="k">' + d.k + '</div><div class="v" style="font-size:19px">' + d.v + '</div></div>'; }).join('');
     var cats = {}; Object.keys(CAT_LABEL).forEach(function (c) { cats[c] = { n: 0, amt: 0 }; });
     rs.forEach(function (r) { if (!cats[r.cat]) cats[r.cat] = { n: 0, amt: 0 }; cats[r.cat].n++; cats[r.cat].amt += (r.amount || 0); });
-    var maxN = Math.max(1, Math.max.apply(null, Object.keys(cats).map(function (c) { return cats[c].n; })));
-    $('ov-cat').innerHTML = '<table class="minitable"><thead><tr><th>카테고리</th><th class="num">건수</th><th class="num">금액</th><th style="width:100px"></th></tr></thead><tbody>'
-      + Object.keys(CAT_LABEL).map(function (c) { return '<tr class="clickable" data-drill="cat" data-val="' + c + '"><td><span class="link-btn">' + CAT_LABEL[c] + '</span></td><td class="num">' + cats[c].n + '</td><td class="num">' + money(cats[c].amt) + '</td><td><div class="bar" style="width:' + Math.round(cats[c].n / maxN * 100) + '%"></div></td></tr>'; }).join('') + '</tbody></table>';
+    $('ov-cat').innerHTML = '<table class="minitable"><thead><tr><th>카테고리</th><th class="num">건수</th><th class="num">금액</th></tr></thead><tbody>'
+      + Object.keys(CAT_LABEL).map(function (c) { return '<tr class="clickable" data-drill="cat" data-val="' + c + '"><td><span class="link-btn">' + CAT_LABEL[c] + '</span></td><td class="num">' + cats[c].n + '</td><td class="num">' + money(cats[c].amt) + '</td></tr>'; }).join('') + '</tbody></table>';
     var depts = {}; rs.forEach(function (r) { var m = /\(([^)]+)\)\s*$/.exec(r.req || ''); var d = m ? m[1].trim() : (r.req || '미상'); depts[d] = (depts[d] || 0) + 1; });
     var arr = Object.keys(depts).map(function (d) { return { d: d, n: depts[d] }; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 4);
     var maxD = Math.max(1, arr.length ? arr[0].n : 1);

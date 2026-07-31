@@ -71,6 +71,10 @@ CompApp.workflow = (function () {
         if (CompApp.cloudEnabled && CompApp.cloudEnabled()) CompApp.dbCloud.remove(id).catch(function (e) { console.warn('undo delete failed', e); });
       });
       pushAuditEntry({ action: '되돌리기', detail: la.label + ' 되돌림 (발행 취소)', recordId: null, serial: la.payload.serials.join(', '), fam: la.payload.fam });
+    } else if (la.kind === 'reinsert') {
+      la.payload.forEach(function (snap) { records().unshift(snap); });
+      persist(la.payload);
+      la.payload.forEach(function (snap) { pushAuditEntry({ action: '되돌리기', detail: la.label + ' 되돌림 (삭제 취소)', recordId: snap.id, serial: snap.serial, fam: snap.fam }); });
     }
     state.selected = {};
     CompApp.router.renderCounts(); CompApp.router.refresh();
@@ -137,6 +141,35 @@ CompApp.workflow = (function () {
     if (kind === 'extend') { var a2 = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'PENDING' || r.status === 'EXPIRED'; }); if (!a2.length) { toast('연장 가능한 항목이 없습니다.'); return; } return extendModal(a2); }
     if (kind === 'void') { var v = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'PENDING'; }); if (!v.length) { toast('취소 가능한 항목이 없습니다.'); return; } return voidModal(v); }
     if (kind === 'field') return fieldSetModal(rs);
+    if (kind === 'delete') {
+      if (!operator.isAdmin()) { toast('삭제 권한이 없습니다. (관리자만 가능)'); return; }
+      return deleteModal(rs);
+    }
+  }
+
+  // 관리자 전용: 선택한 바우처를 영구 삭제. 취소(VOID)와 달리 목록에서 완전히 제거됨 —
+  // 오발행/테스트 데이터 정리용. 1단계 되돌리기로 복구 가능.
+  function deleteModal(list) {
+    modal({
+      title: '바우처 삭제', sub: list.length + '건을 목록에서 완전히 삭제합니다. 이 작업은 관리자만 할 수 있습니다.',
+      bodyHtml: '<div class="field"><label>삭제 사유<span class="req">*</span></label><input type="text" id="m-reason" placeholder="예: 오발행 / 테스트 데이터 / 중복 등록"></div>',
+      wire: function (b) { b.querySelector('#m-reason').focus(); },
+      buttons: [{ label: '취소' }, {
+        label: '삭제', cls: 'btn-danger', onClick: function (b, setErr) {
+          var rn = b.querySelector('#m-reason').value.trim();
+          if (!rn) { setErr('삭제 사유를 입력하세요.'); return false; }
+          var before = snapshotBefore(list);
+          list.forEach(function (r) {
+            var idx = records().findIndex(function (x) { return x.id === r.id; });
+            if (idx !== -1) records().splice(idx, 1);
+            if (CompApp.cloudEnabled && CompApp.cloudEnabled()) CompApp.dbCloud.remove(r.id).catch(function (e) { console.warn('cloud delete failed for', r.id, e); });
+            pushAuditEntry({ action: '삭제', detail: '사유: ' + rn, recordId: r.id, serial: r.serial, fam: r.fam });
+          });
+          state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
+          finishAction('reinsert', before, '삭제 (' + list.length + '건)', list.length + '건 삭제 완료');
+        }
+      }]
+    });
   }
 
   function approveModal(list) {

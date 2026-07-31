@@ -170,6 +170,7 @@ CompApp.viewList = (function () {
       + '<button data-bulk="use">사용처리</button>'
       + '<button data-bulk="extend">기간연장</button><button data-bulk="void">발행취소</button>'
       + '<button data-bulk="field">일괄입력</button>'
+      + (CompApp.operator.isAdmin() ? '<button data-bulk="delete" class="reject-a">삭제</button>' : '')
       + '<button data-bulk="clear">선택해제</button></div>';
   }
   function clearFilters() { CompApp.router.resetFilterInputs(); state.page = 1; render(); }
