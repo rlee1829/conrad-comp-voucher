@@ -11,12 +11,12 @@
   <aside class="sidebar">
     <div class="sb-brand" id="brandHome" title="새로고침 · 개요로 이동"><div class="eyebrow">Conrad Seoul</div><h1>COMP Voucher</h1><span class="tag">v5</span></div>
     <div class="sb-sec">메뉴</div>
-    <div class="navitem" data-view="overview"><span class="ic">◧</span> 개요</div>
-    <div class="navitem" data-view="list" aria-current="true"><span class="ic">▤</span> 바우처 목록 <span class="n" id="nav-list-n"></span></div>
+    <div class="navitem" data-view="overview" aria-current="true"><span class="ic">◧</span> 개요</div>
+    <div class="navitem" data-view="list"><span class="ic">▤</span> 바우처 목록 <span class="n" id="nav-list-n"></span></div>
     <div class="navitem" data-view="issue"><span class="ic">＋</span> 새 발행</div>
     <div class="navitem" data-view="approvals"><span class="ic">✓</span> 승인 대기함 <span class="n" id="nav-appr-n"></span></div>
     <div class="navitem" data-view="integrity"><span class="ic">⚠</span> 정합성 점검 <span class="n" id="nav-integ-n"></span></div>
-    <div class="navitem" data-view="importexport"><span class="ic">⇅</span> 가져오기/내보내기</div>
+    <div class="navitem" data-view="importexport" id="navImportExport"><span class="ic">⇅</span> 가져오기/내보내기</div>
     <div class="navitem" data-view="auditlog"><span class="ic">▦</span> 감사 로그</div>
     <div class="sb-spacer"></div>
     <div class="sb-sec">모드</div>
@@ -56,7 +56,7 @@
     </div>
 
     <!-- OVERVIEW -->
-    <section class="view" id="view-overview">
+    <section class="view active" id="view-overview">
       <div class="panel"><div class="pbody toolbar">
         <span style="font-size:13px;color:var(--ink-3)">기간</span>
         <span class="datebox" style="width:150px"><input type="text" class="datefield" id="ov-start" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span>~</span><span class="datebox" style="width:150px"><input type="text" class="datefield" id="ov-end" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span>
@@ -75,7 +75,7 @@
     </section>
 
     <!-- LIST -->
-    <section class="view active" id="view-list">
+    <section class="view" id="view-list">
       <div class="chips minichips" id="chips"></div>
       <div class="panel">
         <div class="phead">

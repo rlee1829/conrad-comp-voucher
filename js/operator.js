@@ -59,7 +59,13 @@ CompApp.operator = (function () {
   function saveAdmins(a) { CompApp.metaStore.set(ADMIN_KEY, a); }
   function isAdminName(name) { var list = getAdmins().map(function (n) { return n.trim().toLowerCase(); }); return list.indexOf(String(name || '').trim().toLowerCase()) >= 0; }
   function isAdmin() { var admins = getAdmins(); if (!admins.length) return true; var o = getOp(); return !!(o && o.name && isAdminName(o.name)); }
-  function updateMgmtLinks() { var can = isAdmin(); var b1 = $('btnApproverManage'), b2 = $('btnAdminManage'); if (b1) b1.style.display = can ? '' : 'none'; if (b2) b2.style.display = can ? '' : 'none'; }
+  function updateMgmtLinks() {
+    var can = isAdmin();
+    var b1 = $('btnApproverManage'), b2 = $('btnAdminManage'), navIE = $('navImportExport');
+    if (b1) b1.style.display = can ? '' : 'none';
+    if (b2) b2.style.display = can ? '' : 'none';
+    if (navIE) navIE.style.display = can ? '' : 'none';
+  }
   updateMgmtLinks();
 
   function approverManageModal() {

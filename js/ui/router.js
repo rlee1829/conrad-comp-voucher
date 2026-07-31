@@ -24,6 +24,10 @@ CompApp.router = (function () {
   }
 
   function go(v) {
+    if (v === 'importexport' && CompApp.operator && !CompApp.operator.isAdmin()) {
+      toast('가져오기/내보내기는 관리자만 사용할 수 있습니다.');
+      v = 'list';
+    }
     state.view = v; state.selected = {};
     document.querySelectorAll('.navitem').forEach(function (n) { n.setAttribute('aria-current', n.dataset.view === v ? 'true' : 'false'); });
     ['overview', 'list', 'issue', 'integrity', 'importexport', 'auditlog'].forEach(function (k) { $('view-' + k).classList.toggle('active', k === v); });
