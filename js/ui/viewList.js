@@ -84,9 +84,9 @@ CompApp.viewList = (function () {
       var es = effStatus(r), sel = state.selected[r.id];
       var acts = '';
       if (r.status === 'PENDING' && role === 'approver') { acts += '<button class="approve-a" data-act="approve" data-id="' + r.id + '">승인</button>'; acts += '<button class="reject-a" data-act="reject" data-id="' + r.id + '">반려</button>'; }
-      if (r.status === 'ACTIVE') acts += '<button data-act="use" data-id="' + r.id + '">사용</button>';
-      if (r.status === 'ACTIVE' || r.status === 'EXPIRED') acts += '<button data-act="extend" data-id="' + r.id + '">연장</button>';
-      if (r.status === 'PENDING' || r.status === 'ACTIVE') acts += '<button data-act="void" data-id="' + r.id + '">취소</button>';
+      if (r.status === 'ACTIVE' && CompApp.operator.isAdmin()) acts += '<button data-act="use" data-id="' + r.id + '">사용</button>';
+      if ((r.status === 'ACTIVE' || r.status === 'EXPIRED') && role === 'approver') acts += '<button data-act="extend" data-id="' + r.id + '">연장</button>';
+      if ((r.status === 'PENDING' || r.status === 'ACTIVE') && CompApp.operator.isAdmin()) acts += '<button data-act="void" data-id="' + r.id + '">취소</button>';
       acts += '<button data-act="edit" data-id="' + r.id + '">수정</button>';
       var prodLabel = schema.recordProductLabel(r);
       return '<tr class="' + (sel ? 'sel' : '') + '">'
@@ -128,12 +128,14 @@ CompApp.viewList = (function () {
     var ids = Object.keys(state.selected).filter(function (id) { return state.selected[id]; });
     var w = $('bulkbarWrap');
     if (!ids.length) { w.innerHTML = ''; return; }
+    var isAdmin = CompApp.operator.isAdmin();
     w.innerHTML = '<div class="bulkbar"><span class="cntsel">' + ids.length + '건 선택</span>'
       + (role === 'approver' ? '<button data-bulk="approve">승인</button><button data-bulk="reject">반려</button>' : '')
-      + '<button data-bulk="use">사용처리</button>'
-      + '<button data-bulk="extend">기간연장</button><button data-bulk="void">발행취소</button>'
+      + (isAdmin ? '<button data-bulk="use">사용처리</button>' : '')
+      + (role === 'approver' ? '<button data-bulk="extend">기간연장</button>' : '')
+      + (isAdmin ? '<button data-bulk="void">발행취소</button>' : '')
       + '<button data-bulk="field">일괄입력</button>'
-      + (CompApp.operator.isAdmin() ? '<button data-bulk="delete" class="reject-a">삭제</button>' : '')
+      + (isAdmin ? '<button data-bulk="delete" class="reject-a">삭제</button>' : '')
       + '<button data-bulk="clear">선택해제</button></div>';
   }
   function clearFilters() { CompApp.router.resetFilterInputs(); state.page = 1; render(); }
