@@ -102,11 +102,11 @@ CompApp.ui = (function () {
     function paint() {
       var presets = getPresets ? getPresets() : [];
       containerEl.innerHTML = '<div class="tagrow" id="' + prefix + '-tags"></div>'
-        + '<div style="display:flex;gap:8px;margin-bottom:6px"><select id="' + prefix + '-preset" style="flex:1"><option value="">프리셋에서 추가…</option>'
-        + presets.map(function (p) { return '<option value="' + esc(p) + '">' + esc(p) + '</option>'; }).join('') + '</select></div>'
-        + '<div style="display:flex;gap:8px;margin-bottom:6px">' + dateFieldHTML(prefix + '-from', '') + dateFieldHTML(prefix + '-to', '')
+        + '<div style="display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap"><select id="' + prefix + '-preset" style="flex:1;min-width:120px"><option value="">프리셋에서 추가…</option>'
+        + presets.map(function (p) { return '<option value="' + esc(p) + '">' + esc(p) + '</option>'; }).join('') + '</select>'
+        + dateFieldHTML(prefix + '-from', '') + dateFieldHTML(prefix + '-to', '')
         + '<button type="button" class="btn btn-ghost btn-sm" id="' + prefix + '-addrange" style="white-space:nowrap">기간 추가</button></div>'
-        + '<div style="display:flex;gap:8px"><input type="text" id="' + prefix + '-text" placeholder="자유 입력 후 추가"><button type="button" class="btn btn-ghost btn-sm" id="' + prefix + '-addtext" style="white-space:nowrap">추가</button></div>';
+        + '<div style="display:flex;gap:6px"><input type="text" id="' + prefix + '-text" placeholder="자유 입력 후 추가"><button type="button" class="btn btn-ghost btn-sm" id="' + prefix + '-addtext" style="white-space:nowrap">추가</button></div>';
       wireDateBoxes(containerEl);
       paintTags();
       document.getElementById(prefix + '-preset').addEventListener('change', function () {
