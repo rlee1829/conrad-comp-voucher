@@ -35,24 +35,34 @@ CompApp.ui = (function () {
   }
 
   // F: optional one-shot action button (used by 1-step undo). Existing single-string callers
-  // are unaffected — opts is entirely optional.
+  // are unaffected — opts is entirely optional. When an action is offered, the toast waits for an
+  // explicit choice (되돌리기 or 확인) instead of auto-dismissing, so a processed batch never
+  // disappears before the user decides whether to undo it.
   function toast(m, opts) {
     opts = opts || {};
     var t = $('toast');
-    t.innerHTML = esc(m) + (opts.actionLabel ? '<button type="button" class="toast-action">' + esc(opts.actionLabel) + '</button>' : '');
+    var html = '<span class="toast-msg">' + esc(m) + '</span>';
+    if (opts.actionLabel) html += '<button type="button" class="toast-action">' + esc(opts.actionLabel) + '</button><button type="button" class="toast-confirm">확인</button>';
+    t.innerHTML = html;
     t.classList.toggle('has-action', !!opts.actionLabel);
     t.classList.add('show');
     clearTimeout(t._t);
-    if (opts.actionLabel && opts.onAction) {
-      var btn = t.querySelector('.toast-action');
-      btn.addEventListener('click', function (e) {
+    if (opts.actionLabel) {
+      if (opts.onAction) {
+        t.querySelector('.toast-action').addEventListener('click', function (e) {
+          e.stopPropagation();
+          t.classList.remove('show');
+          opts.onAction();
+        });
+      }
+      t.querySelector('.toast-confirm').addEventListener('click', function (e) {
         e.stopPropagation();
         t.classList.remove('show');
-        clearTimeout(t._t);
-        opts.onAction();
       });
+      // no auto-dismiss — stays until 되돌리기 or 확인 is clicked
+    } else {
+      t._t = setTimeout(function () { t.classList.remove('show'); }, 2200);
     }
-    t._t = setTimeout(function () { t.classList.remove('show'); }, opts.actionLabel ? 5000 : 2200);
   }
 
   // ---- generic modal ----

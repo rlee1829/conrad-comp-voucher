@@ -34,10 +34,10 @@ CompApp.viewOverview = (function () {
     // Room 바우처처럼 원문 설명만 있는 항목이 빈 칸으로 뭉치지 않고 종류별로 정확히 집계된다.
     var prods = {}; rs.forEach(function (r) { var key = schema.recordProductLabel(r); if (!prods[key]) prods[key] = { iss: 0, used: 0 }; prods[key].iss++; if (r.status === 'USED') prods[key].used++; });
     var pkeys = Object.keys(prods);
-    var parr = pkeys.map(function (p) { return { p: p, n: prods[p].iss }; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 8);
+    var parr = pkeys.map(function (p) { return { p: p, n: prods[p].iss }; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 4);
     $('ov-prod').innerHTML = parr.length ? '<table class="minitable"><thead><tr><th>바우처 종류</th><th class="num">발행</th></tr></thead><tbody>'
       + parr.map(function (x) { return '<tr class="clickable" data-drill="text" data-val="' + esc(x.p) + '"><td><span class="link-btn">' + esc(x.p) + '</span></td><td class="num">' + x.n + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">데이터 없음</div>';
-    var uarr = pkeys.map(function (p) { return { p: p, used: prods[p].used, iss: prods[p].iss, rate: prods[p].iss ? Math.round(prods[p].used / prods[p].iss * 100) : 0 }; }).filter(function (x) { return x.used > 0; }).sort(function (a, b) { return b.used - a.used; }).slice(0, 8);
+    var uarr = pkeys.map(function (p) { return { p: p, used: prods[p].used, iss: prods[p].iss, rate: prods[p].iss ? Math.round(prods[p].used / prods[p].iss * 100) : 0 }; }).filter(function (x) { return x.used > 0; }).sort(function (a, b) { return b.used - a.used; }).slice(0, 4);
     $('ov-usage').innerHTML = uarr.length ? '<table class="minitable"><thead><tr><th>바우처 종류</th><th class="num">사용</th><th class="num">사용률</th></tr></thead><tbody>'
       + uarr.map(function (x) { return '<tr class="clickable" data-drill="used" data-val="' + esc(x.p) + '"><td><span class="link-btn">' + esc(x.p) + '</span></td><td class="num">' + x.used + '</td><td class="num">' + x.rate + '%</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">사용 내역 없음</div>';
   }

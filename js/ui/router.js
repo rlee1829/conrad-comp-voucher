@@ -93,6 +93,9 @@ CompApp.router = (function () {
     $('brandHome').addEventListener('click', function () { setScope('ALL'); go('overview'); toast('새로고침 · 개요'); });
     $('btnRefresh').addEventListener('click', function () {
       var b = $('btnRefresh'); b.classList.add('spin'); setTimeout(function () { b.classList.remove('spin'); }, 520);
+      // 개요 화면에서는 기간(ovState)도 "이번 달" 기본값으로 되돌려 진짜 새로고침처럼 동작하게 함 —
+      // 그냥 refresh()만 하면 이전에 직접 지정한 기간이 그대로 남아 오래된 조회로 보일 수 있음.
+      if (state.view === 'overview') state.ovState = { start: '', end: '' };
       renderCounts(); refresh(); toast('새로고침됨');
     });
     $('scopeSeg').addEventListener('click', function (e) { var b = e.target.closest('button[data-fam]'); if (!b) return; setScope(b.dataset.fam); go(state.view); });
