@@ -18,7 +18,10 @@ CompApp.dbCloud = (function () {
   function getAllVouchers() {
     var out = [];
     function page(from) {
-      return client().from('vouchers').select('id,data').order('created_at', { ascending: false }).range(from, from + PAGE - 1).then(function (res) {
+      // order by created_at + id (unique tiebreaker) — created_at alone isn't stable across paged
+      // requests when many rows share the same timestamp (e.g. one bulk-insert batch), which let
+      // ties land on both sides of a page boundary: some rows fetched twice, others skipped.
+      return client().from('vouchers').select('id,data').order('created_at', { ascending: false }).order('id', { ascending: true }).range(from, from + PAGE - 1).then(function (res) {
         chk(res);
         var rows = (res.data || []).map(fromRow);
         out = out.concat(rows);
