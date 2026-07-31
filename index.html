@@ -86,10 +86,9 @@
           <select id="filterStatus">
             <option value="">전체 상태</option>
             <option value="PENDING">승인대기</option><option value="ACTIVE">활성</option>
-            <option value="EXPIRED_PENDING">만료(미처리)</option><option value="USED">사용</option>
+            <option value="USED">사용</option>
             <option value="EXPIRED">만료</option><option value="VOID">취소</option>
             <option value="REJECTED">반려</option>
-            <option value="EXPVOID">만료·미처리/취소</option>
           </select>
           <select id="filterCat">
             <option value="">전체 사유</option>
@@ -98,8 +97,12 @@
           </select>
           <select id="filterProduct"><option value="">전체 종류</option></select>
           <input type="search" id="filterText" placeholder="증서번호·목적·요청자">
-          <span class="fl-label">발행일</span><span class="datebox"><input type="text" class="datefield" id="fIssFrom" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span class="tilde">~</span><span class="datebox"><input type="text" class="datefield" id="fIssTo" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span>
-          <span class="fl-label">만료일</span><span class="datebox"><input type="text" class="datefield" id="fValFrom" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span class="tilde">~</span><span class="datebox"><input type="text" class="datefield" id="fValTo" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span>
+          <select id="filterDateField">
+            <option value="issued">발행일</option>
+            <option value="valid">만료일</option>
+            <option value="usedDate">사용일</option>
+          </select>
+          <span class="datebox"><input type="text" class="datefield" id="fDateFrom" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span class="tilde">~</span><span class="datebox"><input type="text" class="datefield" id="fDateTo" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span>
           <button class="btn btn-ghost btn-sm" id="btnClearFilter" type="button">필터 해제</button>
           <button class="btn btn-primary btn-sm" id="btnGoIssue" type="button">＋ 발행</button>
         </div>

@@ -63,6 +63,16 @@ CompApp.schema = (function () {
     return r.productText || '(원본 미기재)';
   }
 
+  // E: appendReviewNote() (importMapper.js) writes just "[가져오기 검토 필요: ...]" into remark
+  // when the source had no real remark to begin with (no leading "실제내용 · " prefix). That
+  // internal housekeeping marker isn't meaningful to someone reading 비고, so hide it when it's
+  // the only thing there — the underlying needsReview flag/정합성 tracking is unaffected.
+  var REVIEW_MARKER_ONLY_RE = /^\[가져오기 검토 필요:[^\]]*\]$/;
+  function displayRemark(remark) {
+    if (!remark) return '';
+    return REVIEW_MARKER_ONLY_RE.test(remark) ? '' : remark;
+  }
+
   var CATALOG_KEY = 'compVoucherCatalog';
   function saveCatalog() {
     try { localStorage.setItem(CATALOG_KEY, JSON.stringify(CATALOG)); } catch (e) {}
@@ -133,7 +143,7 @@ CompApp.schema = (function () {
 
   return {
     CATALOG: CATALOG, CAT_LABEL: CAT_LABEL, STATUS_LABEL: STATUS_LABEL, STATUS_CLASS: STATUS_CLASS, DEFAULT_DEPTS: DEFAULT_DEPTS,
-    prodById: prodById, prod: prod, prodName: prodName, productFam: productFam, recordProductLabel: recordProductLabel,
+    prodById: prodById, prod: prod, prodName: prodName, productFam: productFam, recordProductLabel: recordProductLabel, displayRemark: displayRemark,
     saveCatalog: saveCatalog, loadCatalog: loadCatalog, applyCloudCatalog: applyCloudCatalog, saveRetired: saveRetired,
     getRetired: function () { return retired; },
     uid: uid, money: money, esc: esc, todayStr: todayStr, normDate: normDate, validDate: validDate,

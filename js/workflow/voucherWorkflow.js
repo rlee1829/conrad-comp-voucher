@@ -352,7 +352,7 @@ CompApp.workflow = (function () {
         + (r.voidReason ? '<dt>취소 사유</dt><dd>' + esc(r.voidReason) + '</dd>' : '')
         + (r.rejectReason ? '<dt>반려 사유</dt><dd>' + esc(r.rejectReason) + '</dd>' : '')
         + (schema.blackoutSummary(r) ? '<dt>Black-out</dt><dd>' + esc(schema.blackoutSummary(r)) + '</dd>' : '')
-        + (r.remark ? '<dt>비고</dt><dd>' + esc(r.remark) + '</dd>' : '')
+        + (schema.displayRemark(r.remark) ? '<dt>비고</dt><dd>' + esc(schema.displayRemark(r.remark)) + '</dd>' : '')
         + '</dl><div class="hist"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:6px">변경 이력</div>' + hist + '</div>',
       buttons: [{ label: '닫기' }, { label: '인쇄', onClick: function () { setTimeout(function () { printRecord(r); }, 60); } }, { label: '수정', cls: 'btn-primary', onClick: function () { setTimeout(function () { editModal(r); }, 60); } }]
     });

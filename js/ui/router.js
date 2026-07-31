@@ -66,7 +66,7 @@ CompApp.router = (function () {
   }
 
   // drill-through from overview: set filters then open list
-  function resetFilterInputs() { $('filterStatus').value = ''; $('filterCat').value = ''; state.filterProductVal = ''; $('filterText').value = ''; $('fIssFrom').value = ''; $('fIssTo').value = ''; $('fValFrom').value = ''; $('fValTo').value = ''; }
+  function resetFilterInputs() { $('filterStatus').value = ''; $('filterCat').value = ''; state.filterProductVal = ''; $('filterText').value = ''; $('filterDateField').value = 'issued'; $('fDateFrom').value = ''; $('fDateTo').value = ''; }
   function goListFiltered(opts) {
     if (opts.fam) setScope(opts.fam);
     resetFilterInputs();

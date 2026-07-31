@@ -17,21 +17,17 @@ CompApp.viewList = (function () {
 
   function filtered() {
     var fs = $('filterStatus').value, fc = $('filterCat').value, ft = $('filterText').value.trim().toLowerCase();
-    var iF = normDate($('fIssFrom').value), iT = normDate($('fIssTo').value), vF = normDate($('fValFrom').value), vT = normDate($('fValTo').value);
+    var dField = $('filterDateField').value, dF = normDate($('fDateFrom').value), dT = normDate($('fDateTo').value);
     var rows = records().filter(function (r) {
       if (!famMatch(r)) return false;
       if (fc && r.cat !== fc) return false;
       if (state.filterProductVal && r.product !== state.filterProductVal) return false;
-      if (iF && (r.issued || '') < iF) return false;
-      if (iT && (r.issued || '') > iT) return false;
-      if (vF && (r.valid || '') < vF) return false;
-      if (vT && (r.valid || '') > vT) return false;
-      if (fs) {
-        if (fs === 'EXPIRED_PENDING') { if (effStatus(r) !== 'EXPIRED_PENDING') return false; }
-        else if (fs === 'ACTIVE') { if (effStatus(r) !== 'ACTIVE') return false; }
-        else if (fs === 'EXPVOID') { var es = effStatus(r); if (!(es === 'EXPIRED_PENDING' || r.status === 'EXPIRED' || r.status === 'VOID')) return false; }
-        else if (r.status !== fs) return false;
+      if (dF || dT) {
+        var dv = (dField === 'valid' ? r.valid : dField === 'usedDate' ? r.usedDate : r.issued) || '';
+        if (dF && dv < dF) return false;
+        if (dT && dv > dT) return false;
       }
+      if (fs && r.status !== fs) return false;
       if (ft && (r.serial + ' ' + r.purpose + ' ' + r.req + ' ' + schema.recordProductLabel(r)).toLowerCase().indexOf(ft) < 0) return false;
       return true;
     });
@@ -58,8 +54,10 @@ CompApp.viewList = (function () {
   function renderChips() {
     var rs = records().filter(famMatch), by = { PENDING: 0, ACTIVE: 0, USED: 0, EXPIRED: 0, VOID: 0, REJECTED: 0 };
     rs.forEach(function (r) { by[r.status]++; });
-    var expp = rs.filter(function (r) { return effStatus(r) === 'EXPIRED_PENDING'; }).length;
-    var data = [{ k: '총 발행', v: rs.length, f: '' }, { k: '승인대기', v: by.PENDING, f: 'PENDING' }, { k: '활성', v: by.ACTIVE - expp, f: 'ACTIVE' }, { k: '사용', v: by.USED, f: 'USED' }, { k: '반려', v: by.REJECTED, f: 'REJECTED' }, { k: '만료·미처리/취소', v: by.EXPIRED + by.VOID + expp, f: 'EXPVOID' }];
+    var data = [
+      { k: '총 발행', v: rs.length, f: '' }, { k: '승인대기', v: by.PENDING, f: 'PENDING' }, { k: '활성', v: by.ACTIVE, f: 'ACTIVE' },
+      { k: '사용', v: by.USED, f: 'USED' }, { k: '반려', v: by.REJECTED, f: 'REJECTED' }, { k: '만료', v: by.EXPIRED, f: 'EXPIRED' }, { k: '취소', v: by.VOID, f: 'VOID' }
+    ];
     var cur = $('filterStatus').value;
     $('chips').innerHTML = data.map(function (d) { return '<button type="button" class="mini-chip' + (cur === d.f ? ' active' : '') + '" data-fstat="' + d.f + '"><b>' + d.v + '</b>' + d.k + '</button>'; }).join('');
   }
@@ -101,7 +99,7 @@ CompApp.viewList = (function () {
         + '<td><span class="cat">' + (CAT_LABEL[r.cat] || r.cat) + '</span><div class="purpose-detail">' + esc(r.purpose) + '</div></td>'
         + '<td class="req-by">' + esc(r.req || '') + '</td>'
         + '<td class="mate-no">' + esc(r.mate || '—') + '</td>'
-        + '<td class="remark-cell" title="' + esc(r.remark || '') + '">' + (r.remark ? esc(r.remark) : '—') + '</td>'
+        + '<td class="remark-cell" title="' + esc(schema.displayRemark(r.remark)) + '">' + (schema.displayRemark(r.remark) ? esc(schema.displayRemark(r.remark)) : '—') + '</td>'
         + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + STATUS_LABEL[es] + '</span></td>'
         + '<td><div class="rowact">' + acts + '</div></td></tr>';
     }).join('');
@@ -136,7 +134,8 @@ CompApp.viewList = (function () {
   $('filterCat').addEventListener('change', function () { state.page = 1; render(); });
   $('filterProduct').addEventListener('change', function () { state.filterProductVal = this.value; state.page = 1; render(); });
   $('chips').addEventListener('click', function (e) { var c = e.target.closest('.mini-chip'); if (!c) return; $('filterStatus').value = c.dataset.fstat; state.page = 1; render(); });
-  ['fIssFrom', 'fIssTo', 'fValFrom', 'fValTo'].forEach(function (id) { $(id).addEventListener('change', function () { state.page = 1; render(); }); });
+  $('filterDateField').addEventListener('change', function () { state.page = 1; render(); });
+  ['fDateFrom', 'fDateTo'].forEach(function (id) { $(id).addEventListener('change', function () { state.page = 1; render(); }); });
   $('filterText').addEventListener('input', function () { state.page = 1; render(); });
   $('listTable').addEventListener('click', function (e) {
     var s = e.target.closest('th.sortable');
