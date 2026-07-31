@@ -78,8 +78,8 @@ CompApp.viewList = (function () {
     var allSel = slice.length > 0 && slice.every(function (r) { return state.selected[r.id]; });
     var head = '<thead><tr>'
       + '<th class="chkcol"><input type="checkbox" id="selAll" ' + (allSel ? 'checked' : '') + '></th>'
-      + th('serial', '증서번호') + '<th>타입</th>' + th('product', '바우처 종류') + th('issued', '발행일') + th('valid', '만료일') + '<th>사용일</th>'
-      + '<th>사유 / 세부목적</th><th>요청자</th><th>Mate 승인</th><th>비고</th>' + th('status', '상태') + '<th></th></tr></thead>';
+      + th('serial', '증서번호') + '<th>타입</th>' + th('product', '바우처 종류') + th('issued', '발행일') + th('valid', '만료일') + '<th>사용일</th>' + th('status', '상태')
+      + '<th>사유 / 세부목적</th><th>요청자</th><th>Mate 승인</th><th>비고</th><th></th></tr></thead>';
     var body = slice.map(function (r) {
       var es = effStatus(r), sel = state.selected[r.id];
       var acts = '';
@@ -95,11 +95,11 @@ CompApp.viewList = (function () {
         + '<td>' + famBadge(r.fam) + '</td>'
         + '<td class="prod" title="' + esc(prodLabel) + '">' + esc(prodLabel) + '</td>'
         + '<td class="date">' + r.issued + '</td><td class="date">' + r.valid + '</td><td class="date">' + (r.usedDate || '—') + '</td>'
+        + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + STATUS_LABEL[es] + '</span></td>'
         + '<td class="cat-purpose" title="' + esc((CAT_LABEL[r.cat] || r.cat) + ' — ' + (r.purpose || '')) + '"><span class="cat">' + (CAT_LABEL[r.cat] || r.cat) + '</span> <span class="purpose-inline">' + esc(r.purpose) + '</span></td>'
         + '<td class="req-by">' + esc(r.req || '') + '</td>'
         + '<td class="mate-no">' + esc(r.mate || '—') + '</td>'
         + '<td class="remark-cell" title="' + esc(schema.displayRemark(r.remark)) + '">' + (schema.displayRemark(r.remark) ? esc(schema.displayRemark(r.remark)) : '—') + '</td>'
-        + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + STATUS_LABEL[es] + '</span></td>'
         + '<td><div class="rowact">' + acts + '</div></td></tr>';
     }).join('');
     $('listTable').innerHTML = head + '<tbody>' + (slice.length ? body : '<tr><td colspan="13"><div class="empty">표시할 바우처가 없습니다.</div></td></tr>') + '</tbody>';
@@ -107,11 +107,21 @@ CompApp.viewList = (function () {
     var pg = $('pager');
     if (total <= state.perPage) { pg.innerHTML = '<span class="pinfo">' + total + '건</span>'; }
     else {
-      pg.innerHTML = '<span class="pinfo">' + total + '건 · ' + state.page + '/' + pages + '</span>'
+      pg.innerHTML = '<span class="pinfo">' + total + '건</span>'
         + '<button id="pgFirst" ' + (state.page === 1 ? 'disabled' : '') + '>«</button><button id="pgPrev" ' + (state.page === 1 ? 'disabled' : '') + '>‹ 이전</button>'
+        + '<span class="pg-jump-wrap"><input type="number" id="pgJump" class="pg-jump" min="1" max="' + pages + '" value="' + state.page + '"> / ' + pages + '</span>'
         + '<button id="pgNext" ' + (state.page === pages ? 'disabled' : '') + '>다음 ›</button><button id="pgLast" ' + (state.page === pages ? 'disabled' : '') + '>»</button>';
       $('pgFirst').onclick = function () { state.page = 1; render(); }; $('pgPrev').onclick = function () { state.page--; render(); };
       $('pgNext').onclick = function () { state.page++; render(); }; $('pgLast').onclick = function () { state.page = pages; render(); };
+      var jumpEl = $('pgJump');
+      function doJump() {
+        var v = parseInt(jumpEl.value, 10);
+        if (isNaN(v)) { jumpEl.value = state.page; return; }
+        v = Math.max(1, Math.min(pages, v));
+        if (v !== state.page) { state.page = v; render(); } else { jumpEl.value = state.page; }
+      }
+      jumpEl.addEventListener('change', doJump);
+      jumpEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') doJump(); });
     }
   }
   function renderBulkbar() {
