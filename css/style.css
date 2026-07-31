@@ -193,6 +193,8 @@
   .listfilters .dp-native{width:28px;min-width:28px;}
   .listfilters .fl-label{font-size:11px;margin-left:3px;white-space:nowrap;flex:0 0 auto;}
   .listfilters .tilde{color:var(--ink-3);font-size:12px;flex:0 0 auto;}
+  .listfilters #btnClearFilter{margin-left:auto;flex:0 0 auto;}
+  .listfilters #btnGoIssue{flex:0 0 auto;}
   /* minimal summary strip for the list */
   .minichips{display:flex!important;grid-template-columns:none!important;gap:8px;margin:0 0 10px!important;flex-wrap:wrap;}
   .minichips .mini-chip{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 12px;font-size:12.5px;color:var(--ink-3);box-shadow:var(--shadow);white-space:nowrap;cursor:pointer;font-family:inherit;transition:.12s;}
@@ -349,7 +351,7 @@
   /* 바우처 종류 이름이 원본 자유텍스트라 매우 길 수 있음 — 한 줄로, 왼쪽 2/3 폭까지만 보이고 말줄임 */
   #ov-prod table,#ov-usage table{table-layout:fixed;}
   #ov-prod th:first-child,#ov-prod td:first-child{width:66%;}
-  #ov-usage th:first-child,#ov-usage td:first-child{width:55%;}
+  #ov-usage th:first-child,#ov-usage td:first-child{width:66%;}
   #ov-prod td:first-child .link-btn,#ov-usage td:first-child .link-btn{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   /* black-out tag chips (G: structured black-out input) */
   .tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}

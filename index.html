@@ -81,12 +81,6 @@
       <div class="panel">
         <div class="phead">
           <h3 id="listTitle">목록</h3>
-          <div style="display:flex;gap:8px;align-items:center">
-            <select id="savedFilterSel" style="max-width:150px"><option value="">저장된 필터…</option></select>
-            <button class="btn btn-ghost btn-sm" id="btnSaveFilter" type="button">필터 저장</button>
-            <button class="btn btn-ghost btn-sm" id="btnClearFilter" type="button">필터 해제</button>
-            <button class="btn btn-primary btn-sm" id="btnGoIssue" type="button">＋ 발행</button>
-          </div>
         </div>
         <div class="listfilters" id="listFilters">
           <select id="filterStatus">
@@ -106,6 +100,8 @@
           <input type="search" id="filterText" placeholder="증서번호·목적·요청자">
           <span class="fl-label">발행일</span><span class="datebox"><input type="text" class="datefield" id="fIssFrom" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span class="tilde">~</span><span class="datebox"><input type="text" class="datefield" id="fIssTo" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span>
           <span class="fl-label">만료일</span><span class="datebox"><input type="text" class="datefield" id="fValFrom" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span class="tilde">~</span><span class="datebox"><input type="text" class="datefield" id="fValTo" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span>
+          <button class="btn btn-ghost btn-sm" id="btnClearFilter" type="button">필터 해제</button>
+          <button class="btn btn-primary btn-sm" id="btnGoIssue" type="button">＋ 발행</button>
         </div>
         <div id="bulkbarWrap"></div>
         <div class="pbody" style="padding:0"><div class="tablewrap"><table id="listTable"></table></div></div>

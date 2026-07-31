@@ -71,55 +71,9 @@ CompApp.viewList = (function () {
     fams.forEach(function (f) { html += '<optgroup label="' + (f === 'FB' ? 'F&B' : (f === 'RM' ? 'Room' : 'HR')) + '">' + CATALOG[f].map(function (p) { return '<option value="' + p.id + '">' + p.name + '</option>'; }).join('') + '</optgroup>'; });
     sel.innerHTML = html; sel.value = state.filterProductVal;
   }
-  // G: 저장된 필터 — personal, per-device (localStorage), NOT shared metaStore config.
-  var SAVED_FILTERS_KEY = 'compVoucherSavedFilters';
-  function getSavedFilters() { try { var a = JSON.parse(localStorage.getItem(SAVED_FILTERS_KEY)); if (Array.isArray(a)) return a; } catch (e) {} return []; }
-  function saveSavedFilters(a) { try { localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(a)); } catch (e) {} }
-  function currentFilterSnapshot() {
-    return {
-      status: $('filterStatus').value, cat: $('filterCat').value, product: state.filterProductVal, text: $('filterText').value,
-      issFrom: $('fIssFrom').value, issTo: $('fIssTo').value, valFrom: $('fValFrom').value, valTo: $('fValTo').value
-    };
-  }
-  function applyFilterSnapshot(f) {
-    $('filterStatus').value = f.status || ''; $('filterCat').value = f.cat || ''; state.filterProductVal = f.product || '';
-    $('filterText').value = f.text || ''; CompApp.ui.setDate('fIssFrom', f.issFrom || ''); CompApp.ui.setDate('fIssTo', f.issTo || '');
-    CompApp.ui.setDate('fValFrom', f.valFrom || ''); CompApp.ui.setDate('fValTo', f.valTo || ''); state.page = 1; render();
-  }
-  function populateSavedFilterSel() {
-    var sel = $('savedFilterSel'); if (!sel) return; var list = getSavedFilters();
-    sel.innerHTML = '<option value="">저장된 필터…</option>' + list.map(function (f, i) { return '<option value="' + i + '">' + esc(f.name) + '</option>'; }).join('') + (list.length ? '<option value="__manage">— 관리…</option>' : '');
-  }
-  $('savedFilterSel').addEventListener('change', function () {
-    if (this.value === '__manage') { savedFilterManageModal(); this.value = ''; return; }
-    if (this.value === '') return;
-    var list = getSavedFilters(), f = list[parseInt(this.value, 10)]; if (f) applyFilterSnapshot(f.filters);
-    this.value = '';
-  });
-  $('btnSaveFilter').addEventListener('click', function () {
-    modal({
-      title: '필터 저장', sub: '현재 상태·사유·종류·기간·검색어 조합을 이름으로 저장합니다.', bodyHtml: '<div class="field"><label>이름<span class="req">*</span></label><input type="text" id="sf-name" placeholder="예: 이번달 승인대기"></div>',
-      wire: function (b) { b.querySelector('#sf-name').focus(); },
-      buttons: [{ label: '취소' }, {
-        label: '저장', cls: 'btn-primary', onClick: function (b, setErr) {
-          var name = b.querySelector('#sf-name').value.trim(); if (!name) { setErr('이름을 입력하세요.'); return false; }
-          var list = getSavedFilters(); list.push({ name: name, filters: currentFilterSnapshot() }); saveSavedFilters(list); populateSavedFilterSel(); toast('필터 저장됨: ' + name);
-        }
-      }]
-    });
-  });
-  function savedFilterManageModal() {
-    function body() { var list = getSavedFilters(); return list.length ? list.map(function (f, i) { return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)"><span style="flex:1;font-size:13px">' + esc(f.name) + '</span><button type="button" class="btn btn-danger btn-sm sf-del" data-i="' + i + '">삭제</button></div>'; }).join('') : '<div class="empty">저장된 필터가 없습니다.</div>'; }
-    modal({
-      title: '저장된 필터 관리', bodyHtml: body(), buttons: [{ label: '닫기' }], wire: function wire(b) {
-        b.querySelectorAll('.sf-del').forEach(function (btn) { btn.addEventListener('click', function () { var arr = getSavedFilters(); arr.splice(parseInt(btn.dataset.i, 10), 1); saveSavedFilters(arr); b.innerHTML = body(); wire(b); populateSavedFilterSel(); }); });
-      }
-    });
-  }
-
   function render() {
     role = CompApp.operator.getRole();
-    renderChips(); populateProductFilter(); populateSavedFilterSel();
+    renderChips(); populateProductFilter();
     var rows = filtered(), total = rows.length, pages = Math.max(1, Math.ceil(total / state.perPage));
     if (state.page > pages) state.page = pages;
     var slice = rows.slice((state.page - 1) * state.perPage, state.page * state.perPage);
