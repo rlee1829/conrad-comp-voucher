@@ -89,7 +89,7 @@ CompApp.workflow = (function () {
     var product = $('f-product').value, batch = $('f-batch').checked, qty = batch ? Math.max(1, parseInt($('f-qty').value, 10) || 1) : 1;
     var start = $('f-serial').value.trim() || CompApp.viewIssue.nextSerial(issueFam, product), iss = normDate($('f-issued').value), val = normDate($('f-valid').value);
     var purpose = $('f-purpose').value.trim(), req = $('f-req').value.trim(), mate = $('f-mate').value.trim(), gm = $('f-gm').checked;
-    var amount = parseInt($('f-amount').value, 10); if (isNaN(amount)) amount = (prod(issueFam, product) || {}).amount || 0;
+    var amount = (prod(issueFam, product) || {}).amount || 0;
     var blackoutTags = CompApp.viewIssue.getBlackoutTags();
     if (!validDate(iss) || !validDate(val)) { err.textContent = '발행일과 만료일을 YYYY-MM-DD 형식으로 입력하세요.'; return; }
     if (!state.selectedCat) { err.textContent = '사유 카테고리를 선택하세요.'; return; }

@@ -304,23 +304,22 @@
   @media (max-width:900px){.issue-layout{grid-template-columns:1fr;}}
   .issue-layout>.panel{display:flex;flex-direction:column;min-height:0;margin-bottom:0;}
   .issue-layout>.panel>.pbody{flex:1;}
-  /* keep the tall right-hand menu from stretching the form: it scrolls internally, panels take natural height */
-  #view-issue .issue-layout{align-items:start;}
+  /* form panel stretches to match the product-menu panel's height (both fit one screen, no scroll) */
   #view-issue .prodmenu-body{max-height:calc(100vh - 176px);}
-  /* new-issue form: compact — small enough to fit one screen without scrolling */
-  #view-issue .pbody{padding:8px 12px;}
+  /* new-issue form: compact but comfortable — fits one screen without scrolling */
+  #view-issue .pbody{padding:7px 14px;}
   .issue-form{gap:0 18px;}
   .issue-form .field{margin-bottom:3px;}
-  .issue-form .field>label{font-size:10.5px;margin-bottom:2px;}
-  .issue-form input,.issue-form select,.issue-form textarea{font-size:12.5px;padding:5px 8px;}
-  .issue-form .seg{gap:4px;}
-  .issue-form .seg button{font-size:11.5px;padding:5px 8px;}
-  .issue-form .approve{margin-top:2px;padding:6px 9px;}
+  .issue-form .field>label{font-size:10.5px;margin-bottom:1px;}
+  .issue-form input,.issue-form select,.issue-form textarea{font-size:12.5px;padding:4px 9px;}
+  .issue-form .seg{gap:5px;}
+  .issue-form .seg button{font-size:12px;padding:4px 9px;}
+  .issue-form .approve{margin-top:2px;padding:5px 10px;}
   .issue-form .approve .achk{font-size:12px;gap:7px;}
-  .issue-form .hintline{font-size:10px;margin-top:1px;}
-  .issue-form textarea{min-height:28px;}
+  .issue-form .hintline{font-size:10.5px;margin-top:0;}
+  .issue-form textarea{min-height:24px;}
   .issue-form .actions{margin-top:0;}
-  .issue-form .actions .btn{padding:8px 16px;font-size:13px;}
+  .issue-form .actions .btn{padding:6px 16px;font-size:13px;}
   .prodmenu-body{padding:0;flex:1;min-height:0;overflow:auto;}
   .pm-group{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent-ink);font-weight:700;padding:14px 17px 8px;position:sticky;top:0;background:var(--surface);z-index:1;border-bottom:1px solid var(--line);}
   .pm-item{display:flex;align-items:stretch;gap:4px;border-bottom:1px solid var(--line);}

@@ -35,7 +35,6 @@ CompApp.viewIssue = (function () {
     var o = $('f-product').selectedOptions[0]; var m = o ? parseInt(o.dataset.months, 10) : 12;
     $('prodhint').textContent = '기본 유효기간 ' + m + '개월'; recalcValid();
     if ($('f-serial')) $('f-serial').value = nextSerial(state.issueFam, $('f-product').value);
-    if ($('f-amount')) $('f-amount').value = o ? (parseInt(o.dataset.amt, 10) || 0) : 0;
     renderSerialHint(); if ($('prodMenu')) renderProdMenu();
   }
   function setIssueFam(f) {
