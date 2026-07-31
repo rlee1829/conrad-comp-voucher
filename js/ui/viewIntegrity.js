@@ -21,8 +21,11 @@ CompApp.viewIntegrity = (function () {
       var list = bySerial[s];
       if (list.length > 1) list.forEach(function (r) { issues.push({ type: 'DUP_SERIAL', severity: 'high', recordId: r.id, serial: r.serial, message: '증서번호 "' + s + '"가 ' + list.length + '건에서 중복 사용됨' }); });
     });
+    function wasImported(r) { return (r.history || []).some(function (h) { return h.action === '가져오기'; }); }
     recs.forEach(function (r) {
-      if (r.status === 'ACTIVE' && !r.mate) issues.push({ type: 'MISSING_MATE', severity: 'medium', recordId: r.id, serial: r.serial, message: '활성 상태이지만 Mate 승인번호가 없음' });
+      // 가져온 과거 데이터(특히 HR)는 원본 자체에 Mate 승인번호가 없는 경우가 많음 — 앞으로 직접
+      // 발행하는 건에 대해서만 이 검사를 적용하고, 이관된 이력은 대상에서 제외.
+      if (r.status === 'ACTIVE' && !r.mate && !wasImported(r)) issues.push({ type: 'MISSING_MATE', severity: 'medium', recordId: r.id, serial: r.serial, message: '활성 상태이지만 Mate 승인번호가 없음' });
       if (r.valid && r.issued && r.valid < r.issued) issues.push({ type: 'BAD_DATE_RANGE', severity: 'high', recordId: r.id, serial: r.serial, message: '만료일(' + r.valid + ')이 발행일(' + r.issued + ')보다 빠름' });
       if (effStatus(r) === 'EXPIRED_PENDING') issues.push({ type: 'EXPIRED_STILL_ACTIVE', severity: 'low', recordId: r.id, serial: r.serial, message: '만료일(' + r.valid + ')이 지났지만 상태가 아직 활성 — 만료 처리 필요' });
     });
