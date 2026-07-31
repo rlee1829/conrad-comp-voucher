@@ -5,7 +5,7 @@
 window.CompApp = window.CompApp || {};
 CompApp.state = {
   fam: 'ALL', issueFam: 'FB', view: 'list', selectedCat: '',
-  sortKey: 'serial', sortDir: 'desc', page: 1, perPage: 15,
+  sortKey: 'serial', sortDir: 'desc', page: 1, perPage: 20,
   filterProductVal: '', selected: {}, ovState: { start: '', end: '' },
   auditLog: [] // F: global audit log, newest first — populated by voucherWorkflow.js mutations
 };
