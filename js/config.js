@@ -14,8 +14,8 @@
 window.CompApp = window.CompApp || {};
 CompApp.config = {
   supabase: {
-    url: '',
-    anonKey: ''
+    url: 'https://foupxcgdopunvxecvwvn.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvdXB4Y2dkb3B1bnZ4ZWN2d3ZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MzM4MTYsImV4cCI6MjEwMTAwOTgxNn0.lXAI3yO92AKynI_rNCZBEGVlfDsyrzmNB7mtbftW7z4'
   }
 };
 
