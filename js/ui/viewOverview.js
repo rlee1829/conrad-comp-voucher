@@ -6,7 +6,7 @@ CompApp.viewOverview = (function () {
   var $ = CompApp.ui.$, setDate = CompApp.ui.setDate;
   var schema = CompApp.schema;
   var esc = schema.esc, money = schema.money, normDate = schema.normDate, todayStr = schema.todayStr, effStatus = schema.effStatus;
-  var CAT_LABEL = schema.CAT_LABEL, prodName = schema.prodName;
+  var CAT_LABEL = schema.CAT_LABEL;
   var state = CompApp.state;
 
   function records() { return CompApp.db.cache.records; }
@@ -27,19 +27,19 @@ CompApp.viewOverview = (function () {
       + Object.keys(CAT_LABEL).map(function (c) { return '<tr class="clickable" data-drill="cat" data-val="' + c + '"><td><span class="link-btn">' + CAT_LABEL[c] + '</span></td><td class="num">' + cats[c].n + '</td><td class="num">' + money(cats[c].amt) + '</td></tr>'; }).join('') + '</tbody></table>';
     var depts = {}; rs.forEach(function (r) { var m = /\(([^)]+)\)\s*$/.exec(r.req || ''); var d = m ? m[1].trim() : (r.req || '미상'); depts[d] = (depts[d] || 0) + 1; });
     var arr = Object.keys(depts).map(function (d) { return { d: d, n: depts[d] }; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 4);
-    var maxD = Math.max(1, arr.length ? arr[0].n : 1);
-    $('ov-dept').innerHTML = arr.length ? '<table class="minitable"><thead><tr><th>부서/요청자</th><th class="num">건수</th><th style="width:100px"></th></tr></thead><tbody>'
-      + arr.map(function (x) { return '<tr class="clickable" data-drill="text" data-val="' + esc(x.d) + '"><td><span class="link-btn">' + esc(x.d) + '</span></td><td class="num">' + x.n + '</td><td><div class="bar" style="width:' + Math.round(x.n / maxD * 100) + '%"></div></td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">데이터 없음</div>';
-    var prods = {}; rs.forEach(function (r) { if (!prods[r.product]) prods[r.product] = { iss: 0, used: 0 }; prods[r.product].iss++; if (r.status === 'USED') prods[r.product].used++; });
+    $('ov-dept').innerHTML = arr.length ? '<table class="minitable"><thead><tr><th>부서/요청자</th><th class="num">건수</th></tr></thead><tbody>'
+      + arr.map(function (x) { return '<tr class="clickable" data-drill="text" data-val="' + esc(x.d) + '"><td><span class="link-btn">' + esc(x.d) + '</span></td><td class="num">' + x.n + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">데이터 없음</div>';
+    // 바우처 종류별 집계 — 가져온 레코드는 카탈로그 id(product)가 비어 있고 원문 텍스트(productText)만
+    // 있을 수 있으므로, id가 아니라 화면에 실제 표시되는 라벨(recordProductLabel)로 묶는다. 그래야
+    // Room 바우처처럼 원문 설명만 있는 항목이 빈 칸으로 뭉치지 않고 종류별로 정확히 집계된다.
+    var prods = {}; rs.forEach(function (r) { var key = schema.recordProductLabel(r); if (!prods[key]) prods[key] = { iss: 0, used: 0 }; prods[key].iss++; if (r.status === 'USED') prods[key].used++; });
     var pkeys = Object.keys(prods);
     var parr = pkeys.map(function (p) { return { p: p, n: prods[p].iss }; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 8);
-    var maxP = Math.max(1, parr.length ? parr[0].n : 1);
-    $('ov-prod').innerHTML = parr.length ? '<table class="minitable"><thead><tr><th>바우처 종류</th><th class="num">발행</th><th style="width:100px"></th></tr></thead><tbody>'
-      + parr.map(function (x) { return '<tr class="clickable" data-drill="text" data-val="' + esc(prodName(state.fam, x.p)) + '"><td><span class="link-btn">' + prodName(state.fam, x.p) + '</span></td><td class="num">' + x.n + '</td><td><div class="bar" style="width:' + Math.round(x.n / maxP * 100) + '%"></div></td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">데이터 없음</div>';
+    $('ov-prod').innerHTML = parr.length ? '<table class="minitable"><thead><tr><th>바우처 종류</th><th class="num">발행</th></tr></thead><tbody>'
+      + parr.map(function (x) { return '<tr class="clickable" data-drill="text" data-val="' + esc(x.p) + '"><td><span class="link-btn">' + esc(x.p) + '</span></td><td class="num">' + x.n + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">데이터 없음</div>';
     var uarr = pkeys.map(function (p) { return { p: p, used: prods[p].used, iss: prods[p].iss, rate: prods[p].iss ? Math.round(prods[p].used / prods[p].iss * 100) : 0 }; }).filter(function (x) { return x.used > 0; }).sort(function (a, b) { return b.used - a.used; }).slice(0, 8);
-    var maxU = Math.max(1, uarr.length ? uarr[0].used : 1);
-    $('ov-usage').innerHTML = uarr.length ? '<table class="minitable"><thead><tr><th>바우처 종류</th><th class="num">사용</th><th class="num">사용률</th><th style="width:64px"></th></tr></thead><tbody>'
-      + uarr.map(function (x) { return '<tr class="clickable" data-drill="used" data-val="' + esc(prodName(state.fam, x.p)) + '"><td><span class="link-btn">' + prodName(state.fam, x.p) + '</span></td><td class="num">' + x.used + '</td><td class="num">' + x.rate + '%</td><td><div class="bar" style="width:' + Math.round(x.used / maxU * 100) + '%"></div></td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">사용 내역 없음</div>';
+    $('ov-usage').innerHTML = uarr.length ? '<table class="minitable"><thead><tr><th>바우처 종류</th><th class="num">사용</th><th class="num">사용률</th></tr></thead><tbody>'
+      + uarr.map(function (x) { return '<tr class="clickable" data-drill="used" data-val="' + esc(x.p) + '"><td><span class="link-btn">' + esc(x.p) + '</span></td><td class="num">' + x.used + '</td><td class="num">' + x.rate + '%</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">사용 내역 없음</div>';
   }
   $('ov-apply').addEventListener('click', function () {
     state.ovState = { start: normDate($('ov-start').value) || state.ovState.start, end: normDate($('ov-end').value) || state.ovState.end };
