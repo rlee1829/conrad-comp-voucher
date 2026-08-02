@@ -267,11 +267,13 @@
   .view{display:none;}.view.active{display:block;}
   /* 목록 화면: 흰 패널이 항상 사이드바(100vh)와 같은 높이까지 채워지도록 — 행 수가
      페이지마다 달라도(마지막 페이지 등) 패널이 짧아져 하단에 빈 여백이 남지 않는다.
-     표 영역만 flex:1로 늘어나고, 넘칠 경우 표 안에서만 스크롤(전체 페이지는 스크롤 안 함). */
+     단, 표 자체는 원래 높이 그대로 두고(마지막 행 바로 아래 페이저가 붙도록) 남는
+     공간은 페이저의 margin-bottom:auto로 흡수해 패널 맨 아래(페이저 밑)에만 생기게 한다
+     — 표와 페이저 사이에 빈 여백이 보이지 않는다. 표 내용이 넘칠 경우에만 표 안에서 스크롤. */
   #view-list.view.active{display:flex;flex-direction:column;flex:1;min-height:0;}
   #view-list .panel{flex:1;min-height:0;display:flex;flex-direction:column;}
-  #view-list .pbody{flex:1;min-height:0;display:flex;flex-direction:column;}
-  #view-list .tablewrap{flex:1;min-height:0;overflow-y:auto;}
+  #view-list .tablewrap{max-height:100%;overflow-y:auto;}
+  #view-list .pager{margin-bottom:auto;}
 
   .backdrop{position:fixed;inset:0;background:rgba(20,18,16,.5);display:none;align-items:center;justify-content:center;z-index:40;padding:20px;}
   .backdrop.show{display:flex;}
