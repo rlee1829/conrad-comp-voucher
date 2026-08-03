@@ -34,6 +34,7 @@ window.CompApp = window.CompApp || {};
       })
       .then(function (auditRows) {
         CompApp.state.auditLog = auditRows;
+        CompApp.workflow.autoExpireStale();
         boot();
       })
       .catch(function (e) {

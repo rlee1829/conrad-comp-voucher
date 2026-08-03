@@ -368,10 +368,21 @@ CompApp.workflow = (function () {
     setTimeout(function () { window.print(); }, 50);
   }
 
+  // 자동 만료 처리: 상태가 ACTIVE인데 만료일이 오늘보다 지난 건을 자동으로 EXPIRED로 전환.
+  // 앱 로드 시(app.js boot) 매번 한 번 실행되어, 정합성 점검의 "만료 미처리" 항목이 쌓이지 않게 한다.
+  function autoExpireStale() {
+    var today = todayStr();
+    var stale = records().filter(function (r) { return r.status === 'ACTIVE' && r.valid && r.valid < today; });
+    if (!stale.length) return 0;
+    stale.forEach(function (r) { r.status = 'EXPIRED'; logHist(r, '자동 만료', '만료일(' + r.valid + ') 경과로 자동 상태 변경'); });
+    persist(stale);
+    return stale.length;
+  }
+
   return {
     issue: issue, rowAction: rowAction, bulkAction: bulkAction, logHist: logHist,
     approveModal: approveModal, rejectModal: rejectModal, useModal: useModal, extendModal: extendModal, voidModal: voidModal,
     fieldSetModal: fieldSetModal, editModal: editModal, showDetail: showDetail, printRecord: printRecord,
-    recById: recById, selIds: selIds
+    recById: recById, selIds: selIds, autoExpireStale: autoExpireStale
   };
 })();
