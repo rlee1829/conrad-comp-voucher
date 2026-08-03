@@ -31,10 +31,12 @@ CompApp.workflow = (function () {
     }
     return entry;
   }
-  function logHist(r, action, detail) {
+  function logHist(r, action, detail, batchId) {
     r.history = r.history || [];
     r.history.push({ ts: todayStr(), actor: operator.actor(), action: action, detail: detail });
-    pushAuditEntry({ action: action, detail: detail, recordId: r.id, serial: r.serial, fam: r.fam });
+    var entry = { action: action, detail: detail, recordId: r.id, serial: r.serial, fam: r.fam };
+    if (batchId) entry.batchId = batchId;
+    pushAuditEntry(entry);
   }
   // Mirror a mutated record (or list of them) to Supabase in the background when cloud is enabled.
   // The in-memory array stays the source every view reads synchronously — this never blocks the UI.
@@ -150,11 +152,12 @@ CompApp.workflow = (function () {
           var rn = b.querySelector('#m-reason').value.trim();
           if (!rn) { setErr('삭제 사유를 입력하세요.'); return false; }
           var before = snapshotBefore(list);
+          var batchId = schema.uid();
           list.forEach(function (r) {
             var idx = records().findIndex(function (x) { return x.id === r.id; });
             if (idx !== -1) records().splice(idx, 1);
             if (CompApp.cloudEnabled && CompApp.cloudEnabled()) CompApp.dbCloud.remove(r.id).catch(function (e) { console.warn('cloud delete failed for', r.id, e); });
-            pushAuditEntry({ action: '삭제', detail: '사유: ' + rn, recordId: r.id, serial: r.serial, fam: r.fam });
+            pushAuditEntry({ action: '삭제', detail: '사유: ' + rn, recordId: r.id, serial: r.serial, fam: r.fam, batchId: batchId });
           });
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('reinsert', before, '삭제 (' + list.length + '건)', list.length + '건 삭제 완료');
@@ -173,7 +176,8 @@ CompApp.workflow = (function () {
           var mate = b.querySelector('#m-mate').value.trim();
           if (!mate) { setErr('Mate 승인번호는 필수입니다.'); return false; }
           var before = snapshotBefore(list);
-          list.forEach(function (r) { r.status = 'ACTIVE'; r.mate = mate; logHist(r, '승인', 'GM 승인 · Mate ' + mate); });
+          var batchId = schema.uid();
+          list.forEach(function (r) { r.status = 'ACTIVE'; r.mate = mate; logHist(r, '승인', 'GM 승인 · Mate ' + mate, batchId); });
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('restore', before, '승인 (' + list.length + '건)', list.length + '건 승인 완료');
@@ -191,7 +195,8 @@ CompApp.workflow = (function () {
           var rn = b.querySelector('#m-reason').value.trim();
           if (!rn) { setErr('반려 사유를 입력하세요.'); return false; }
           var before = snapshotBefore(list);
-          list.forEach(function (r) { r.status = 'REJECTED'; r.rejectReason = rn; logHist(r, '반려', '사유: ' + rn); });
+          var batchId = schema.uid();
+          list.forEach(function (r) { r.status = 'REJECTED'; r.rejectReason = rn; logHist(r, '반려', '사유: ' + rn, batchId); });
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('restore', before, '반려 (' + list.length + '건)', list.length + '건 반려');
@@ -209,7 +214,8 @@ CompApp.workflow = (function () {
           if (!validDate(d)) { setErr('사용일을 선택하세요.'); return false; }
           var note = b.querySelector('#m-note').value.trim();
           var before = snapshotBefore(list);
-          list.forEach(function (r) { r.status = 'USED'; r.usedDate = d; logHist(r, '사용', '사용일 ' + d + (note ? ' · ' + note : '')); });
+          var batchId = schema.uid();
+          list.forEach(function (r) { r.status = 'USED'; r.usedDate = d; logHist(r, '사용', '사용일 ' + d + (note ? ' · ' + note : ''), batchId); });
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('restore', before, '사용 처리 (' + list.length + '건)', list.length + '건 사용 처리');
@@ -227,10 +233,11 @@ CompApp.workflow = (function () {
           if (!validDate(nv)) { setErr('새 만료일을 선택하세요.'); return false; }
           if (!nm) { setErr('연장 승인 Mate 번호는 필수입니다.'); return false; }
           var before = snapshotBefore(list);
+          var batchId = schema.uid();
           list.forEach(function (r) {
             r.valid = nv; r.mate = (r.mate ? r.mate + ' → ' : '') + nm;
             if (r.status === 'PENDING' || r.status === 'EXPIRED') r.status = 'ACTIVE';
-            logHist(r, '기간연장', '새 만료일 ' + nv + ' · Mate ' + nm);
+            logHist(r, '기간연장', '새 만료일 ' + nv + ' · Mate ' + nm, batchId);
           });
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
@@ -249,7 +256,8 @@ CompApp.workflow = (function () {
           var rn = b.querySelector('#m-reason').value.trim();
           if (!rn) { setErr('취소 사유를 입력하세요.'); return false; }
           var before = snapshotBefore(list);
-          list.forEach(function (r) { r.status = 'VOID'; r.voidReason = rn; logHist(r, '취소', '사유: ' + rn); });
+          var batchId = schema.uid();
+          list.forEach(function (r) { r.status = 'VOID'; r.voidReason = rn; logHist(r, '취소', '사유: ' + rn, batchId); });
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('restore', before, '발행취소 (' + list.length + '건)', list.length + '건 취소');
@@ -280,10 +288,11 @@ CompApp.workflow = (function () {
           if (v === '') { setErr('값을 입력하세요.'); return false; }
           var fl = FIELD_OPTS.find(function (x) { return x.k === f; }).l;
           var before = snapshotBefore(list);
+          var batchId = schema.uid();
           list.forEach(function (r) {
             if (f === 'blackout') { r.blackoutTags = [{ type: 'text', label: v }]; }
             else { r[f] = v; }
-            logHist(r, '일괄입력', fl + ' → ' + (f === 'cat' ? CAT_LABEL[v] : v));
+            logHist(r, '일괄입력', fl + ' → ' + (f === 'cat' ? CAT_LABEL[v] : v), batchId);
           });
           persist(list);
           state.selected = {}; CompApp.router.refresh();
@@ -374,7 +383,8 @@ CompApp.workflow = (function () {
     var today = todayStr();
     var stale = records().filter(function (r) { return r.status === 'ACTIVE' && r.valid && r.valid < today; });
     if (!stale.length) return 0;
-    stale.forEach(function (r) { r.status = 'EXPIRED'; logHist(r, '자동 만료', '만료일(' + r.valid + ') 경과로 자동 상태 변경'); });
+    var batchId = schema.uid();
+    stale.forEach(function (r) { r.status = 'EXPIRED'; logHist(r, '자동 만료', '만료일(' + r.valid + ') 경과로 자동 상태 변경', batchId); });
     persist(stale);
     return stale.length;
   }

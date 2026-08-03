@@ -25,6 +25,20 @@ CompApp.viewAuditLog = (function () {
     });
   }
 
+  // 같은 배치(batchId)로 기록된 항목(일괄 승인/반려/사용/연장/취소/일괄입력/자동 만료 등)을
+  // 감사 로그 화면에서 한 줄로 묶어 보여준다 — batchId가 없는 항목(발행/수정 등 단건 작업,
+  // 또는 이 기능 도입 전 기록)은 그대로 개별 줄로 표시.
+  function groupEntries(rows) {
+    var seen = {}, out = [];
+    rows.forEach(function (e) {
+      if (e.batchId && seen[e.batchId]) { seen[e.batchId].items.push(e); return; }
+      var g = { items: [e] };
+      if (e.batchId) seen[e.batchId] = g;
+      out.push(g);
+    });
+    return out;
+  }
+
   function populateActionFilter() {
     var sel = $('alFilterAction'); if (!sel) return;
     var cur = sel.value;
@@ -37,16 +51,18 @@ CompApp.viewAuditLog = (function () {
 
   function render() {
     populateActionFilter();
-    var rows = filtered();
-    var total = rows.length, pages = Math.max(1, Math.ceil(total / perPage));
+    var groups = groupEntries(filtered());
+    var total = groups.length, pages = Math.max(1, Math.ceil(total / perPage));
     if (page > pages) page = pages;
-    var slice = rows.slice((page - 1) * perPage, page * perPage);
+    var slice = groups.slice((page - 1) * perPage, page * perPage);
     $('alTitle').textContent = '감사 로그 · ' + total + '건';
     var head = '<thead><tr><th>시각</th><th>행위자</th><th>작업</th><th>증서번호</th><th>상세</th></tr></thead>';
-    var body = slice.map(function (e) {
+    var body = slice.map(function (g) {
+      var e = g.items[0], n = g.items.length;
+      var detail = n > 1 ? ('증서번호 ' + esc(e.serial || '') + ' 외 ' + (n - 1) + '건') : esc(e.detail || '');
       return '<tr><td class="date">' + esc(e.ts || '') + '</td><td>' + esc(e.actor || '') + '</td><td><span class="cat">' + esc(e.action || '') + '</span></td>'
         + '<td class="serial">' + (e.recordId ? '<button data-detail="' + e.recordId + '">' + esc(e.serial || '') + '</button>' : esc(e.serial || '—')) + '</td>'
-        + '<td>' + esc(e.detail || '') + '</td></tr>';
+        + '<td>' + detail + '</td></tr>';
     }).join('');
     $('alTable').innerHTML = head + '<tbody>' + (slice.length ? body : '<tr><td colspan="5"><div class="empty">기록이 없습니다.</div></td></tr>') + '</tbody>';
     var pg = $('alPager');
