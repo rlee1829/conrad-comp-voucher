@@ -15,7 +15,23 @@ CompApp.viewList = (function () {
   function famMatch(r) { return CompApp.router.famMatch(r); }
   function famBadge(f) { return CompApp.router.famBadge(f); }
 
-  function filtered() {
+  // 지금 걸려 있는 필터를 사람이 읽을 수 있는 형태로. 목록이 비었을 때 "왜 비었는지" 보여주는 용도.
+  function activeFilters() {
+    var out = [];
+    var fs = $('filterStatus').value, fc = $('filterCat').value, ft = $('filterText').value.trim();
+    var dF = normDate($('fDateFrom').value), dT = normDate($('fDateTo').value);
+    var dLabel = { issued: '발행일', valid: '만료일', usedDate: '사용일' }[$('filterDateField').value] || '발행일';
+    if (fs) out.push('상태: ' + (STATUS_LABEL[fs] || fs));
+    if (fc) out.push('사유: ' + (CAT_LABEL[fc] || fc));
+    if (state.filterProductVal) { var p = prodById(state.filterProductVal); out.push('종류: ' + ((p && p.name) || state.filterProductVal)); }
+    if (dF || dT) out.push(dLabel + ': ' + (dF || '…') + ' ~ ' + (dT || '…'));
+    if (ft) out.push('검색: ' + ft);
+    return out;
+  }
+  // opts.ignoreStatus — 상태 필터만 빼고 거른다. 미니칩(상태별 건수)이 나머지 필터를 그대로 반영하게
+  // 해서, "총 발행" 칩 숫자와 실제 목록 건수가 어긋나 보이지 않도록 하기 위한 것.
+  function filtered(opts) {
+    opts = opts || {};
     var fs = $('filterStatus').value, fc = $('filterCat').value, ft = $('filterText').value.trim().toLowerCase();
     var dField = $('filterDateField').value, dF = normDate($('fDateFrom').value), dT = normDate($('fDateTo').value);
     var rows = records().filter(function (r) {
@@ -27,7 +43,7 @@ CompApp.viewList = (function () {
         if (dF && dv < dF) return false;
         if (dT && dv > dT) return false;
       }
-      if (fs && r.status !== fs) return false;
+      if (!opts.ignoreStatus && fs && r.status !== fs) return false;
       if (ft && (r.serial + ' ' + r.purpose + ' ' + r.req + ' ' + schema.recordProductLabel(r)).toLowerCase().indexOf(ft) < 0) return false;
       return true;
     });
@@ -52,7 +68,8 @@ CompApp.viewList = (function () {
     return '<th class="sortable' + (cls ? ' ' + cls : '') + '" data-sort="' + key + '">' + label + arr + '</th>';
   }
   function renderChips() {
-    var rs = records().filter(famMatch), by = { PENDING: 0, ACTIVE: 0, USED: 0, EXPIRED: 0, VOID: 0, REJECTED: 0 };
+    // 상태 필터를 제외한 나머지 필터를 반영한다 — 상태 필터가 없으면 "총 발행" 칩 = 목록 건수.
+    var rs = filtered({ ignoreStatus: true }), by = { PENDING: 0, ACTIVE: 0, USED: 0, EXPIRED: 0, VOID: 0, REJECTED: 0 };
     rs.forEach(function (r) { by[r.status]++; });
     var data = [
       { k: '총 발행', v: rs.length, f: '' }, { k: '승인대기', v: by.PENDING, f: 'PENDING' }, { k: '활성', v: by.ACTIVE, f: 'ACTIVE' },
@@ -71,7 +88,7 @@ CompApp.viewList = (function () {
   }
   function render() {
     canApprove = CompApp.operator.canApprove(); canAdmin = CompApp.operator.canAdmin();
-    renderChips(); populateProductFilter();
+    populateProductFilter(); renderChips();  // 종류 필터를 먼저 정리해야(타입 전환 시 해제됨) 칩 건수가 맞는다
     var rows = filtered(), total = rows.length, pages = Math.max(1, Math.ceil(total / state.perPage));
     if (state.page > pages) state.page = pages;
     var slice = rows.slice((state.page - 1) * state.perPage, state.page * state.perPage);
@@ -103,7 +120,17 @@ CompApp.viewList = (function () {
         + '<td class="remark-cell" title="' + esc(schema.displayRemark(r.remark)) + '">' + (schema.displayRemark(r.remark) ? esc(schema.displayRemark(r.remark)) : '—') + '</td>'
         + '<td><div class="rowact">' + acts + '</div></td></tr>';
     }).join('');
-    $('listTable').innerHTML = head + '<tbody>' + (slice.length ? body : '<tr><td colspan="13"><div class="empty">표시할 바우처가 없습니다.</div></td></tr>') + '</tbody>';
+    // 비었을 때는 "왜" 비었는지까지 보여준다 — 필터가 걸려 있으면 그 조건과 해제 버튼을 함께.
+    var af = activeFilters();
+    var emptyHtml = af.length
+      ? '<div class="empty">필터 조건에 맞는 바우처가 없습니다.<div class="empty-filters">적용 중: ' + esc(af.join(' · ')) + ' <span class="dim">(' + CompApp.router.famLabel(state.fam) + ' 전체 ' + records().filter(famMatch).length + '건)</span></div><button type="button" class="btn btn-ghost btn-sm" id="emptyClearFilter">필터 해제</button></div>'
+      : '<div class="empty">표시할 바우처가 없습니다.</div>';
+    $('listTable').innerHTML = head + '<tbody>' + (slice.length ? body : '<tr><td colspan="13">' + emptyHtml + '</td></tr>') + '</tbody>';
+    var ecf = $('emptyClearFilter'); if (ecf) ecf.addEventListener('click', clearFilters);
+    var cf = $('btnClearFilter');
+    cf.textContent = af.length ? '필터 해제 (' + af.length + ')' : '필터 해제';
+    cf.classList.toggle('filter-on', af.length > 0);
+    cf.title = af.length ? '적용 중: ' + af.join(' · ') : '';
     renderBulkbar();
     var pg = $('pager');
     if (total <= state.perPage) { pg.innerHTML = '<span class="pinfo">' + total + '건</span>'; }

@@ -264,6 +264,10 @@
   .minitable tr.clickable:hover{background:var(--surface-2);}
   .bar{height:7px;border-radius:4px;background:var(--accent);opacity:.85;}
   .empty{text-align:center;color:var(--ink-3);font-size:13.5px;padding:36px 10px;}
+  /* 목록이 필터 때문에 비었을 때: 무엇이 걸려 있는지 + 해제 버튼 */
+  .empty-filters{font-size:12.5px;color:var(--ink-2);margin:7px 0 11px;}
+  .empty-filters .dim{color:var(--ink-3);}
+  .btn.filter-on{border-color:var(--accent);color:var(--accent);font-weight:640;}
   .view{display:none;}.view.active{display:block;}
   /* 목록 화면: 흰 패널이 항상 사이드바(100vh)와 같은 높이까지 채워지도록 — 행 수가
      페이지마다 달라도(마지막 페이지 등) 패널이 짧아져 하단에 빈 여백이 남지 않는다.
