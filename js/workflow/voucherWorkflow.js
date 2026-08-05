@@ -90,7 +90,11 @@ CompApp.workflow = (function () {
     var issueFam = state.issueFam;
     var product = $('f-product').value, batch = $('f-batch').checked, qty = batch ? Math.max(1, parseInt($('f-qty').value, 10) || 1) : 1;
     var start = $('f-serial').value.trim() || CompApp.viewIssue.nextSerial(issueFam, product), iss = normDate($('f-issued').value), val = normDate($('f-valid').value);
-    var purpose = $('f-purpose').value.trim(), req = $('f-req').value.trim(), mate = $('f-mate').value.trim(), gm = $('f-gm').checked;
+    var purpose = $('f-purpose').value.trim(), req = $('f-req').value.trim();
+    // 요청자 모드는 자가 승인 불가 — 승인 권한이 있을 때만 GM 승인 체크가 유효하다(폼에서도 숨겨두지만
+    // 상태가 남아 새어 들어오지 않도록 여기서 한 번 더 막는다). 요청자 발행은 항상 승인대기로 들어간다.
+    var canAppr = operator.canApprove();
+    var gm = canAppr && $('f-gm').checked, mate = canAppr ? $('f-mate').value.trim() : '';
     var amount = (prod(issueFam, product) || {}).amount || 0;
     var blackoutTags = CompApp.viewIssue.getBlackoutTags();
     if (!validDate(iss) || !validDate(val)) { err.textContent = '발행일과 만료일을 YYYY-MM-DD 형식으로 입력하세요.'; return; }
@@ -108,9 +112,11 @@ CompApp.workflow = (function () {
       issued.push(r);
     }
     persist(issued);
-    CompApp.router.renderCounts(); CompApp.router.go('list');
+    CompApp.router.renderCounts();
+    // 승인대기로 들어간 건은 목록이 아니라 승인 대기함으로 보낸다 — 요청이 어디로 갔는지 바로 보이도록.
+    if (status === 'PENDING') CompApp.router.goListFiltered({ status: 'PENDING', nav: 'approvals', silent: true }); else CompApp.router.go('list');
     finishAction('remove', { ids: issued.map(function (r) { return r.id; }), serials: issued.map(function (r) { return r.serial; }), fam: issueFam },
-      '발행 (' + issued.length + '건)', (qty > 1 ? qty + '장 ' : '') + '발행 등록 완료' + (gm ? '' : ' (승인대기)'));
+      '발행 (' + issued.length + '건)', (qty > 1 ? qty + '장 ' : '') + (gm ? '발행 등록 완료' : '발행 요청 완료 (승인대기)'));
   }
 
   function rowAction(act, id) {

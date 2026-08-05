@@ -74,17 +74,15 @@ CompApp.router = (function () {
     $('filterCat').value = opts.cat || '';
     $('filterText').value = opts.text || '';
     state.page = 1; renderCounts(); go('list');
-    toast('목록 필터 적용');
+    // 목록으로 열되 사이드바에서는 눌린 메뉴(예: 승인 대기함)를 현재 위치로 표시.
+    if (opts.nav) document.querySelectorAll('.navitem').forEach(function (x) { x.setAttribute('aria-current', x.dataset.view === opts.nav ? 'true' : 'false'); });
+    if (!opts.silent) toast('목록 필터 적용');
   }
 
   function wireNav() {
     document.querySelectorAll('.navitem').forEach(function (n) {
       n.addEventListener('click', function () {
-        if (n.dataset.view === 'approvals') {
-          goListFiltered({ status: 'PENDING' });
-          document.querySelectorAll('.navitem').forEach(function (x) { x.setAttribute('aria-current', x === n ? 'true' : 'false'); });
-          return;
-        }
+        if (n.dataset.view === 'approvals') { goListFiltered({ status: 'PENDING', nav: 'approvals' }); return; }
         go(n.dataset.view);
       });
     });

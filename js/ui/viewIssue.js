@@ -171,10 +171,20 @@ CompApp.viewIssue = (function () {
       }
     });
   }
+  // 요청자 모드에서는 스스로 GM 승인 처리를 할 수 없다 — 승인대기로만 등록되고, 승인자가 승인 대기함에서
+  // 승인한다. 모드는 발행 화면에 머무는 중에도 바뀔 수 있어서(사이드바 토글) 폼 초기화와 분리해 둔다.
+  function applyRoleUI() {
+    var canAppr = operator.canApprove();
+    $('f-gm-block').style.display = canAppr ? '' : 'none';
+    $('f-gm-note').style.display = canAppr ? 'none' : '';
+    $('btnIssue').textContent = canAppr ? '발행 등록' : '발행 요청';
+    if (!canAppr) { $('f-gm').checked = false; $('f-mate').value = ''; }
+  }
   function resetForm() {
     $('f-batch').checked = false; $('f-qty').value = 1; $('f-qty').disabled = true; CompApp.ui.setDate('f-issued', todayStr());
     $('f-purpose').value = ''; populatePurposePresets(); $('f-req').value = operator.opLabel();
     $('f-mate').value = ''; $('f-remark').value = ''; $('f-gm').checked = false;
+    applyRoleUI();
     blackoutEditor = CompApp.ui.wireBlackoutEditor('f-bo', $('f-blackout-editor'), [], getBlackouts);
     state.selectedCat = ''; document.querySelectorAll('#f-cat button').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); $('formerr').textContent = '';
     document.querySelectorAll('#f-type button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.fam === state.issueFam ? 'true' : 'false'); });
@@ -192,5 +202,5 @@ CompApp.viewIssue = (function () {
 
   function getBlackoutTags() { return blackoutEditor ? blackoutEditor.getTags() : []; }
 
-  return { render: render, nextSerial: nextSerial, serialPrefix: serialPrefix, getBlackoutTags: getBlackoutTags, getBlackouts: getBlackouts };
+  return { render: render, applyRoleUI: applyRoleUI, nextSerial: nextSerial, serialPrefix: serialPrefix, getBlackoutTags: getBlackoutTags, getBlackouts: getBlackouts };
 })();

@@ -55,17 +55,23 @@ CompApp.operator = (function () {
     var o = getOp();
     return (o && o.name && isApproverName(o.name)) ? 'approver' : 'requester';
   }
+  // 승인 권한 보유 여부(명단 소속). 관리자는 승인 권한을 포함한다.
+  function isListedApprover() { var o = getOp(); return isAdmin() || !!(o && o.name && isApproverName(o.name)); }
   var role = computeAutoRole();
   function applyRole(r) {
-    if (r === 'admin' && !isAdmin()) r = isApproverName((getOp() || {}).name) ? 'approver' : 'requester';
+    // 모드 토글은 화면 필터지만 발행 시 자가 승인 여부까지 가른다 — 명단에 없는 사람이 임의로
+    // 승인자/관리자 모드로 올라가지 못하게 여기서 강등시킨다.
+    if (r === 'admin' && !isAdmin()) r = 'approver';
+    if (r === 'approver' && !isListedApprover()) r = 'requester';
     role = r;
     document.querySelectorAll('#roleSwitch button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.role === role ? 'true' : 'false'); });
+    if (CompApp.viewIssue && CompApp.viewIssue.applyRoleUI) CompApp.viewIssue.applyRoleUI();
     if (CompApp.router && CompApp.router.refresh) CompApp.router.refresh();
   }
   // 자동 판정을 다시 돌린다(담당자 재등록 / 명단 변경 / 클라우드 설정 로딩 완료 시). 수동 토글은 리셋됨.
   function refreshRole() { updateMgmtLinks(); applyRole(computeAutoRole()); return role; }
   // 승인·관리 액션의 실제 게이트. 명단 소속(권한) + 현재 모드(화면 필터) 둘 다 만족해야 노출.
-  function canApprove() { return role === 'approver' || role === 'admin'; }
+  function canApprove() { return (role === 'approver' || role === 'admin') && isListedApprover(); }
   function canAdmin() { return role === 'admin' && isAdmin(); }
   document.querySelectorAll('#roleSwitch button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.role === role ? 'true' : 'false'); });
   $('roleSwitch').addEventListener('click', function (e) { var b = e.target.closest('button[data-role]'); if (!b) return; applyRole(b.dataset.role); });
@@ -79,10 +85,13 @@ CompApp.operator = (function () {
     var can = isAdmin();
     var b1 = $('btnApproverManage'), b2 = $('btnAdminManage'), navIE = $('navImportExport');
     var roleAdminBtn = document.querySelector('#roleSwitch button[data-role="admin"]');
+    var roleApprBtn = document.querySelector('#roleSwitch button[data-role="approver"]');
     if (b1) b1.style.display = can ? '' : 'none';
     if (b2) b2.style.display = can ? '' : 'none';
     if (navIE) navIE.style.display = can ? '' : 'none';
-    if (roleAdminBtn) roleAdminBtn.style.display = can ? '' : 'none';  // 관리자만 관리자 모드로 전환 가능
+    // 명단에 있는 사람에게만 해당 모드 버튼을 노출 — 모드는 곧 발행 시 자가 승인 가능 여부이기도 하다.
+    if (roleAdminBtn) roleAdminBtn.style.display = can ? '' : 'none';
+    if (roleApprBtn) roleApprBtn.style.display = isListedApprover() ? '' : 'none';
   }
   updateMgmtLinks();
 
