@@ -280,6 +280,8 @@
   .modal{background:var(--surface);border:1px solid var(--line-2);border-radius:13px;box-shadow:var(--shadow);width:100%;max-width:480px;max-height:88vh;overflow:auto;padding:22px;}
   .modal h3{margin:0 0 4px;font-size:17px;}
   .modal .msub{margin:0 0 15px;font-size:13px;color:var(--ink-3);}
+  /* 모달 안내문. 사이드바용 .sb-hint는 흰색 반투명(--side-dim)이라 밝은 모달 배경에서 안 보인다. */
+  .modal-hint{font-size:12px;line-height:1.5;color:var(--ink-2);background:var(--warn-soft);border:1px solid var(--line-2);border-radius:8px;padding:9px 11px;margin:0 0 13px;}
   .kv{display:grid;grid-template-columns:128px 1fr;gap:7px 14px;font-size:13px;margin-bottom:13px;}
   .kv dt{color:var(--ink-3);}.kv dd{margin:0;color:var(--ink);font-weight:540;}
   .hist{border-top:1px solid var(--line);padding-top:11px;margin-top:6px;}

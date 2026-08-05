@@ -130,12 +130,12 @@ CompApp.workflow = (function () {
     if (!rs.length) { toast('선택된 항목이 없습니다.'); return; }
     if (kind === 'approve') { var p = rs.filter(function (r) { return r.status === 'PENDING'; }); if (!p.length) { toast('승인대기 상태인 선택 항목이 없습니다.'); return; } return approveModal(p); }
     if (kind === 'reject') { var rj = rs.filter(function (r) { return r.status === 'PENDING'; }); if (!rj.length) { toast('승인대기 상태인 선택 항목이 없습니다.'); return; } return rejectModal(rj); }
-    if (kind === 'use') { var a = rs.filter(function (r) { return r.status === 'ACTIVE'; }); if (!a.length) { toast('활성 상태인 선택 항목이 없습니다.'); return; } return useModal(a); }
+    if (kind === 'use') { var a = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'EXPIRED'; }); if (!a.length) { toast('사용 처리 가능한(활성·만료) 선택 항목이 없습니다.'); return; } return useModal(a); }
     if (kind === 'extend') { var a2 = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'PENDING' || r.status === 'EXPIRED'; }); if (!a2.length) { toast('연장 가능한 항목이 없습니다.'); return; } return extendModal(a2); }
     if (kind === 'void') { var v = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'PENDING'; }); if (!v.length) { toast('취소 가능한 항목이 없습니다.'); return; } return voidModal(v); }
     if (kind === 'field') return fieldSetModal(rs);
     if (kind === 'delete') {
-      if (!operator.isAdmin()) { toast('삭제 권한이 없습니다. (관리자만 가능)'); return; }
+      if (!operator.canAdmin()) { toast('삭제 권한이 없습니다. (관리자 모드에서만 가능)'); return; }
       return deleteModal(rs);
     }
   }
@@ -204,18 +204,36 @@ CompApp.workflow = (function () {
       }]
     });
   }
+  // 만료(EXPIRED) 건도 대상에 포함된다 — 유효기간 안에 실제로 사용한 바우처를 만료일이 지난 뒤에
+  // 뒤늦게 등록하는 경우가 실무에서 가장 흔하기 때문. 대신 사용일이 만료일보다 늦으면 막는다
+  // (그건 소급 등록이 아니라 만료 후 사용이므로 먼저 [연장]으로 만료일을 조정해야 함).
   function useModal(list) {
+    var expiredCnt = list.filter(function (r) { return r.status === 'EXPIRED'; }).length;
+    var minValid = list.reduce(function (m, r) { return (r.valid && (!m || r.valid < m)) ? r.valid : m; }, '');
+    var defDate = (minValid && minValid < todayStr()) ? minValid : todayStr();  // 선택 건 전체에 유효한 가장 늦은 날짜
     modal({
-      title: '사용 처리', sub: list.length + '건을 사용 처리합니다.',
-      bodyHtml: '<div class="field"><label>사용일<span class="req">*</span></label>' + dateFieldHTML('m-date', todayStr()) + '</div><div class="field"><label>사용 메모 <span class="opt">(선택)</span></label><input type="text" id="m-note" placeholder="예: 객실번호 / 투숙객명"></div>',
+      title: '사용 처리', sub: list.length + '건을 사용 처리합니다.' + (expiredCnt ? ' (만료 ' + expiredCnt + '건 포함)' : ''),
+      bodyHtml: (expiredCnt ? '<div class="modal-hint">※ 만료된 바우처 ' + expiredCnt + '건이 포함되어 있습니다. 만료일 이전에 실제로 사용한 건을 뒤늦게 등록하는 경우이므로, <b>실제 사용한 날짜</b>를 입력하세요(만료일 이후 날짜는 입력할 수 없습니다).</div>' : '')
+        + '<div class="field"><label>사용일<span class="req">*</span></label>' + dateFieldHTML('m-date', defDate) + '</div><div class="field"><label>사용 메모 <span class="opt">(선택)</span></label><input type="text" id="m-note" placeholder="예: 객실번호 / 투숙객명"></div>',
       buttons: [{ label: '취소' }, {
         label: '사용 처리', cls: 'btn-primary', onClick: function (b, setErr) {
           var d = normDate(b.querySelector('#m-date').value);
           if (!validDate(d)) { setErr('사용일을 선택하세요.'); return false; }
+          var late = list.filter(function (r) { return r.valid && d > r.valid; });
+          if (late.length) {
+            setErr('사용일이 만료일보다 늦습니다 — ' + late.slice(0, 3).map(function (r) { return r.serial + '(만료 ' + r.valid + ')'; }).join(', ')
+              + (late.length > 3 ? ' 외 ' + (late.length - 3) + '건' : '')
+              + '. 실제 사용일로 고치거나, 만료 후 사용을 인정하려면 먼저 [연장]으로 만료일을 조정하세요.');
+            return false;
+          }
           var note = b.querySelector('#m-note').value.trim();
           var before = snapshotBefore(list);
           var batchId = schema.uid();
-          list.forEach(function (r) { r.status = 'USED'; r.usedDate = d; logHist(r, '사용', '사용일 ' + d + (note ? ' · ' + note : ''), batchId); });
+          list.forEach(function (r) {
+            var retro = r.status === 'EXPIRED';
+            r.status = 'USED'; r.usedDate = d;
+            logHist(r, '사용', '사용일 ' + d + (retro ? ' · 만료 후 소급 등록(만료일 ' + r.valid + ')' : '') + (note ? ' · ' + note : ''), batchId);
+          });
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('restore', before, '사용 처리 (' + list.length + '건)', list.length + '건 사용 처리');

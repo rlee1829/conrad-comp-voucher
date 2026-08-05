@@ -17,7 +17,8 @@ window.CompApp = window.CompApp || {};
     if (CompApp.cloudEnabled && CompApp.cloudEnabled()) {
       var onRemoteChange = function () { CompApp.router.renderCounts(); CompApp.router.refresh(); };
       CompApp.dbCloud.subscribe(onRemoteChange);
-      CompApp.metaStore.subscribe(onRemoteChange);
+      // 공유 설정(승인자·관리자 명단 등)이 다른 브라우저에서 바뀌면 내 모드도 자동 판정을 다시 돌린다.
+      CompApp.metaStore.subscribe(function () { CompApp.operator.refreshRole(); onRemoteChange(); });
     }
   }
 

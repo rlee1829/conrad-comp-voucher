@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COMP Voucher Manager · Conrad Seoul</title>
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 <div class="shell">
@@ -23,8 +23,9 @@
     <div class="design-switch" id="roleSwitch">
       <button type="button" data-role="requester" aria-pressed="false">요청자</button>
       <button type="button" data-role="approver" aria-pressed="true">승인자</button>
+      <button type="button" data-role="admin" aria-pressed="false">관리자</button>
     </div>
-    <div class="sb-hint">담당자 이름이 승인자 명단에 있으면 자동으로 승인자 모드가 적용됩니다.</div>
+    <div class="sb-hint">담당자 이름이 승인자·관리자 명단에 있으면 자동으로 해당 모드가 적용됩니다.</div>
     <button type="button" class="sb-link" id="btnApproverManage">승인자 명단 관리…</button>
     <button type="button" class="sb-link" id="btnAdminManage">관리자 명단 관리…</button>
     <div class="sb-sec">디자인</div>
@@ -251,27 +252,27 @@
 
 <script src="js/lib/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/config.js?v=5"></script>
-<script src="js/metaStore.js?v=5"></script>
-<script src="js/schema.js?v=5"></script>
-<script src="js/ui/components.js?v=5"></script>
-<script src="js/operator.js?v=5"></script>
-<script src="js/db.js?v=5"></script>
-<script src="js/db-cloud.js?v=5"></script>
-<script src="js/ui/router.js?v=5"></script>
-<script src="js/import/importMapper.js?v=5"></script>
-<script src="js/import/importCompFB.js?v=5"></script>
-<script src="js/import/importCompRM.js?v=5"></script>
-<script src="js/import/importHR.js?v=5"></script>
-<script src="js/import/importPipeline.js?v=5"></script>
-<script src="js/export/exportWorkbook.js?v=5"></script>
-<script src="js/workflow/voucherWorkflow.js?v=5"></script>
-<script src="js/ui/viewOverview.js?v=5"></script>
-<script src="js/ui/viewList.js?v=5"></script>
-<script src="js/ui/viewIssue.js?v=5"></script>
-<script src="js/ui/viewIntegrity.js?v=5"></script>
-<script src="js/ui/viewImportExport.js?v=5"></script>
-<script src="js/ui/viewAuditLog.js?v=5"></script>
-<script src="js/app.js?v=5"></script>
+<script src="js/config.js?v=6"></script>
+<script src="js/metaStore.js?v=6"></script>
+<script src="js/schema.js?v=6"></script>
+<script src="js/ui/components.js?v=6"></script>
+<script src="js/operator.js?v=6"></script>
+<script src="js/db.js?v=6"></script>
+<script src="js/db-cloud.js?v=6"></script>
+<script src="js/ui/router.js?v=6"></script>
+<script src="js/import/importMapper.js?v=6"></script>
+<script src="js/import/importCompFB.js?v=6"></script>
+<script src="js/import/importCompRM.js?v=6"></script>
+<script src="js/import/importHR.js?v=6"></script>
+<script src="js/import/importPipeline.js?v=6"></script>
+<script src="js/export/exportWorkbook.js?v=6"></script>
+<script src="js/workflow/voucherWorkflow.js?v=6"></script>
+<script src="js/ui/viewOverview.js?v=6"></script>
+<script src="js/ui/viewList.js?v=6"></script>
+<script src="js/ui/viewIssue.js?v=6"></script>
+<script src="js/ui/viewIntegrity.js?v=6"></script>
+<script src="js/ui/viewImportExport.js?v=6"></script>
+<script src="js/ui/viewAuditLog.js?v=6"></script>
+<script src="js/app.js?v=6"></script>
 </body>
 </html>

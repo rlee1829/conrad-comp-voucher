@@ -9,7 +9,7 @@ CompApp.viewList = (function () {
   var CAT_LABEL = schema.CAT_LABEL, STATUS_LABEL = schema.STATUS_LABEL, STATUS_CLASS = schema.STATUS_CLASS, CATALOG = schema.CATALOG;
   var prodName = schema.prodName, prodById = schema.prodById, productFam = schema.productFam;
   var state = CompApp.state;
-  var role; // read fresh each render via CompApp.operator.getRole()
+  var canApprove, canAdmin; // 승인/관리 액션 노출 여부 — 매 render()마다 현재 모드 기준으로 갱신
 
   function records() { return CompApp.db.cache.records; }
   function famMatch(r) { return CompApp.router.famMatch(r); }
@@ -70,7 +70,7 @@ CompApp.viewList = (function () {
     sel.innerHTML = html; sel.value = state.filterProductVal;
   }
   function render() {
-    role = CompApp.operator.getRole();
+    canApprove = CompApp.operator.canApprove(); canAdmin = CompApp.operator.canAdmin();
     renderChips(); populateProductFilter();
     var rows = filtered(), total = rows.length, pages = Math.max(1, Math.ceil(total / state.perPage));
     if (state.page > pages) state.page = pages;
@@ -83,10 +83,11 @@ CompApp.viewList = (function () {
     var body = slice.map(function (r) {
       var es = effStatus(r), sel = state.selected[r.id];
       var acts = '';
-      if (r.status === 'PENDING' && role === 'approver') { acts += '<button class="approve-a" data-act="approve" data-id="' + r.id + '">승인</button>'; acts += '<button class="reject-a" data-act="reject" data-id="' + r.id + '">반려</button>'; }
-      if (r.status === 'ACTIVE' && CompApp.operator.isAdmin()) acts += '<button data-act="use" data-id="' + r.id + '">사용</button>';
-      if ((r.status === 'ACTIVE' || r.status === 'EXPIRED') && role === 'approver') acts += '<button data-act="extend" data-id="' + r.id + '">연장</button>';
-      if ((r.status === 'PENDING' || r.status === 'ACTIVE') && CompApp.operator.isAdmin()) acts += '<button data-act="void" data-id="' + r.id + '">취소</button>';
+      if (r.status === 'PENDING' && canApprove) { acts += '<button class="approve-a" data-act="approve" data-id="' + r.id + '">승인</button>'; acts += '<button class="reject-a" data-act="reject" data-id="' + r.id + '">반려</button>'; }
+      // 만료 건도 사용 처리 대상 — 만료일 전에 실제로 사용한 걸 뒤늦게 등록하는 경우가 많다(사용일 검증은 useModal에서).
+      if ((r.status === 'ACTIVE' || r.status === 'EXPIRED') && canAdmin) acts += '<button data-act="use" data-id="' + r.id + '">사용</button>';
+      if ((r.status === 'ACTIVE' || r.status === 'EXPIRED') && canApprove) acts += '<button data-act="extend" data-id="' + r.id + '">연장</button>';
+      if ((r.status === 'PENDING' || r.status === 'ACTIVE') && canAdmin) acts += '<button data-act="void" data-id="' + r.id + '">취소</button>';
       acts += '<button data-act="edit" data-id="' + r.id + '">수정</button>';
       var prodLabel = schema.recordProductLabel(r);
       return '<tr class="' + (sel ? 'sel' : '') + '">'
@@ -128,14 +129,13 @@ CompApp.viewList = (function () {
     var ids = Object.keys(state.selected).filter(function (id) { return state.selected[id]; });
     var w = $('bulkbarWrap');
     if (!ids.length) { w.innerHTML = ''; return; }
-    var isAdmin = CompApp.operator.isAdmin();
     w.innerHTML = '<div class="bulkbar"><span class="cntsel">' + ids.length + '건 선택</span>'
-      + (role === 'approver' ? '<button data-bulk="approve">승인</button><button data-bulk="reject">반려</button>' : '')
-      + (isAdmin ? '<button data-bulk="use">사용처리</button>' : '')
-      + (role === 'approver' ? '<button data-bulk="extend">기간연장</button>' : '')
-      + (isAdmin ? '<button data-bulk="void">발행취소</button>' : '')
+      + (canApprove ? '<button data-bulk="approve">승인</button><button data-bulk="reject">반려</button>' : '')
+      + (canAdmin ? '<button data-bulk="use">사용처리</button>' : '')
+      + (canApprove ? '<button data-bulk="extend">기간연장</button>' : '')
+      + (canAdmin ? '<button data-bulk="void">발행취소</button>' : '')
       + '<button data-bulk="field">일괄입력</button>'
-      + (isAdmin ? '<button data-bulk="delete" class="reject-a">삭제</button>' : '')
+      + (canAdmin ? '<button data-bulk="delete" class="reject-a">삭제</button>' : '')
       + '<button data-bulk="clear">선택해제</button></div>';
   }
   function clearFilters() { CompApp.router.resetFilterInputs(); state.page = 1; render(); }
