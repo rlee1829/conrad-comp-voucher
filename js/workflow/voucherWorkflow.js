@@ -98,6 +98,9 @@ CompApp.workflow = (function () {
     // Mate 승인번호는 요청자도 미리 적어 올릴 수 있다 — 승인자는 그 번호를 확인하고 승인만 하면 된다.
     var canAppr = operator.canApprove();
     var gm = canAppr && $('f-gm').checked, mate = $('f-mate').value.trim();
+    // 픽업 알림 수신 주소는 담당자 등록에 적어둔 이메일을 요청 건에 그대로 실어 보낸다(별도 명단 없음).
+    // 남을 대신해 발행하는 경우(요청자 칸에 내 이름이 없음)엔 붙이지 않는다 — 오발송 방지.
+    var reqEmail = operator.isSelfRequest(req) ? operator.opEmail() : '';
     var amount = (prod(issueFam, product) || {}).amount || 0;
     var blackoutTags = CompApp.viewIssue.getBlackoutTags();
     if (!validDate(iss) || !validDate(val)) { err.textContent = '발행일과 만료일을 YYYY-MM-DD 형식으로 입력하세요.'; return; }
@@ -109,7 +112,7 @@ CompApp.workflow = (function () {
     var issued = [];
     for (var k = 0; k < qty; k++) {
       var serial = m ? m[1] + m[2] + String(parseInt(m[3], 10) + k).padStart(m[3].length, '0') : start + (qty > 1 ? '-' + (k + 1) : '');
-      var r = { id: schema.uid(), fam: issueFam, serial: serial, product: product, amount: amount, issued: iss, valid: val, cat: state.selectedCat, purpose: purpose, req: req, mate: mate, remark: $('f-remark').value.trim(), blackoutTags: blackoutTags.slice(), status: status, history: [] };
+      var r = { id: schema.uid(), fam: issueFam, serial: serial, product: product, amount: amount, issued: iss, valid: val, cat: state.selectedCat, purpose: purpose, req: req, reqEmail: reqEmail, mate: mate, remark: $('f-remark').value.trim(), blackoutTags: blackoutTags.slice(), status: status, history: [] };
       logHist(r, '발행', gm ? ('발행·즉시활성 · Mate ' + mate) : ('발행 요청 (승인대기) · ' + (mate ? 'Mate ' + mate : 'Mate 번호 미기재')));
       records().unshift(r);
       issued.push(r);
@@ -303,18 +306,20 @@ CompApp.workflow = (function () {
   function notifyPickupModal(list) {
     var PLACE_KEY = 'compVoucherPickupPlace';
     var place = CompApp.metaStore.get(PLACE_KEY, '4층 Finance Office (평일 09:00–17:00)');
-    var groups = [];   // [{name, email, recs, known}]
+    // 주소는 레코드에 실려 있다(요청자가 담당자 등록 때 적은 이메일). 없는 건 — 과거 이관분이나
+    // 대리 발행분 — 은 여기서 한 번 입력하면 그 레코드에 저장돼 다음부터는 자동으로 잡힌다.
+    var groups = [];
     list.forEach(function (r) {
       var req = (r.req || '').trim() || '(요청자 미기재)';
-      var c = operator.findContact(req);
-      var key = c ? c.email.toLowerCase() : ('?' + req.toLowerCase());
+      var mail = (r.reqEmail || '').trim();
+      var key = mail ? mail.toLowerCase() : ('?' + req.toLowerCase());
       var g = null;
       groups.forEach(function (x) { if (x.key === key) g = x; });
-      if (!g) { g = { key: key, name: c ? c.name : req, req: req, email: c ? c.email : '', recs: [] }; groups.push(g); }
+      if (!g) { g = { key: key, name: req, req: req, email: mail, recs: [] }; groups.push(g); }
       g.recs.push(r);
     });
     function body() {
-      return '<div class="modal-hint">요청자별로 메일을 나눠 엽니다. [메일 열기]를 누르면 Outlook에 내용이 채워진 새 메일이 뜨고, <b>보내기는 직접</b> 누르시면 됩니다. 주소가 비어 있으면 입력 후 열면 되고, 입력한 주소는 연락처에 저장됩니다.</div>'
+      return '<div class="modal-hint">요청자별로 메일을 나눠 엽니다. [메일 열기]를 누르면 Outlook에 내용이 채워진 새 메일이 뜨고, <b>보내기는 직접</b> 누르시면 됩니다. 주소는 요청자가 담당자 등록 때 적은 이메일이 자동으로 들어오고, 비어 있으면 여기서 입력하면 <b>해당 건에 저장</b>돼 다음부터 자동으로 잡힙니다.</div>'
         + '<div class="field"><label>픽업 안내 문구</label><input type="text" id="pk-place" value="' + esc(place) + '"></div>'
         + groups.map(function (g, i) {
           return '<div class="pkrow" data-i="' + i + '">'
@@ -346,12 +351,15 @@ CompApp.workflow = (function () {
             if (!mail) { toast('이메일 주소를 입력하세요.'); return; }
             var placeText = b.querySelector('#pk-place').value.trim();
             if (placeText !== place) { place = placeText; CompApp.metaStore.set(PLACE_KEY, place); }
-            if (mail !== g.email) operator.upsertContact(g.name, mail);
             var subject = '[Conrad Seoul] COMP 바우처 ' + g.recs.length + '건 픽업 안내';
             window.location.href = 'mailto:' + encodeURIComponent(mail)
               + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(mailBody(g, placeText));
             var today = todayStr(), batchId = schema.uid();
-            g.recs.forEach(function (r) { r.notifiedAt = today; r.notifiedTo = mail; logHist(r, '픽업 알림', mail + ' 앞 메일 작성', batchId); });
+            g.recs.forEach(function (r) {
+              r.notifiedAt = today; r.notifiedTo = mail;
+              if (!r.reqEmail) r.reqEmail = mail;   // 다음 알림 때 다시 묻지 않도록 레코드에 남긴다
+              logHist(r, '픽업 알림', mail + ' 앞 메일 작성', batchId);
+            });
             persist(g.recs);
             g.email = mail;
             CompApp.router.refresh();
@@ -478,6 +486,7 @@ CompApp.workflow = (function () {
         + '<div class="field"><label>만료일</label>' + dateFieldHTML('e-valid', r.valid || '') + '</div>'
         + '<div class="field"><label>사유 카테고리</label><select id="e-cat">' + catOpts + '</select></div>'
         + '<div class="field"><label>요청자</label><input type="text" id="e-req" value="' + esc(r.req || '') + '"></div>'
+        + '<div class="field"><label>요청자 이메일 <span class="opt">(픽업 알림용)</span></label><input type="text" id="e-reqmail" value="' + esc(r.reqEmail || '') + '"></div>'
         + '<div class="field full"><label>세부 목적</label><textarea id="e-purpose">' + esc(r.purpose || '') + '</textarea></div>'
         + '<div class="field"><label>Mate 승인번호</label><input type="text" id="e-mate" value="' + esc(r.mate || '') + '"></div>'
         + '<div class="field"><label>비고</label><input type="text" id="e-remark" value="' + esc(r.remark || '') + '"></div>'
@@ -493,6 +502,7 @@ CompApp.workflow = (function () {
           set('valid', normDate(b.querySelector('#e-valid').value), '만료일'); set('cat', b.querySelector('#e-cat').value, '사유');
           set('req', b.querySelector('#e-req').value.trim(), '요청자'); set('purpose', b.querySelector('#e-purpose').value.trim(), '목적');
           set('mate', b.querySelector('#e-mate').value.trim(), 'Mate'); set('remark', b.querySelector('#e-remark').value.trim(), '비고');
+          set('reqEmail', b.querySelector('#e-reqmail').value.trim(), '요청자 이메일');
           var oldBoSummary = schema.blackoutSummary(r), newBoTags = boEditor ? boEditor.getTags() : schema.normalizeBlackoutTags(r);
           r.blackoutTags = newBoTags; var newBoSummary = schema.blackoutSummary(r);
           if (oldBoSummary !== newBoSummary) changes.push('Black-out: ' + (oldBoSummary || '—') + ' → ' + (newBoSummary || '—'));
@@ -512,7 +522,7 @@ CompApp.workflow = (function () {
         + '<dt>금액</dt><dd>' + money(r.amount) + '</dd>'
         + '<dt>발행일</dt><dd>' + r.issued + '</dd><dt>만료일</dt><dd>' + r.valid + (daysUntil(r.valid) < 0 ? ' <span style="color:var(--warn)">(만료 지남)</span>' : '') + '</dd>'
         + '<dt>사유</dt><dd><span class="cat">' + (CAT_LABEL[r.cat] || r.cat) + '</span></dd>'
-        + '<dt>세부 목적</dt><dd>' + esc(r.purpose) + '</dd><dt>요청자</dt><dd>' + esc(r.req || '—') + '</dd>'
+        + '<dt>세부 목적</dt><dd>' + esc(r.purpose) + '</dd><dt>요청자</dt><dd>' + esc(r.req || '—') + (r.reqEmail ? ' <span style="color:var(--ink-3)">· ' + esc(r.reqEmail) + '</span>' : '') + '</dd>'
         + '<dt>Mate 승인</dt><dd class="mate-no">' + esc(r.mate || '—') + '</dd>'
         + (r.usedDate ? '<dt>사용일</dt><dd>' + r.usedDate + '</dd>' : '')
         + (schema.pickupState(r) ? '<dt>픽업</dt><dd><span class="pkbadge ' + schema.PICKUP_CLASS[schema.pickupState(r)] + '">' + schema.PICKUP_LABEL[schema.pickupState(r)] + '</span>'
