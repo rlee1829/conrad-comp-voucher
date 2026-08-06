@@ -93,8 +93,9 @@ CompApp.workflow = (function () {
     var purpose = $('f-purpose').value.trim(), req = $('f-req').value.trim();
     // 요청자 모드는 자가 승인 불가 — 승인 권한이 있을 때만 GM 승인 체크가 유효하다(폼에서도 숨겨두지만
     // 상태가 남아 새어 들어오지 않도록 여기서 한 번 더 막는다). 요청자 발행은 항상 승인대기로 들어간다.
+    // Mate 승인번호는 요청자도 미리 적어 올릴 수 있다 — 승인자는 그 번호를 확인하고 승인만 하면 된다.
     var canAppr = operator.canApprove();
-    var gm = canAppr && $('f-gm').checked, mate = canAppr ? $('f-mate').value.trim() : '';
+    var gm = canAppr && $('f-gm').checked, mate = $('f-mate').value.trim();
     var amount = (prod(issueFam, product) || {}).amount || 0;
     var blackoutTags = CompApp.viewIssue.getBlackoutTags();
     if (!validDate(iss) || !validDate(val)) { err.textContent = '발행일과 만료일을 YYYY-MM-DD 형식으로 입력하세요.'; return; }
@@ -106,8 +107,8 @@ CompApp.workflow = (function () {
     var issued = [];
     for (var k = 0; k < qty; k++) {
       var serial = m ? m[1] + m[2] + String(parseInt(m[3], 10) + k).padStart(m[3].length, '0') : start + (qty > 1 ? '-' + (k + 1) : '');
-      var r = { id: schema.uid(), fam: issueFam, serial: serial, product: product, amount: amount, issued: iss, valid: val, cat: state.selectedCat, purpose: purpose, req: req, mate: gm ? mate : '', remark: $('f-remark').value.trim(), blackoutTags: blackoutTags.slice(), status: status, history: [] };
-      logHist(r, '발행', gm ? ('발행·즉시활성 · Mate ' + mate) : '발행 (승인대기)');
+      var r = { id: schema.uid(), fam: issueFam, serial: serial, product: product, amount: amount, issued: iss, valid: val, cat: state.selectedCat, purpose: purpose, req: req, mate: mate, remark: $('f-remark').value.trim(), blackoutTags: blackoutTags.slice(), status: status, history: [] };
+      logHist(r, '발행', gm ? ('발행·즉시활성 · Mate ' + mate) : ('발행 요청 (승인대기) · ' + (mate ? 'Mate ' + mate : 'Mate 번호 미기재')));
       records().unshift(r);
       issued.push(r);
     }
@@ -172,18 +173,34 @@ CompApp.workflow = (function () {
     });
   }
 
+  // 요청자가 요청 시 Mate 승인번호를 미리 적어 올릴 수 있으므로, 승인 화면은 그 번호를 그대로 보여주고
+  // 승인자는 확인만 하면 되게 한다. 번호가 없는 요청은 승인할 수 없고(입력 필수) 대기함에 남는다 —
+  // 나중에 번호가 나오면 [수정]이나 [일괄입력]으로 채워 넣은 뒤 승인하면 된다.
   function approveModal(list) {
+    var mates = list.map(function (r) { return (r.mate || '').trim(); });
+    var filled = mates.filter(Boolean);
+    var uniq = filled.filter(function (v, i, a) { return a.indexOf(v) === i; });
+    var pre = uniq.length === 1 ? uniq[0] : '';
+    var hint;
+    if (!filled.length) hint = '요청 시 기재된 Mate 승인번호가 없습니다. 승인번호를 입력해야 승인할 수 있습니다 — 아직 GM 승인 전이라면 그대로 두고 대기함에 남겨두세요.';
+    else if (uniq.length === 1 && filled.length === list.length) hint = '요청 시 기재된 번호입니다. 확인 후 승인하세요.';
+    else hint = '선택한 ' + list.length + '건 중 ' + (list.length - filled.length) + '건은 번호가 없고, 기재된 번호는 ' + uniq.length + '종류입니다. 여기 입력한 번호가 ' + list.length + '건 전체에 적용됩니다.';
     modal({
-      title: 'GM 승인 처리', sub: list.length + '건을 활성화합니다. Mate 승인번호를 입력하세요.',
-      bodyHtml: '<div class="field"><label>Mate 승인번호<span class="req">*</span></label><input type="text" id="m-mate" placeholder="예: 2025-4224"></div>',
+      title: 'GM 승인 처리', sub: list.length + '건을 활성화합니다. Mate 승인번호를 확인하세요.',
+      bodyHtml: '<div class="modal-hint">' + hint + '</div>'
+        + '<div class="field"><label>Mate 승인번호<span class="req">*</span></label><input type="text" id="m-mate" placeholder="예: 2026-4224" value="' + esc(pre) + '"></div>',
       wire: function (b) { b.querySelector('#m-mate').focus(); },
       buttons: [{ label: '취소' }, {
         label: '승인 완료', cls: 'btn-primary', onClick: function (b, setErr) {
           var mate = b.querySelector('#m-mate').value.trim();
-          if (!mate) { setErr('Mate 승인번호는 필수입니다.'); return false; }
+          if (!mate) { setErr('Mate 승인번호는 필수입니다. 아직 번호가 없다면 승인하지 말고 대기함에 두세요.'); return false; }
           var before = snapshotBefore(list);
           var batchId = schema.uid();
-          list.forEach(function (r) { r.status = 'ACTIVE'; r.mate = mate; logHist(r, '승인', 'GM 승인 · Mate ' + mate, batchId); });
+          list.forEach(function (r) {
+            var prev = (r.mate || '').trim();
+            r.status = 'ACTIVE'; r.mate = mate;
+            logHist(r, '승인', 'GM 승인 · Mate ' + mate + (prev && prev !== mate ? ' (요청 시 기재: ' + prev + ')' : ''), batchId);
+          });
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('restore', before, '승인 (' + list.length + '건)', list.length + '건 승인 완료');

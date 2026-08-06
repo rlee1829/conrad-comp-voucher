@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COMP Voucher Manager · Conrad Seoul</title>
-<link rel="stylesheet" href="css/style.css?v=8">
+<link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
 <div class="shell">
@@ -157,12 +157,12 @@
             </div>
             <textarea id="f-purpose" rows="2" placeholder="예: 5th Service Anniversary / Park Hyatt 바우처 교환"></textarea>
           </div>
-          <div class="field" id="f-gm-field"><label>GM 승인 <span class="opt">(이미 승인받았다면 바로 활성화)</span></label>
-            <div class="approve" id="f-gm-block">
-              <label class="achk"><input type="checkbox" id="f-gm"> GM 승인 완료 <span style="font-weight:400;color:var(--ink-3);font-size:12px">· 미체크 시 승인대기</span></label>
-              <div class="field" style="margin:12px 0 0"><label>Mate 승인번호</label><input type="text" id="f-mate" placeholder="예: 2025-4224 (승인 시 필수)"></div>
+          <div class="field" id="f-gm-field"><label>GM 승인 <span class="opt" id="f-gm-label-opt">(이미 승인받았다면 바로 활성화)</span></label>
+            <div class="approve">
+              <label class="achk" id="f-gm-row"><input type="checkbox" id="f-gm"> GM 승인 완료 <span style="font-weight:400;color:var(--ink-3);font-size:12px">· 미체크 시 승인대기</span></label>
+              <div id="f-gm-note" style="display:none"><b>승인대기</b>로 등록됩니다. Mate 승인번호를 이미 받았다면 함께 적어 올리세요 — 승인자가 확인 후 승인합니다. 아직 못 받았다면 비워두고 요청해도 되고, 번호가 나온 뒤 [수정]으로 채워 넣으면 승인됩니다.</div>
+              <div class="field" style="margin:12px 0 0"><label>Mate 승인번호 <span class="opt" id="f-mate-opt"></span></label><input type="text" id="f-mate" placeholder="예: 2026-4224"></div>
             </div>
-            <div class="approve" id="f-gm-note" style="display:none">요청자 모드에서는 <b>승인대기</b>로 등록됩니다. 승인자가 승인 대기함에서 GM 승인·Mate 번호를 입력하면 활성화됩니다.</div>
           </div>
 
           <div class="field full"><label>비고 <span class="opt">(선택)</span></label><input type="text" id="f-remark" placeholder="추가 메모"></div>
@@ -253,27 +253,27 @@
 
 <script src="js/lib/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/config.js?v=8"></script>
-<script src="js/metaStore.js?v=8"></script>
-<script src="js/schema.js?v=8"></script>
-<script src="js/ui/components.js?v=8"></script>
-<script src="js/operator.js?v=8"></script>
-<script src="js/db.js?v=8"></script>
-<script src="js/db-cloud.js?v=8"></script>
-<script src="js/ui/router.js?v=8"></script>
-<script src="js/import/importMapper.js?v=8"></script>
-<script src="js/import/importCompFB.js?v=8"></script>
-<script src="js/import/importCompRM.js?v=8"></script>
-<script src="js/import/importHR.js?v=8"></script>
-<script src="js/import/importPipeline.js?v=8"></script>
-<script src="js/export/exportWorkbook.js?v=8"></script>
-<script src="js/workflow/voucherWorkflow.js?v=8"></script>
-<script src="js/ui/viewOverview.js?v=8"></script>
-<script src="js/ui/viewList.js?v=8"></script>
-<script src="js/ui/viewIssue.js?v=8"></script>
-<script src="js/ui/viewIntegrity.js?v=8"></script>
-<script src="js/ui/viewImportExport.js?v=8"></script>
-<script src="js/ui/viewAuditLog.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/config.js?v=9"></script>
+<script src="js/metaStore.js?v=9"></script>
+<script src="js/schema.js?v=9"></script>
+<script src="js/ui/components.js?v=9"></script>
+<script src="js/operator.js?v=9"></script>
+<script src="js/db.js?v=9"></script>
+<script src="js/db-cloud.js?v=9"></script>
+<script src="js/ui/router.js?v=9"></script>
+<script src="js/import/importMapper.js?v=9"></script>
+<script src="js/import/importCompFB.js?v=9"></script>
+<script src="js/import/importCompRM.js?v=9"></script>
+<script src="js/import/importHR.js?v=9"></script>
+<script src="js/import/importPipeline.js?v=9"></script>
+<script src="js/export/exportWorkbook.js?v=9"></script>
+<script src="js/workflow/voucherWorkflow.js?v=9"></script>
+<script src="js/ui/viewOverview.js?v=9"></script>
+<script src="js/ui/viewList.js?v=9"></script>
+<script src="js/ui/viewIssue.js?v=9"></script>
+<script src="js/ui/viewIntegrity.js?v=9"></script>
+<script src="js/ui/viewImportExport.js?v=9"></script>
+<script src="js/ui/viewAuditLog.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 </body>
 </html>

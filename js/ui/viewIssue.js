@@ -172,13 +172,16 @@ CompApp.viewIssue = (function () {
     });
   }
   // 요청자 모드에서는 스스로 GM 승인 처리를 할 수 없다 — 승인대기로만 등록되고, 승인자가 승인 대기함에서
-  // 승인한다. 모드는 발행 화면에 머무는 중에도 바뀔 수 있어서(사이드바 토글) 폼 초기화와 분리해 둔다.
+  // 승인한다. 다만 Mate 승인번호는 요청자도 적어 올릴 수 있다(이미 받았다면). 모드는 발행 화면에
+  // 머무는 중에도 바뀔 수 있어서(사이드바 토글) 폼 초기화와 분리해 둔다.
   function applyRoleUI() {
     var canAppr = operator.canApprove();
-    $('f-gm-block').style.display = canAppr ? '' : 'none';
+    $('f-gm-row').style.display = canAppr ? '' : 'none';
     $('f-gm-note').style.display = canAppr ? 'none' : '';
+    $('f-gm-label-opt').textContent = canAppr ? '(이미 승인받았다면 바로 활성화)' : '(Mate 번호는 받았으면 입력, 아니면 비워두기)';
+    $('f-mate-opt').textContent = canAppr ? '(GM 승인 완료 시 필수)' : '(선택)';
     $('btnIssue').textContent = canAppr ? '발행 등록' : '발행 요청';
-    if (!canAppr) { $('f-gm').checked = false; $('f-mate').value = ''; }
+    if (!canAppr) $('f-gm').checked = false;  // Mate 번호는 지우지 않는다 — 요청에 함께 실어 보낸다
   }
   function resetForm() {
     $('f-batch').checked = false; $('f-qty').value = 1; $('f-qty').disabled = true; CompApp.ui.setDate('f-issued', todayStr());
