@@ -8,6 +8,8 @@ CompApp.state = {
   sortKey: 'serial', sortDir: 'desc', page: 1, perPage: 20,
   filterProductVal: '', selected: {}, ovState: { start: '', end: '' },
   filterPickup: '', // '' | TOPRINT | TOPICKUP | PICKED — 픽업 흐름 필터(상태 필터와 별개 축)
+  listOpts: null,   // 지금 목록 화면이 어느 대기함으로 열린 것인지(goListFiltered 인자). 평범한 목록이면 null
+
   auditLog: [] // F: global audit log, newest first — populated by voucherWorkflow.js mutations
 };
 
@@ -29,6 +31,9 @@ CompApp.router = (function () {
       toast('가져오기/내보내기는 관리자만 사용할 수 있습니다.');
       v = 'list';
     }
+    // 목록 화면에 "그냥" 들어오면 대기함 맥락은 사라진다. 대기함으로 들어오는 goListFiltered는
+    // go('list') 이후에 다시 맥락을 세우므로, 여기서 지우는 게 모든 경로에 일관되게 먹는다.
+    if (v === 'list') state.listOpts = null;
     state.view = v; state.selected = {};
     document.querySelectorAll('.navitem').forEach(function (n) { n.setAttribute('aria-current', n.dataset.view === v ? 'true' : 'false'); });
     ['overview', 'list', 'issue', 'integrity', 'importexport', 'auditlog'].forEach(function (k) { $('view-' + k).classList.toggle('active', k === v); });
@@ -82,17 +87,23 @@ CompApp.router = (function () {
     $('filterCat').value = opts.cat || '';
     $('filterText').value = opts.text || '';
     state.page = 1; renderCounts(); go('list');
-    // 목록으로 열되 사이드바에서는 눌린 메뉴(예: 승인 대기함)를 현재 위치로 표시.
+    // 목록으로 열되 사이드바에서는 눌린 메뉴(예: 승인 대기함)를 현재 위치로 표시하고,
+    // 제목도 그 대기함 이름으로 바꾼다 — 같은 목록 화면이지만 어디에 있는지 헷갈리지 않도록.
     if (opts.nav) document.querySelectorAll('.navitem').forEach(function (x) { x.setAttribute('aria-current', x.dataset.view === opts.nav ? 'true' : 'false'); });
+    if (opts.title) { $('viewTitle').textContent = famLabel(state.fam) + ' ' + opts.title; $('viewDesc').textContent = opts.desc || ''; }
+    if (opts.nav) state.listOpts = opts;   // 타입 탭을 바꿔도 이 대기함에 그대로 머무르도록 기억
     if (!opts.silent) toast('목록 필터 적용');
   }
 
   function wireNav() {
     document.querySelectorAll('.navitem').forEach(function (n) {
       n.addEventListener('click', function () {
-        if (n.dataset.view === 'approvals') { goListFiltered({ status: 'PENDING', nav: 'approvals' }); return; }
-        // 픽업 대기함 = 인쇄대기 + 픽업대기(아직 요청자 손에 안 넘어간 건). 목록 화면에 픽업 필터로 연다.
-        if (n.dataset.view === 'pickup') { goListFiltered({ pickup: 'OPEN', nav: 'pickup' }); return; }
+        // 세 메뉴가 같은 목록 화면을 쓰되 각자의 필터를 갖는다 — 대기함에 걸린 필터가 목록으로
+        // 따라오지 않도록, 어느 쪽으로 이동하든 진입 시점에 필터를 자기 것으로 다시 세팅한다.
+        if (n.dataset.view === 'approvals') { goListFiltered({ status: 'PENDING', nav: 'approvals', silent: true, title: '승인 대기함', desc: 'Mate 승인번호 확인 후 승인 · 번호가 없으면 대기 유지' }); return; }
+        // 픽업 대기함 = 인쇄대기 + 픽업대기(아직 요청자 손에 안 넘어간 건).
+        if (n.dataset.view === 'pickup') { goListFiltered({ pickup: 'OPEN', nav: 'pickup', silent: true, title: '픽업 대기함', desc: '인쇄완료 표시 → 요청자 알림 → 픽업완료' }); return; }
+        if (n.dataset.view === 'list') { resetFilterInputs(); state.page = 1; go('list'); return; }
         go(n.dataset.view);
       });
     });
@@ -106,7 +117,12 @@ CompApp.router = (function () {
       if (state.view === 'overview') state.ovState = { start: '', end: '' };
       renderCounts(); refresh(); toast('새로고침됨');
     });
-    $('scopeSeg').addEventListener('click', function (e) { var b = e.target.closest('button[data-fam]'); if (!b) return; setScope(b.dataset.fam); go(state.view); });
+    $('scopeSeg').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-fam]'); if (!b) return;
+      var keep = (state.view === 'list') ? state.listOpts : null;   // 대기함에 있었다면 타입만 바꾸고 그대로 머문다
+      setScope(b.dataset.fam);
+      if (keep) goListFiltered(keep); else go(state.view);
+    });
   }
 
   return {

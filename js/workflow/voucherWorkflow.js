@@ -120,7 +120,8 @@ CompApp.workflow = (function () {
     persist(issued);
     CompApp.router.renderCounts();
     // 승인대기로 들어간 건은 목록이 아니라 승인 대기함으로 보낸다 — 요청이 어디로 갔는지 바로 보이도록.
-    if (status === 'PENDING') CompApp.router.goListFiltered({ status: 'PENDING', nav: 'approvals', silent: true }); else CompApp.router.go('list');
+    if (status === 'PENDING') CompApp.router.goListFiltered({ status: 'PENDING', nav: 'approvals', silent: true, title: '승인 대기함', desc: 'Mate 승인번호 확인 후 승인 · 번호가 없으면 대기 유지' });
+    else CompApp.router.go('list');
     finishAction('remove', { ids: issued.map(function (r) { return r.id; }), serials: issued.map(function (r) { return r.serial; }), fam: issueFam },
       '발행 (' + issued.length + '건)', (qty > 1 ? qty + '장 ' : '') + (gm ? '발행 등록 완료' : '발행 요청 완료 (승인대기)'));
   }
