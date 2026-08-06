@@ -31,7 +31,7 @@ CompApp.importHR = (function () {
       var serialRaw = row[0];
       if (serialRaw == null || String(serialRaw).trim() === '') continue;
       read++;
-      var serial = String(serialRaw).trim().replace(/\s+/g, ' '); // collapse, but keep the space (matches app's HR convention)
+      var serial = String(serialRaw).trim().replace(/\s+/g, ''); // 원본은 "HRF 000006"처럼 공백이 있으나 앱 표기는 붙여 쓴다
       var issuedRaw = row[1], validRaw = row[2], statusRaw = row[3], usedRaw = row[4];
       var contents = row[5], voucherType = row[6], empNo = row[7], name = row[8], dept = row[9], sheetRemark = row[10];
 

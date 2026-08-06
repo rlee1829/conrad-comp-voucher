@@ -16,14 +16,15 @@ CompApp.viewIssue = (function () {
   // ---- issue form ----
   function serialPrefix(f, product) { if (f === 'HR') { var p = schema.prod(f, product); return (p && p.prefix) || 'HR'; } return f; }
   function nextSerial(f, product) {
-    var pre = serialPrefix(f, product), sep = (f === 'HR' ? ' ' : ''), mx = 0;
+    // 접두어와 번호는 붙여 쓴다(HRF000006). 예전엔 HR만 공백을 넣었으나 표기를 전 계열 통일함.
+    var pre = serialPrefix(f, product), mx = 0;
     records().forEach(function (r) {
       if (!r.serial) return;
       var clean = String(r.serial).replace(/\s/g, '');
       if (clean.indexOf(pre) === 0) { var num = clean.slice(pre.length).match(/^0*(\d+)/); if (num) mx = Math.max(mx, parseInt(num[1], 10)); }
     });
     var base = (f === 'FB' ? 12280 : (f === 'RM' ? 10318 : 0));
-    return pre + sep + String((mx || base) + 1).padStart(6, '0');
+    return pre + String((mx || base) + 1).padStart(6, '0');
   }
   function renderProductSelect() { $('f-product').innerHTML = CATALOG[state.issueFam].map(function (p) { return '<option value="' + p.id + '" data-months="' + p.defMonths + '" data-amt="' + p.amount + '">' + p.name + '</option>'; }).join(''); onProductChange(); }
   function rebuildProductOptions() {

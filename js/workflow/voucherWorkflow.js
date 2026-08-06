@@ -89,7 +89,9 @@ CompApp.workflow = (function () {
     if (!operator.getOp()) { operator.openOpModal(); return; }
     var issueFam = state.issueFam;
     var product = $('f-product').value, batch = $('f-batch').checked, qty = batch ? Math.max(1, parseInt($('f-qty').value, 10) || 1) : 1;
-    var start = $('f-serial').value.trim() || CompApp.viewIssue.nextSerial(issueFam, product), iss = normDate($('f-issued').value), val = normDate($('f-valid').value);
+    // 직접 입력한 증서번호도 공백은 제거한다 — 표기는 접두어+번호 붙여쓰기로 통일(HRF000006).
+    var start = ($('f-serial').value.trim() || CompApp.viewIssue.nextSerial(issueFam, product)).replace(/\s+/g, '');
+    var iss = normDate($('f-issued').value), val = normDate($('f-valid').value);
     var purpose = $('f-purpose').value.trim(), req = $('f-req').value.trim();
     // 요청자 모드는 자가 승인 불가 — 승인 권한이 있을 때만 GM 승인 체크가 유효하다(폼에서도 숨겨두지만
     // 상태가 남아 새어 들어오지 않도록 여기서 한 번 더 막는다). 요청자 발행은 항상 승인대기로 들어간다.
