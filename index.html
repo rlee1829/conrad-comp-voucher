@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COMP Voucher Manager · Conrad Seoul</title>
-<link rel="stylesheet" href="css/style.css?v=9">
+<link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
 <div class="shell">
@@ -15,6 +15,7 @@
     <div class="navitem" data-view="list"><span class="ic">▤</span> 바우처 목록 <span class="n" id="nav-list-n"></span></div>
     <div class="navitem" data-view="issue"><span class="ic">＋</span> 새 발행</div>
     <div class="navitem" data-view="approvals"><span class="ic">✓</span> 승인 대기함 <span class="n" id="nav-appr-n"></span></div>
+    <div class="navitem" data-view="pickup"><span class="ic">🖨</span> 픽업 대기함 <span class="n" id="nav-pickup-n"></span></div>
     <div class="navitem" data-view="integrity"><span class="ic">⚠</span> 정합성 점검 <span class="n" id="nav-integ-n"></span></div>
     <div class="navitem" data-view="importexport" id="navImportExport"><span class="ic">⇅</span> 가져오기/내보내기</div>
     <div class="navitem" data-view="auditlog"><span class="ic">▦</span> 감사 로그</div>
@@ -28,6 +29,7 @@
     <div class="sb-hint">담당자 이름이 승인자·관리자 명단에 있으면 자동으로 해당 모드가 적용됩니다.</div>
     <button type="button" class="sb-link" id="btnApproverManage">승인자 명단 관리…</button>
     <button type="button" class="sb-link" id="btnAdminManage">관리자 명단 관리…</button>
+    <button type="button" class="sb-link" id="btnContactManage">요청자 연락처 관리…</button>
     <div class="sb-sec">디자인</div>
     <div class="design-switch" id="designSwitch">
       <button data-design="bronze" aria-pressed="true">Bronze</button>
@@ -96,6 +98,13 @@
             <option value="STAFF">직원 복리후생</option><option value="PARTNER">제휴/마케팅</option>
           </select>
           <select id="filterProduct"><option value="">전체 종류</option></select>
+          <select id="filterPickup">
+            <option value="">픽업 전체</option>
+            <option value="OPEN">인쇄+픽업 대기</option>
+            <option value="TOPRINT">인쇄대기</option>
+            <option value="TOPICKUP">픽업대기</option>
+            <option value="PICKED">픽업완료</option>
+          </select>
           <input type="search" id="filterText" placeholder="증서번호·목적·요청자">
           <select id="filterDateField">
             <option value="issued">발행일</option>
@@ -253,27 +262,27 @@
 
 <script src="js/lib/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/config.js?v=9"></script>
-<script src="js/metaStore.js?v=9"></script>
-<script src="js/schema.js?v=9"></script>
-<script src="js/ui/components.js?v=9"></script>
-<script src="js/operator.js?v=9"></script>
-<script src="js/db.js?v=9"></script>
-<script src="js/db-cloud.js?v=9"></script>
-<script src="js/ui/router.js?v=9"></script>
-<script src="js/import/importMapper.js?v=9"></script>
-<script src="js/import/importCompFB.js?v=9"></script>
-<script src="js/import/importCompRM.js?v=9"></script>
-<script src="js/import/importHR.js?v=9"></script>
-<script src="js/import/importPipeline.js?v=9"></script>
-<script src="js/export/exportWorkbook.js?v=9"></script>
-<script src="js/workflow/voucherWorkflow.js?v=9"></script>
-<script src="js/ui/viewOverview.js?v=9"></script>
-<script src="js/ui/viewList.js?v=9"></script>
-<script src="js/ui/viewIssue.js?v=9"></script>
-<script src="js/ui/viewIntegrity.js?v=9"></script>
-<script src="js/ui/viewImportExport.js?v=9"></script>
-<script src="js/ui/viewAuditLog.js?v=9"></script>
-<script src="js/app.js?v=9"></script>
+<script src="js/config.js?v=10"></script>
+<script src="js/metaStore.js?v=10"></script>
+<script src="js/schema.js?v=10"></script>
+<script src="js/ui/components.js?v=10"></script>
+<script src="js/operator.js?v=10"></script>
+<script src="js/db.js?v=10"></script>
+<script src="js/db-cloud.js?v=10"></script>
+<script src="js/ui/router.js?v=10"></script>
+<script src="js/import/importMapper.js?v=10"></script>
+<script src="js/import/importCompFB.js?v=10"></script>
+<script src="js/import/importCompRM.js?v=10"></script>
+<script src="js/import/importHR.js?v=10"></script>
+<script src="js/import/importPipeline.js?v=10"></script>
+<script src="js/export/exportWorkbook.js?v=10"></script>
+<script src="js/workflow/voucherWorkflow.js?v=10"></script>
+<script src="js/ui/viewOverview.js?v=10"></script>
+<script src="js/ui/viewList.js?v=10"></script>
+<script src="js/ui/viewIssue.js?v=10"></script>
+<script src="js/ui/viewIntegrity.js?v=10"></script>
+<script src="js/ui/viewImportExport.js?v=10"></script>
+<script src="js/ui/viewAuditLog.js?v=10"></script>
+<script src="js/app.js?v=10"></script>
 </body>
 </html>

@@ -83,7 +83,8 @@ CompApp.operator = (function () {
   function isAdmin() { var admins = getAdmins(); if (!admins.length) return true; var o = getOp(); return !!(o && o.name && isAdminName(o.name)); }
   function updateMgmtLinks() {
     var can = isAdmin();
-    var b1 = $('btnApproverManage'), b2 = $('btnAdminManage'), navIE = $('navImportExport');
+    var b1 = $('btnApproverManage'), b2 = $('btnAdminManage'), b3 = $('btnContactManage'), navIE = $('navImportExport');
+    if (b3) b3.style.display = can ? '' : 'none';
     var roleAdminBtn = document.querySelector('#roleSwitch button[data-role="admin"]');
     var roleApprBtn = document.querySelector('#roleSwitch button[data-role="approver"]');
     if (b1) b1.style.display = can ? '' : 'none';
@@ -134,6 +135,55 @@ CompApp.operator = (function () {
   }
   $('btnAdminManage').addEventListener('click', adminManageModal);
 
+  // ---- 요청자 연락처 (픽업 알림 메일 수신자) — shared config, 관리자만 편집 ----
+  // 레코드의 요청자(req)는 "Hans Kim/Event"처럼 자유 텍스트라 정확히 일치하지 않는다. 그래서 등록된
+  // 이름이 요청자 문자열 안에 들어 있으면 매칭하고, 여러 개가 걸리면 더 긴(더 구체적인) 이름을 쓴다.
+  var CONTACT_KEY = 'compVoucherContacts';
+  function getContacts() { var v = CompApp.metaStore.get(CONTACT_KEY, []); return Array.isArray(v) ? v : []; }
+  function saveContacts(a) { CompApp.metaStore.set(CONTACT_KEY, a); }
+  function findContact(req) {
+    var s = String(req == null ? '' : req).trim().toLowerCase();
+    if (!s) return null;
+    var best = null, bestLen = 0;
+    getContacts().forEach(function (c) {
+      var n = String(c && c.name || '').trim().toLowerCase();
+      if (!n || !c.email) return;
+      if (s.indexOf(n) >= 0 && n.length > bestLen) { best = c; bestLen = n.length; }
+    });
+    return best;
+  }
+  function upsertContact(name, email) {
+    name = String(name || '').trim(); email = String(email || '').trim();
+    if (!name || !email) return;
+    var arr = getContacts(), hit = null;
+    arr.forEach(function (c) { if (String(c.name || '').trim().toLowerCase() === name.toLowerCase()) hit = c; });
+    if (hit) hit.email = email; else arr.push({ name: name, email: email });
+    saveContacts(arr);
+  }
+  function contactManageModal() {
+    if (!isAdmin()) { toast('요청자 연락처 관리 권한이 없습니다. (관리자만 편집 가능)'); return; }
+    function body() {
+      var list = getContacts();
+      return '<div class="modal-hint">픽업 알림 메일의 수신자입니다. 여기 등록한 <b>이름이 요청자 칸에 포함되어 있으면</b> 자동으로 그 주소가 잡힙니다. (예: 이름 "Hans Kim" → 요청자 "Hans Kim/Event" 매칭)</div>'
+        + (list.length ? list.map(function (c, i) { return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)"><span style="flex:0 0 34%;font-size:13px">' + esc(c.name) + '</span><span style="flex:1;font-size:12.5px;color:var(--ink-3)">' + esc(c.email) + '</span><button type="button" class="btn btn-danger btn-sm pdel-ct" data-i="' + i + '">삭제</button></div>'; }).join('') : '<div class="empty">등록된 연락처가 없습니다.</div>')
+        + '<div style="display:flex;gap:8px;margin-top:12px"><input type="text" id="ct-name" placeholder="이름 (예: Hans Kim)" style="flex:0 0 34%"><input type="text" id="ct-mail" placeholder="이메일" style="flex:1"><button type="button" class="btn btn-primary btn-sm" id="ct-add" style="white-space:nowrap">추가</button></div>';
+    }
+    modal({
+      title: '요청자 연락처 관리', sub: '픽업 알림 메일을 받을 요청자 이름·이메일입니다.', bodyHtml: body(),
+      buttons: [{ label: '닫기' }],
+      wire: function wire(b) {
+        b.querySelectorAll('.pdel-ct').forEach(function (btn) { btn.addEventListener('click', function () { var arr = getContacts(); arr.splice(parseInt(btn.dataset.i, 10), 1); saveContacts(arr); b.innerHTML = body(); wire(b); }); });
+        var add = b.querySelector('#ct-add');
+        if (add) add.addEventListener('click', function () {
+          var n = b.querySelector('#ct-name').value.trim(), m = b.querySelector('#ct-mail').value.trim();
+          if (!n || !m) return;
+          upsertContact(n, m); b.innerHTML = body(); wire(b);
+        });
+      }
+    });
+  }
+  $('btnContactManage').addEventListener('click', contactManageModal);
+
   // ---- design switch ----
   function applyDesign(d) {
     document.documentElement.setAttribute('data-design', d);
@@ -160,6 +210,7 @@ CompApp.operator = (function () {
     refreshRole: refreshRole, canApprove: canApprove, canAdmin: canAdmin,
     getApprovers: getApprovers, isApproverName: isApproverName,
     getAdmins: getAdmins, isAdmin: isAdmin,
+    getContacts: getContacts, findContact: findContact, upsertContact: upsertContact,
     DESIGN_KEY: DESIGN_KEY, applyDesign: applyDesign, init: init
   };
 })();

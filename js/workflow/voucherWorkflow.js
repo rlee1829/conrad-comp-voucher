@@ -140,6 +140,16 @@ CompApp.workflow = (function () {
     if (kind === 'use') { var a = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'EXPIRED'; }); if (!a.length) { toast('사용 처리 가능한(활성·만료) 선택 항목이 없습니다.'); return; } return useModal(a); }
     if (kind === 'extend') { var a2 = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'PENDING' || r.status === 'EXPIRED'; }); if (!a2.length) { toast('연장 가능한 항목이 없습니다.'); return; } return extendModal(a2); }
     if (kind === 'void') { var v = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'PENDING'; }); if (!v.length) { toast('취소 가능한 항목이 없습니다.'); return; } return voidModal(v); }
+    // 픽업 흐름 — 승인자/관리자만. 각 단계에 해당하는 건만 골라서 넘긴다.
+    if (kind === 'printed' || kind === 'notify' || kind === 'pickedup') {
+      if (!operator.canApprove()) { toast('픽업 처리 권한이 없습니다. (승인자·관리자만 가능)'); return; }
+      var want = kind === 'printed' ? 'TOPRINT' : 'TOPICKUP';
+      var pk = rs.filter(function (r) { return schema.pickupState(r) === want; });
+      if (!pk.length) { toast(kind === 'printed' ? '인쇄대기 상태인 선택 항목이 없습니다.' : '픽업대기 상태인 선택 항목이 없습니다. (먼저 [인쇄완료] 표시)'); return; }
+      if (kind === 'printed') return markPrintedModal(pk);
+      if (kind === 'notify') return notifyPickupModal(pk);
+      return markPickedUpModal(pk);
+    }
     if (kind === 'field') return fieldSetModal(rs);
     if (kind === 'delete') {
       if (!operator.canAdmin()) { toast('삭제 권한이 없습니다. (관리자 모드에서만 가능)'); return; }
@@ -264,6 +274,119 @@ CompApp.workflow = (function () {
       }]
     });
   }
+  // ---- 픽업 흐름: 인쇄완료 → (요청자 알림) → 픽업완료 ----
+  // 인쇄 자체는 전용 용지·프린터로 따로 하므로 앱은 "인쇄했다"는 표시만 받는다.
+  function markPrintedModal(list) {
+    modal({
+      title: '인쇄 완료 표시', sub: list.length + '건을 인쇄 완료(픽업 대기)로 표시합니다.',
+      bodyHtml: '<div class="modal-hint">실물 인쇄가 끝난 건만 표시하세요. 표시하면 <b>픽업 대기함</b>으로 넘어가고, 요청자에게 픽업 알림을 보낼 수 있습니다.</div>'
+        + '<div class="field"><label>인쇄일<span class="req">*</span></label>' + dateFieldHTML('m-date', todayStr()) + '</div>',
+      buttons: [{ label: '취소' }, {
+        label: '인쇄 완료', cls: 'btn-primary', onClick: function (b, setErr) {
+          var d = normDate(b.querySelector('#m-date').value);
+          if (!validDate(d)) { setErr('인쇄일을 입력하세요.'); return false; }
+          var before = snapshotBefore(list);
+          var batchId = schema.uid();
+          list.forEach(function (r) { r.printedAt = d; r.printedBy = operator.actor(); logHist(r, '인쇄완료', '인쇄일 ' + d, batchId); });
+          persist(list);
+          state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
+          finishAction('restore', before, '인쇄완료 (' + list.length + '건)', list.length + '건 인쇄 완료 · 픽업 대기');
+        }
+      }]
+    });
+  }
+
+  // 요청자별로 묶어 Outlook 새 메일을 열어 준다(mailto). 서버·API 키 없이 회사 메일 그대로 나가고,
+  // 발신자가 실제 담당자라 회신도 자연스럽다. 보내기는 사람이 누른다.
+  function notifyPickupModal(list) {
+    var PLACE_KEY = 'compVoucherPickupPlace';
+    var place = CompApp.metaStore.get(PLACE_KEY, '4층 Finance Office (평일 09:00–17:00)');
+    var groups = [];   // [{name, email, recs, known}]
+    list.forEach(function (r) {
+      var req = (r.req || '').trim() || '(요청자 미기재)';
+      var c = operator.findContact(req);
+      var key = c ? c.email.toLowerCase() : ('?' + req.toLowerCase());
+      var g = null;
+      groups.forEach(function (x) { if (x.key === key) g = x; });
+      if (!g) { g = { key: key, name: c ? c.name : req, req: req, email: c ? c.email : '', recs: [] }; groups.push(g); }
+      g.recs.push(r);
+    });
+    function body() {
+      return '<div class="modal-hint">요청자별로 메일을 나눠 엽니다. [메일 열기]를 누르면 Outlook에 내용이 채워진 새 메일이 뜨고, <b>보내기는 직접</b> 누르시면 됩니다. 주소가 비어 있으면 입력 후 열면 되고, 입력한 주소는 연락처에 저장됩니다.</div>'
+        + '<div class="field"><label>픽업 안내 문구</label><input type="text" id="pk-place" value="' + esc(place) + '"></div>'
+        + groups.map(function (g, i) {
+          return '<div class="pkrow" data-i="' + i + '">'
+            + '<div class="pkrow-h"><b>' + esc(g.name) + '</b> <span class="dim">· ' + g.recs.length + '건</span>'
+            + (g.recs[0] && g.recs[0].notifiedAt ? ' <span class="dim">(알림 ' + esc(g.recs[0].notifiedAt) + ')</span>' : '') + '</div>'
+            + '<div class="pkrow-b"><input type="text" class="pk-mail" data-i="' + i + '" placeholder="이메일 주소" value="' + esc(g.email) + '">'
+            + '<button type="button" class="btn btn-primary btn-sm pk-open" data-i="' + i + '">메일 열기</button></div>'
+            + '<div class="pkrow-s">' + esc(g.recs.map(function (r) { return r.serial; }).slice(0, 6).join(', ')) + (g.recs.length > 6 ? ' 외 ' + (g.recs.length - 6) + '건' : '') + '</div>'
+            + '</div>';
+        }).join('');
+    }
+    function mailBody(g, placeText) {
+      var lines = ['안녕하세요, ' + g.name + '님', '', '요청하신 COMP 바우처가 준비되었습니다. 아래 안내에 따라 수령해 주세요.', ''];
+      g.recs.slice(0, 30).forEach(function (r) {
+        lines.push('· ' + r.serial + ' | ' + schema.recordProductLabel(r) + ' | 유효기간 ~' + (r.valid || '') + (r.purpose ? ' | ' + r.purpose : ''));
+      });
+      if (g.recs.length > 30) lines.push('· 외 ' + (g.recs.length - 30) + '건');
+      lines.push('', '픽업 장소: ' + placeText, '', '감사합니다.', 'Conrad Seoul Finance');
+      return lines.join('\r\n');
+    }
+    modal({
+      title: '픽업 알림', sub: list.length + '건 · 요청자 ' + groups.length + '명', bodyHtml: body(),
+      buttons: [{ label: '닫기' }],
+      wire: function wire(b) {
+        b.querySelectorAll('.pk-open').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var i = parseInt(btn.dataset.i, 10), g = groups[i];
+            var mail = b.querySelector('.pk-mail[data-i="' + i + '"]').value.trim();
+            if (!mail) { toast('이메일 주소를 입력하세요.'); return; }
+            var placeText = b.querySelector('#pk-place').value.trim();
+            if (placeText !== place) { place = placeText; CompApp.metaStore.set(PLACE_KEY, place); }
+            if (mail !== g.email) operator.upsertContact(g.name, mail);
+            var subject = '[Conrad Seoul] COMP 바우처 ' + g.recs.length + '건 픽업 안내';
+            window.location.href = 'mailto:' + encodeURIComponent(mail)
+              + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(mailBody(g, placeText));
+            var today = todayStr(), batchId = schema.uid();
+            g.recs.forEach(function (r) { r.notifiedAt = today; r.notifiedTo = mail; logHist(r, '픽업 알림', mail + ' 앞 메일 작성', batchId); });
+            persist(g.recs);
+            g.email = mail;
+            CompApp.router.refresh();
+            toast(g.name + '님 앞 메일을 열었습니다 (' + g.recs.length + '건) — Outlook에서 보내기를 눌러주세요.');
+            b.innerHTML = body(); wire(b);
+          });
+        });
+      }
+    });
+  }
+
+  function markPickedUpModal(list) {
+    var notNotified = list.filter(function (r) { return !r.notifiedAt; }).length;
+    modal({
+      title: '픽업 완료', sub: list.length + '건을 요청자가 수령한 것으로 처리합니다.',
+      bodyHtml: (notNotified ? '<div class="modal-hint">' + notNotified + '건은 아직 픽업 알림을 보내지 않은 건입니다. 직접 전달하신 경우라면 그대로 진행하세요.</div>' : '')
+        + '<div class="field"><label>수령일<span class="req">*</span></label>' + dateFieldHTML('m-date', todayStr()) + '</div>'
+        + '<div class="field"><label>수령자 <span class="opt">(선택)</span></label><input type="text" id="m-by" placeholder="비우면 요청자 이름으로 기록"></div>',
+      buttons: [{ label: '취소' }, {
+        label: '픽업 완료', cls: 'btn-primary', onClick: function (b, setErr) {
+          var d = normDate(b.querySelector('#m-date').value);
+          if (!validDate(d)) { setErr('수령일을 입력하세요.'); return false; }
+          var by = b.querySelector('#m-by').value.trim();
+          var before = snapshotBefore(list);
+          var batchId = schema.uid();
+          list.forEach(function (r) {
+            r.pickedUpAt = d; r.pickedUpBy = by || (r.req || '');
+            logHist(r, '픽업완료', '수령일 ' + d + (r.pickedUpBy ? ' · ' + r.pickedUpBy : ''), batchId);
+          });
+          persist(list);
+          state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
+          finishAction('restore', before, '픽업완료 (' + list.length + '건)', list.length + '건 픽업 완료');
+        }
+      }]
+    });
+  }
+
   function extendModal(list) {
     modal({
       title: '유효기간 연장', sub: list.length + '건 연장 · GM 재승인 필요',
@@ -390,6 +513,10 @@ CompApp.workflow = (function () {
         + '<dt>세부 목적</dt><dd>' + esc(r.purpose) + '</dd><dt>요청자</dt><dd>' + esc(r.req || '—') + '</dd>'
         + '<dt>Mate 승인</dt><dd class="mate-no">' + esc(r.mate || '—') + '</dd>'
         + (r.usedDate ? '<dt>사용일</dt><dd>' + r.usedDate + '</dd>' : '')
+        + (schema.pickupState(r) ? '<dt>픽업</dt><dd><span class="pkbadge ' + schema.PICKUP_CLASS[schema.pickupState(r)] + '">' + schema.PICKUP_LABEL[schema.pickupState(r)] + '</span>'
+          + (r.printedAt ? ' · 인쇄 ' + r.printedAt : '')
+          + (r.notifiedAt ? ' · 알림 ' + r.notifiedAt + (r.notifiedTo ? ' (' + esc(r.notifiedTo) + ')' : '') : '')
+          + (r.pickedUpAt ? ' · 수령 ' + r.pickedUpAt + (r.pickedUpBy ? ' (' + esc(r.pickedUpBy) + ')' : '') : '') + '</dd>' : '')
         + (r.voidReason ? '<dt>취소 사유</dt><dd>' + esc(r.voidReason) + '</dd>' : '')
         + (r.rejectReason ? '<dt>반려 사유</dt><dd>' + esc(r.rejectReason) + '</dd>' : '')
         + (schema.blackoutSummary(r) ? '<dt>Black-out</dt><dd>' + esc(schema.blackoutSummary(r)) + '</dd>' : '')
@@ -434,6 +561,7 @@ CompApp.workflow = (function () {
     issue: issue, rowAction: rowAction, bulkAction: bulkAction, logHist: logHist,
     approveModal: approveModal, rejectModal: rejectModal, useModal: useModal, extendModal: extendModal, voidModal: voidModal,
     fieldSetModal: fieldSetModal, editModal: editModal, showDetail: showDetail, printRecord: printRecord,
+    markPrintedModal: markPrintedModal, notifyPickupModal: notifyPickupModal, markPickedUpModal: markPickedUpModal,
     recById: recById, selIds: selIds, autoExpireStale: autoExpireStale
   };
 })();

@@ -24,6 +24,7 @@ CompApp.viewList = (function () {
     if (fs) out.push('상태: ' + (STATUS_LABEL[fs] || fs));
     if (fc) out.push('사유: ' + (CAT_LABEL[fc] || fc));
     if (state.filterProductVal) { var p = prodById(state.filterProductVal); out.push('종류: ' + ((p && p.name) || state.filterProductVal)); }
+    if (state.filterPickup) out.push('픽업: ' + (state.filterPickup === 'OPEN' ? '인쇄대기+픽업대기' : (schema.PICKUP_LABEL[state.filterPickup] || state.filterPickup)));
     if (dF || dT) out.push(dLabel + ': ' + (dF || '…') + ' ~ ' + (dT || '…'));
     if (ft) out.push('검색: ' + ft);
     return out;
@@ -38,6 +39,10 @@ CompApp.viewList = (function () {
       if (!famMatch(r)) return false;
       if (fc && r.cat !== fc) return false;
       if (state.filterProductVal && r.product !== state.filterProductVal) return false;
+      if (state.filterPickup) {
+        var pk = schema.pickupState(r);
+        if (state.filterPickup === 'OPEN' ? (pk !== 'TOPRINT' && pk !== 'TOPICKUP') : pk !== state.filterPickup) return false;
+      }
       if (dF || dT) {
         var dv = (dField === 'valid' ? r.valid : dField === 'usedDate' ? r.usedDate : r.issued) || '';
         if (dF && dv < dF) return false;
@@ -62,6 +67,15 @@ CompApp.viewList = (function () {
       return 0;
     });
     return rows;
+  }
+  // 픽업 단계 뱃지 — 상태 뱃지 옆에 작게. 해당 없는 건(이관 이력 등)엔 아무것도 안 붙인다.
+  function pickupBadge(r) {
+    var p = schema.pickupState(r);
+    if (!p) return '';
+    var tip = p === 'TOPICKUP' ? ('인쇄 ' + (r.printedAt || '') + (r.notifiedAt ? ' · 알림 ' + r.notifiedAt : ' · 알림 전'))
+      : p === 'PICKED' ? ('픽업 ' + (r.pickedUpAt || '') + (r.pickedUpBy ? ' · ' + r.pickedUpBy : ''))
+        : '승인됨 · 인쇄 후 [인쇄완료] 표시 필요';
+    return ' <span class="pkbadge ' + schema.PICKUP_CLASS[p] + '" title="' + esc(tip) + '">' + schema.PICKUP_LABEL[p] + '</span>';
   }
   function th(key, label, cls) {
     var arr = state.sortKey === key ? '<span class="arr">' + (state.sortDir === 'asc' ? '▲' : '▼') + '</span>' : '';
@@ -113,7 +127,7 @@ CompApp.viewList = (function () {
         + '<td>' + famBadge(r.fam) + '</td>'
         + '<td class="prod" title="' + esc(prodLabel) + '">' + esc(prodLabel) + '</td>'
         + '<td class="date">' + r.issued + '</td><td class="date">' + r.valid + '</td><td class="date">' + (r.usedDate || '—') + '</td>'
-        + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + STATUS_LABEL[es] + '</span></td>'
+        + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + STATUS_LABEL[es] + '</span>' + pickupBadge(r) + '</td>'
         + '<td class="cat-purpose" title="' + esc((CAT_LABEL[r.cat] || r.cat) + ' — ' + (r.purpose || '')) + '"><span class="cat">' + (CAT_LABEL[r.cat] || r.cat) + '</span> <span class="purpose-inline">' + esc(r.purpose) + '</span></td>'
         + '<td class="req-by">' + esc(r.req || '') + '</td>'
         + '<td class="mate-no">' + esc(r.mate || '—') + '</td>'
@@ -161,6 +175,7 @@ CompApp.viewList = (function () {
       + (canAdmin ? '<button data-bulk="use">사용처리</button>' : '')
       + (canApprove ? '<button data-bulk="extend">기간연장</button>' : '')
       + (canAdmin ? '<button data-bulk="void">발행취소</button>' : '')
+      + (canApprove ? '<button data-bulk="printed">인쇄완료</button><button data-bulk="notify">픽업 알림</button><button data-bulk="pickedup">픽업완료</button>' : '')
       + '<button data-bulk="field">일괄입력</button>'
       + (canAdmin ? '<button data-bulk="delete" class="reject-a">삭제</button>' : '')
       + '<button data-bulk="clear">선택해제</button></div>';
@@ -171,6 +186,7 @@ CompApp.viewList = (function () {
   $('filterStatus').addEventListener('change', function () { state.page = 1; render(); });
   $('filterCat').addEventListener('change', function () { state.page = 1; render(); });
   $('filterProduct').addEventListener('change', function () { state.filterProductVal = this.value; state.page = 1; render(); });
+  $('filterPickup').addEventListener('change', function () { state.filterPickup = this.value; state.page = 1; render(); });
   $('chips').addEventListener('click', function (e) { var c = e.target.closest('.mini-chip'); if (!c) return; $('filterStatus').value = c.dataset.fstat; state.page = 1; render(); });
   $('filterDateField').addEventListener('change', function () { state.page = 1; render(); });
   ['fDateFrom', 'fDateTo'].forEach(function (id) { $(id).addEventListener('change', function () { state.page = 1; render(); }); });

@@ -41,6 +41,10 @@ CompApp.schema = (function () {
   var STATUS_LABEL = { PENDING: '승인대기', ACTIVE: '활성', USED: '사용', EXPIRED: '만료', VOID: '취소', EXPIRED_PENDING: '만료(미처리)', REJECTED: '반려' };
   var STATUS_CLASS = { PENDING: 'b-pending', ACTIVE: 'b-active', USED: 'b-used', EXPIRED: 'b-expired', VOID: 'b-void', EXPIRED_PENDING: 'b-expired', REJECTED: 'b-rejected' };
   var DEFAULT_DEPTS = ['FO', 'FB', 'Finance', 'RSVN', 'Sales', 'HR', 'MarComm', 'BD', 'HK', 'Event Sales', 'Concierge', 'GM'];
+  // 픽업 흐름 — status(승인/사용/만료)와 별개의 축이다. 승인된 바우처를 실물로 인쇄해서 요청자에게
+  // 건네주기까지의 단계만 다룬다. 인쇄는 별도 프린터·용지로 하므로 앱은 "인쇄했다"는 표시만 받는다.
+  var PICKUP_LABEL = { TOPRINT: '인쇄대기', TOPICKUP: '픽업대기', PICKED: '픽업완료' };
+  var PICKUP_CLASS = { TOPRINT: 'pk-toprint', TOPICKUP: 'pk-topickup', PICKED: 'pk-picked' };
 
   var retired = {}; // deleted products still referenced by past records — keep their names resolvable
   function saveRetired() { try { localStorage.setItem('compVoucherRetired', JSON.stringify(retired)); } catch (e) {} }
@@ -127,6 +131,15 @@ CompApp.schema = (function () {
   function addMonths(ds, m) { var d = new Date(ds + 'T00:00:00'); if (isNaN(d)) return ''; var day = d.getDate(); d.setMonth(d.getMonth() + m); if (d.getDate() < day) d.setDate(0); return d.toISOString().slice(0, 10); }
   function daysUntil(ds) { if (!ds) return 99999; return Math.round((new Date(ds + 'T00:00:00') - new Date(todayStr() + 'T00:00:00')) / 86400000); }
   function effStatus(r) { if (r.status === 'ACTIVE' && r.valid && r.valid < todayStr()) return 'EXPIRED_PENDING'; return r.status; }
+  function wasImported(r) { return (r.history || []).some(function (h) { return h.action === '가져오기'; }); }
+  // 픽업 단계. 이관된 과거 이력은 인쇄·전달이 이미 끝난 건이므로 '인쇄대기'로 잡지 않는다 —
+  // 그렇지 않으면 대기함에 수천 건이 쌓인다. 앱에서 발행/승인한 건만 흐름을 탄다.
+  function pickupState(r) {
+    if (r.pickedUpAt) return 'PICKED';
+    if (r.printedAt) return 'TOPICKUP';
+    if (r.status === 'ACTIVE' && !wasImported(r)) return 'TOPRINT';
+    return '';
+  }
 
   // ---- black-out tags (G: structured input) ----
   // A tag is {type:'preset'|'range'|'text', label?, from?, to?}. Records may still carry the old
@@ -143,6 +156,7 @@ CompApp.schema = (function () {
 
   return {
     CATALOG: CATALOG, CAT_LABEL: CAT_LABEL, STATUS_LABEL: STATUS_LABEL, STATUS_CLASS: STATUS_CLASS, DEFAULT_DEPTS: DEFAULT_DEPTS,
+    PICKUP_LABEL: PICKUP_LABEL, PICKUP_CLASS: PICKUP_CLASS, pickupState: pickupState, wasImported: wasImported,
     prodById: prodById, prod: prod, prodName: prodName, productFam: productFam, recordProductLabel: recordProductLabel, displayRemark: displayRemark,
     saveCatalog: saveCatalog, loadCatalog: loadCatalog, applyCloudCatalog: applyCloudCatalog, saveRetired: saveRetired,
     getRetired: function () { return retired; },

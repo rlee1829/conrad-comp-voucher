@@ -7,6 +7,7 @@ CompApp.state = {
   fam: 'ALL', issueFam: 'FB', view: 'list', selectedCat: '',
   sortKey: 'serial', sortDir: 'desc', page: 1, perPage: 20,
   filterProductVal: '', selected: {}, ovState: { start: '', end: '' },
+  filterPickup: '', // '' | TOPRINT | TOPICKUP | PICKED — 픽업 흐름 필터(상태 필터와 별개 축)
   auditLog: [] // F: global audit log, newest first — populated by voucherWorkflow.js mutations
 };
 
@@ -55,6 +56,11 @@ CompApp.router = (function () {
     $('sc-hr').textContent = records.filter(function (r) { return r.fam === 'HR'; }).length;
     $('nav-list-n').textContent = records.filter(famMatch).length;
     $('nav-appr-n').textContent = records.filter(function (r) { return famMatch(r) && r.status === 'PENDING'; }).length;
+    $('nav-pickup-n').textContent = records.filter(function (r) {
+      if (!famMatch(r)) return false;
+      var p = CompApp.schema.pickupState(r);
+      return p === 'TOPRINT' || p === 'TOPICKUP';
+    }).length;
     $('nav-integ-n').textContent = CompApp.viewIntegrity.count(famMatch);
   }
 
@@ -66,10 +72,12 @@ CompApp.router = (function () {
   }
 
   // drill-through from overview: set filters then open list
-  function resetFilterInputs() { $('filterStatus').value = ''; $('filterCat').value = ''; state.filterProductVal = ''; $('filterText').value = ''; $('filterDateField').value = 'issued'; $('fDateFrom').value = ''; $('fDateTo').value = ''; }
+  function resetFilterInputs() { $('filterStatus').value = ''; $('filterCat').value = ''; state.filterProductVal = ''; $('filterText').value = ''; $('filterDateField').value = 'issued'; $('fDateFrom').value = ''; $('fDateTo').value = ''; state.filterPickup = ''; $('filterPickup').value = ''; }
   function goListFiltered(opts) {
     if (opts.fam) setScope(opts.fam);
     resetFilterInputs();
+    state.filterPickup = opts.pickup || '';
+    $('filterPickup').value = state.filterPickup;
     $('filterStatus').value = opts.status || '';
     $('filterCat').value = opts.cat || '';
     $('filterText').value = opts.text || '';
@@ -83,6 +91,8 @@ CompApp.router = (function () {
     document.querySelectorAll('.navitem').forEach(function (n) {
       n.addEventListener('click', function () {
         if (n.dataset.view === 'approvals') { goListFiltered({ status: 'PENDING', nav: 'approvals' }); return; }
+        // 픽업 대기함 = 인쇄대기 + 픽업대기(아직 요청자 손에 안 넘어간 건). 목록 화면에 픽업 필터로 연다.
+        if (n.dataset.view === 'pickup') { goListFiltered({ pickup: 'OPEN', nav: 'pickup' }); return; }
         go(n.dataset.view);
       });
     });

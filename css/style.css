@@ -242,6 +242,18 @@
   .b-expired{background:var(--warn-soft);color:var(--warn);}
   .b-void{background:var(--stop-soft);color:var(--stop);}
   .b-rejected{background:var(--stop-soft);color:var(--stop);}
+  /* 픽업 단계 뱃지 — 상태 뱃지 옆에 붙는 보조 표시라 한 톤 작고 테두리형 */
+  .pkbadge{display:inline-block;font-size:9.5px;font-weight:660;padding:1.5px 6px;border-radius:20px;white-space:nowrap;border:1px solid currentColor;}
+  .pk-toprint{color:var(--ink-3);}
+  .pk-topickup{color:var(--accent);}
+  .pk-picked{color:var(--ok);}
+  /* 픽업 알림 모달: 요청자별 묶음 행 */
+  .pkrow{border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:8px;}
+  .pkrow-h{font-size:13px;margin-bottom:7px;}
+  .pkrow-b{display:flex;gap:8px;align-items:center;}
+  .pkrow-b input{flex:1;}
+  .pkrow-s{font-size:11px;color:var(--ink-3);margin-top:6px;font-variant-numeric:tabular-nums;}
+  .pkrow .dim,.empty-filters .dim{color:var(--ink-3);font-weight:400;}
   .cat{display:inline-block;font-size:11px;font-weight:640;padding:3px 9px;border-radius:6px;background:var(--accent-soft);color:var(--accent-ink);white-space:nowrap;}
   .rowact{display:flex;gap:5px;flex-wrap:nowrap;}
   td:last-child{white-space:nowrap;}
