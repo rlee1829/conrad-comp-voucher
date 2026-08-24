@@ -452,7 +452,7 @@ CompApp.workflow = (function () {
           var f = FIELD_OPTS.find(function (x) { return x.k === b.querySelector('#fs-field').value; });
           var w = b.querySelector('#fs-valwrap');
           if (f.t === 'date') w.innerHTML = '<label>' + t('값') + '</label>' + dateFieldHTML('fs-val', '');
-          else if (f.t === 'cat') w.innerHTML = '<label>' + t('값') + '</label><select id="fs-val"><option value="VIP">' + t('VIP 예우') + '</option><option value="COMPLAINT">' + t('컴플레인 보상') + '</option><option value="STAFF">' + t('직원 복리후생') + '</option><option value="PARTNER">' + t('제휴/마케팅') + '</option></select>';
+          else if (f.t === 'cat') w.innerHTML = '<label>' + t('값') + '</label><select id="fs-val"><option value="VIP">' + t('VIP 예우') + '</option><option value="COMPLAINT">' + t('컴플레인 보상') + '</option><option value="STAFF">' + t('직원 복리후생') + '</option><option value="PARTNER">' + t('제휴/마케팅') + '</option><option value="WEDDING">' + t('웨딩') + '</option></select>';
           else w.innerHTML = '<label>' + t('값') + '</label><input type="text" id="fs-val">';
           CompApp.ui.wireDateBoxes(w);
         }

@@ -86,6 +86,7 @@ CompApp.i18n = (function () {
     '컴플레인 보상': 'Complaint Compensation',
     '직원 복리후생': 'Staff Benefit',
     '제휴/마케팅': 'Partnership/Marketing',
+    '웨딩': 'Wedding',
     '전체 종류': 'All Types',
     '픽업 전체': 'All Pickup',
     '인쇄+픽업 대기': 'Print+Pickup Pending',

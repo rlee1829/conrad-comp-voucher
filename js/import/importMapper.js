@@ -24,10 +24,15 @@ CompApp.importMapper = (function () {
   }
 
   // ---- category keyword inference ----
+  // Order matters — checked top to bottom, first match wins. STAFF must precede WEDDING so a
+  // service-anniversary benefit that happens to mention the recipient's own wedding still lands
+  // in STAFF (e.g. "1st Anniversary Benefit: Wedding of ..."), and PARTNER must precede WEDDING so
+  // a barter/exchange deal that happens to mention "wedding spenders" still lands in PARTNER.
   var CAT_KEYWORDS = {
     STAFF: [/anniversary/i, /근속/, /birthday/i, /생일/, /service\s*anniversary/i, /tm\s*birthday/i],
     COMPLAINT: [/apology/i, /complain/i, /보상/, /sorry/i, /inconvenience/i, /불편/],
-    PARTNER: [/exchange/i, /교환/, /partner/i, /협찬/, /sponsorship/i, /collaboration/i, /miles/i, /hyatt/i, /marriott/i, /sheraton/i, /shilla/i, /lotte/i, /westin/i, /intercontinental/i]
+    PARTNER: [/exchange/i, /교환/, /partner/i, /협찬/, /sponsorship/i, /collaboration/i, /miles/i, /hyatt/i, /marriott/i, /sheraton/i, /shilla/i, /lotte/i, /westin/i, /intercontinental/i],
+    WEDDING: [/wedding/i, /웨딩/, /결혼식/]
   };
   // Scans the given text fields; returns {cat, needsReview}. No match -> VIP (catch-all) + needsReview.
   function inferCategory() {
