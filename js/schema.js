@@ -45,6 +45,9 @@ CompApp.schema = (function () {
   // 건네주기까지의 단계만 다룬다. 인쇄는 별도 프린터·용지로 하므로 앱은 "인쇄했다"는 표시만 받는다.
   var PICKUP_LABEL = { TOPRINT: '인쇄대기', TOPICKUP: '픽업대기', PICKED: '픽업완료' };
   var PICKUP_CLASS = { TOPRINT: 'pk-toprint', TOPICKUP: 'pk-topickup', PICKED: 'pk-picked' };
+  function catLabel(c) { var l = CAT_LABEL[c]; return l == null ? c : (CompApp.i18n ? CompApp.i18n.t(l) : l); }
+  function statusLabel(s) { var l = STATUS_LABEL[s]; return l == null ? s : (CompApp.i18n ? CompApp.i18n.t(l) : l); }
+  function pickupLabel(p) { var l = PICKUP_LABEL[p]; return l == null ? p : (CompApp.i18n ? CompApp.i18n.t(l) : l); }
 
   var retired = {}; // deleted products still referenced by past records — keep their names resolvable
   function saveRetired() { try { localStorage.setItem('compVoucherRetired', JSON.stringify(retired)); } catch (e) {} }
@@ -57,14 +60,16 @@ CompApp.schema = (function () {
     return retired[id] || null;
   }
   function prod(fam, id) { var p = CATALOG[fam] && CATALOG[fam].find(function (x) { return x.id === id; }); return p || prodById(id); }
-  function prodName(fam, id) { var p = prod(fam, id); return p ? p.name : id; }
+  // Catalog names are fixed vocabulary for the built-in items — translatable via the i18n dict.
+  // Custom/imported products (no dict entry) just fall through to their Korean name unchanged.
+  function prodName(fam, id) { var p = prod(fam, id); return p ? (CompApp.i18n ? CompApp.i18n.t(p.name) : p.name) : id; }
   function productFam(id) { if (id.indexOf('rm_') === 0) return 'RM'; if (id.indexOf('fb_') === 0) return 'FB'; if (id.indexOf('hr_') === 0) return 'HR'; var p = prodById(id); return (p && p.fam) || 'FB'; }
   // E: imported FB/RM rows have no fixed catalog id (free-text source descriptions) — they carry
   // `productText` instead. Every place that displays a record's product name should use this
   // instead of prodName(r.fam, r.product) directly, so imported rows don't render blank.
   function recordProductLabel(r) {
     if (r.product) { var n = prodName(r.fam, r.product); if (n) return n; }
-    return r.productText || '(원본 미기재)';
+    return r.productText || (CompApp.i18n ? CompApp.i18n.t('(원본 미기재)') : '(원본 미기재)');
   }
 
   // E: appendReviewNote() (importMapper.js) writes just "[가져오기 검토 필요: ...]" into remark
@@ -156,6 +161,7 @@ CompApp.schema = (function () {
 
   return {
     CATALOG: CATALOG, CAT_LABEL: CAT_LABEL, STATUS_LABEL: STATUS_LABEL, STATUS_CLASS: STATUS_CLASS, DEFAULT_DEPTS: DEFAULT_DEPTS,
+    catLabel: catLabel, statusLabel: statusLabel, pickupLabel: pickupLabel,
     PICKUP_LABEL: PICKUP_LABEL, PICKUP_CLASS: PICKUP_CLASS, pickupState: pickupState, wasImported: wasImported,
     prodById: prodById, prod: prod, prodName: prodName, productFam: productFam, recordProductLabel: recordProductLabel, displayRemark: displayRemark,
     saveCatalog: saveCatalog, loadCatalog: loadCatalog, applyCloudCatalog: applyCloudCatalog, saveRetired: saveRetired,

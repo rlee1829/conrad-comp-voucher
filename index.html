@@ -4,38 +4,43 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COMP Voucher Manager · Conrad Seoul</title>
-<link rel="stylesheet" href="css/style.css?v=13">
+<link rel="stylesheet" href="css/style.css?v=16">
 </head>
 <body>
 <div class="shell">
   <aside class="sidebar">
-    <div class="sb-brand" id="brandHome" title="새로고침 · 개요로 이동"><div class="eyebrow">Conrad Seoul</div><h1>COMP Voucher</h1></div>
-    <div class="sb-sec">메뉴</div>
-    <div class="navitem" data-view="overview" aria-current="true"><span class="ic">◧</span> 개요</div>
-    <div class="navitem" data-view="list"><span class="ic">▤</span> 바우처 목록 <span class="n" id="nav-list-n"></span></div>
-    <div class="navitem" data-view="issue"><span class="ic">＋</span> 새 발행</div>
-    <div class="navitem" data-view="approvals"><span class="ic">✓</span> 승인 대기함 <span class="n" id="nav-appr-n"></span></div>
-    <div class="navitem" data-view="pickup"><span class="ic">🖨</span> 픽업 대기함 <span class="n" id="nav-pickup-n"></span></div>
-    <div class="navitem" data-view="integrity"><span class="ic">⚠</span> 정합성 점검 <span class="n" id="nav-integ-n"></span></div>
-    <div class="navitem" data-view="importexport" id="navImportExport"><span class="ic">⇅</span> 가져오기/내보내기</div>
-    <div class="navitem" data-view="auditlog"><span class="ic">▦</span> 감사 로그</div>
-    <div class="sb-spacer"></div>
-    <div class="sb-sec">모드</div>
-    <div class="design-switch" id="roleSwitch">
-      <button type="button" data-role="requester" aria-pressed="false">요청자</button>
-      <button type="button" data-role="approver" aria-pressed="true">승인자</button>
-      <button type="button" data-role="admin" aria-pressed="false">관리자</button>
+    <div class="sb-brand" id="brandHome" data-i18n-title="새로고침 · 개요로 이동" title="새로고침 · 개요로 이동"><div class="eyebrow">Conrad Seoul</div><h1>COMP Voucher</h1></div>
+    <div class="sb-sec" data-i18n="언어">언어</div>
+    <div class="design-switch" id="langSwitch">
+      <button type="button" data-lang="ko" aria-pressed="true">한국어</button>
+      <button type="button" data-lang="en" aria-pressed="false">English</button>
     </div>
-    <div class="sb-hint">담당자 이름이 승인자·관리자 명단에 있으면 자동으로 해당 모드가 적용됩니다.</div>
-    <button type="button" class="sb-link" id="btnApproverManage">승인자 명단 관리…</button>
-    <button type="button" class="sb-link" id="btnAdminManage">관리자 명단 관리…</button>
-    <div class="sb-sec">디자인</div>
+    <div class="sb-sec" data-i18n="메뉴">메뉴</div>
+    <div class="navitem" data-view="overview" aria-current="true"><span class="ic">◧</span> <span data-i18n="개요">개요</span></div>
+    <div class="navitem" data-view="list"><span class="ic">▤</span> <span data-i18n="바우처 목록">바우처 목록</span> <span class="n" id="nav-list-n"></span></div>
+    <div class="navitem" data-view="issue"><span class="ic">＋</span> <span data-i18n="새 발행">새 발행</span></div>
+    <div class="navitem" data-view="approvals"><span class="ic">✓</span> <span data-i18n="승인 대기함">승인 대기함</span> <span class="n" id="nav-appr-n"></span></div>
+    <div class="navitem" data-view="pickup"><span class="ic">🖨</span> <span data-i18n="픽업 대기함">픽업 대기함</span> <span class="n" id="nav-pickup-n"></span></div>
+    <div class="navitem" data-view="integrity"><span class="ic">⚠</span> <span data-i18n="정합성 점검">정합성 점검</span> <span class="n" id="nav-integ-n"></span></div>
+    <div class="navitem" data-view="importexport" id="navImportExport"><span class="ic">⇅</span> <span data-i18n="가져오기/내보내기">가져오기/내보내기</span></div>
+    <div class="navitem" data-view="auditlog"><span class="ic">▦</span> <span data-i18n="감사 로그">감사 로그</span></div>
+    <div class="sb-spacer"></div>
+    <div class="sb-sec" data-i18n="모드">모드</div>
+    <div class="design-switch" id="roleSwitch">
+      <button type="button" data-role="requester" aria-pressed="false" data-i18n="요청자">요청자</button>
+      <button type="button" data-role="approver" aria-pressed="true" data-i18n="승인자">승인자</button>
+      <button type="button" data-role="admin" aria-pressed="false" data-i18n="관리자">관리자</button>
+    </div>
+    <div class="sb-hint" data-i18n="담당자 이름이 승인자·관리자 명단에 있으면 자동으로 해당 모드가 적용됩니다.">담당자 이름이 승인자·관리자 명단에 있으면 자동으로 해당 모드가 적용됩니다.</div>
+    <button type="button" class="sb-link" id="btnApproverManage" data-i18n="승인자 명단 관리…">승인자 명단 관리…</button>
+    <button type="button" class="sb-link" id="btnAdminManage" data-i18n="관리자 명단 관리…">관리자 명단 관리…</button>
+    <div class="sb-sec" data-i18n="디자인">디자인</div>
     <div class="design-switch" id="designSwitch">
       <button data-design="bronze" aria-pressed="true">Bronze</button>
       <button data-design="slate" aria-pressed="false">Slate</button>
     </div>
-    <div class="op-card" id="opCard"><div class="l">담당자</div><div class="who" id="opWho">—</div><div class="chg">클릭하여 변경</div></div>
-    <button class="sb-theme" id="themeBtn" type="button">◐ 라이트/다크</button>
+    <div class="op-card" id="opCard"><div class="l" data-i18n="담당자">담당자</div><div class="who" id="opWho">—</div><div class="chg" data-i18n="클릭하여 변경">클릭하여 변경</div></div>
+    <button class="sb-theme" id="themeBtn" type="button">◐ <span data-i18n="라이트/다크">라이트/다크</span></button>
   </aside>
 
   <main>
@@ -44,7 +49,7 @@
         <div class="title-row">
           <h2 id="viewTitle">바우처 목록</h2>
           <div class="scope-seg" id="scopeSeg" role="tablist">
-            <button type="button" data-fam="ALL" aria-selected="true">전체 <span class="sc-n" id="sc-all"></span></button>
+            <button type="button" data-fam="ALL" aria-selected="true"><span data-i18n="전체">전체</span> <span class="sc-n" id="sc-all"></span></button>
             <button type="button" data-fam="FB" aria-selected="false"><span class="dot" style="background:var(--fb)"></span>F&B <span class="sc-n" id="sc-fb"></span></button>
             <button type="button" data-fam="RM" aria-selected="false"><span class="dot" style="background:var(--rm)"></span>Room <span class="sc-n" id="sc-rm"></span></button>
             <button type="button" data-fam="HR" aria-selected="false"><span class="dot" style="background:var(--hr)"></span>HR <span class="sc-n" id="sc-hr"></span></button>
@@ -53,26 +58,26 @@
         <div class="desc" id="viewDesc"></div>
       </div>
       <div class="headright">
-        <button class="refresh-btn" id="btnRefresh" type="button"><span class="rot">↻</span> 새로고침</button>
+        <button class="refresh-btn" id="btnRefresh" type="button"><span class="rot">↻</span> <span data-i18n="새로고침">새로고침</span></button>
       </div>
     </div>
 
     <!-- OVERVIEW -->
     <section class="view active" id="view-overview">
       <div class="panel"><div class="pbody toolbar">
-        <span style="font-size:13px;color:var(--ink-3)">기간</span>
-        <span class="datebox" style="width:150px"><input type="text" class="datefield" id="ov-start" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span>~</span><span class="datebox" style="width:150px"><input type="text" class="datefield" id="ov-end" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span>
-        <button class="btn btn-ghost btn-sm" id="ov-apply" type="button">조회</button>
-        <span style="font-size:12px;color:var(--ink-3);margin-left:auto">항목 클릭 시 목록 필터로 열림</span>
+        <span style="font-size:13px;color:var(--ink-3)" data-i18n="기간">기간</span>
+        <span class="datebox" style="width:150px"><input type="text" class="datefield" id="ov-start" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" data-i18n-aria="달력" aria-label="달력"></span><span>~</span><span class="datebox" style="width:150px"><input type="text" class="datefield" id="ov-end" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" data-i18n-aria="달력" aria-label="달력"></span>
+        <button class="btn btn-ghost btn-sm" id="ov-apply" type="button" data-i18n="조회">조회</button>
+        <span style="font-size:12px;color:var(--ink-3);margin-left:auto" data-i18n="항목 클릭 시 목록 필터로 열림">항목 클릭 시 목록 필터로 열림</span>
       </div></div>
       <div class="chips" id="ov-chips"></div>
       <div class="rep-grid">
-        <div class="panel"><div class="phead"><h3>사유 카테고리별</h3></div><div class="pbody" id="ov-cat"></div></div>
-        <div class="panel"><div class="phead"><h3>요청 부서별 (상위 4)</h3></div><div class="pbody" id="ov-dept"></div></div>
+        <div class="panel"><div class="phead"><h3 data-i18n="사유 카테고리별">사유 카테고리별</h3></div><div class="pbody" id="ov-cat"></div></div>
+        <div class="panel"><div class="phead"><h3 data-i18n="요청 부서별 (상위 4)">요청 부서별 (상위 4)</h3></div><div class="pbody" id="ov-dept"></div></div>
       </div>
       <div class="rep-grid">
-        <div class="panel"><div class="phead"><h3>바우처 종류별 발행</h3></div><div class="pbody" id="ov-prod"></div></div>
-        <div class="panel"><div class="phead"><h3>바우처 종류별 사용현황</h3></div><div class="pbody" id="ov-usage"></div></div>
+        <div class="panel"><div class="phead"><h3 data-i18n="바우처 종류별 발행">바우처 종류별 발행</h3></div><div class="pbody" id="ov-prod"></div></div>
+        <div class="panel"><div class="phead"><h3 data-i18n="바우처 종류별 사용현황">바우처 종류별 사용현황</h3></div><div class="pbody" id="ov-usage"></div></div>
       </div>
     </section>
 
@@ -81,38 +86,38 @@
       <div class="chips minichips" id="chips"></div>
       <div class="panel">
         <div class="phead">
-          <h3 id="listTitle">목록</h3>
+          <h3 id="listTitle" data-i18n="목록">목록</h3>
         </div>
         <div class="listfilters" id="listFilters">
           <select id="filterStatus">
-            <option value="">전체 상태</option>
-            <option value="PENDING">승인대기</option><option value="ACTIVE">활성</option>
-            <option value="USED">사용</option>
-            <option value="EXPIRED">만료</option><option value="VOID">취소</option>
-            <option value="REJECTED">반려</option>
+            <option value="" data-i18n="전체 상태">전체 상태</option>
+            <option value="PENDING" data-i18n="승인대기">승인대기</option><option value="ACTIVE" data-i18n="활성">활성</option>
+            <option value="USED" data-i18n="사용">사용</option>
+            <option value="EXPIRED" data-i18n="만료">만료</option><option value="VOID" data-i18n="취소">취소</option>
+            <option value="REJECTED" data-i18n="반려">반려</option>
           </select>
           <select id="filterCat">
-            <option value="">전체 사유</option>
-            <option value="VIP">VIP 예우</option><option value="COMPLAINT">컴플레인 보상</option>
-            <option value="STAFF">직원 복리후생</option><option value="PARTNER">제휴/마케팅</option>
+            <option value="" data-i18n="전체 사유">전체 사유</option>
+            <option value="VIP" data-i18n="VIP 예우">VIP 예우</option><option value="COMPLAINT" data-i18n="컴플레인 보상">컴플레인 보상</option>
+            <option value="STAFF" data-i18n="직원 복리후생">직원 복리후생</option><option value="PARTNER" data-i18n="제휴/마케팅">제휴/마케팅</option>
           </select>
-          <select id="filterProduct"><option value="">전체 종류</option></select>
+          <select id="filterProduct"><option value="" data-i18n="전체 종류">전체 종류</option></select>
           <select id="filterPickup">
-            <option value="">픽업 전체</option>
-            <option value="OPEN">인쇄+픽업 대기</option>
-            <option value="TOPRINT">인쇄대기</option>
-            <option value="TOPICKUP">픽업대기</option>
-            <option value="PICKED">픽업완료</option>
+            <option value="" data-i18n="픽업 전체">픽업 전체</option>
+            <option value="OPEN" data-i18n="인쇄+픽업 대기">인쇄+픽업 대기</option>
+            <option value="TOPRINT" data-i18n="인쇄대기">인쇄대기</option>
+            <option value="TOPICKUP" data-i18n="픽업대기">픽업대기</option>
+            <option value="PICKED" data-i18n="픽업완료">픽업완료</option>
           </select>
-          <input type="search" id="filterText" placeholder="증서번호·목적·요청자">
+          <input type="search" id="filterText" data-i18n-ph="증서번호·목적·요청자" placeholder="증서번호·목적·요청자">
           <select id="filterDateField">
-            <option value="issued">발행일</option>
-            <option value="valid">만료일</option>
-            <option value="usedDate">사용일</option>
+            <option value="issued" data-i18n="발행일">발행일</option>
+            <option value="valid" data-i18n="만료일">만료일</option>
+            <option value="usedDate" data-i18n="사용일">사용일</option>
           </select>
-          <span class="datebox"><input type="text" class="datefield" id="fDateFrom" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span class="tilde">~</span><span class="datebox"><input type="text" class="datefield" id="fDateTo" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span>
-          <button class="btn btn-ghost btn-sm" id="btnClearFilter" type="button">필터 해제</button>
-          <button class="btn btn-primary btn-sm" id="btnGoIssue" type="button">＋ 발행</button>
+          <span class="datebox"><input type="text" class="datefield" id="fDateFrom" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" data-i18n-aria="달력" aria-label="달력"></span><span class="tilde">~</span><span class="datebox"><input type="text" class="datefield" id="fDateTo" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" data-i18n-aria="달력" aria-label="달력"></span>
+          <button class="btn btn-ghost btn-sm" id="btnClearFilter" type="button" data-i18n="필터 해제">필터 해제</button>
+          <button class="btn btn-primary btn-sm" id="btnGoIssue" type="button">＋ <span data-i18n="발행">발행</span></button>
         </div>
         <div id="bulkbarWrap"></div>
         <div class="pbody" style="padding:0"><div class="tablewrap"><table id="listTable"></table></div></div>
@@ -125,66 +130,66 @@
       <div class="issue-layout">
         <div class="panel">
         <div class="pbody"><div class="form-grid issue-form">
-          <div class="field full"><label>타입<span class="req">*</span></label>
+          <div class="field full"><label><span data-i18n="타입">타입</span><span class="req">*</span></label>
             <div class="seg" id="f-type">
-              <button type="button" data-fam="FB" aria-pressed="true"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--fb);margin-right:7px"></span>F&B 바우처</button>
-              <button type="button" data-fam="RM" aria-pressed="false"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--rm);margin-right:7px"></span>Room 바우처</button>
-              <button type="button" data-fam="HR" aria-pressed="false"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--hr);margin-right:7px"></span>HR 근속 바우처</button>
+              <button type="button" data-fam="FB" aria-pressed="true"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--fb);margin-right:7px"></span><span data-i18n="F&B 바우처">F&B 바우처</span></button>
+              <button type="button" data-fam="RM" aria-pressed="false"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--rm);margin-right:7px"></span><span data-i18n="Room 바우처">Room 바우처</span></button>
+              <button type="button" data-fam="HR" aria-pressed="false"><span class="dot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--hr);margin-right:7px"></span><span data-i18n="HR 근속 바우처">HR 근속 바우처</span></button>
             </div>
           </div>
-          <div class="field full"><label>바우처 종류<span class="req">*</span></label><select id="f-product"></select><div class="hintline" id="prodhint"></div></div>
+          <div class="field full"><label><span data-i18n="바우처 종류">바우처 종류</span><span class="req">*</span></label><select id="f-product"></select><div class="hintline" id="prodhint"></div></div>
 
-          <div class="field full"><label>사유 카테고리<span class="req">*</span></label>
+          <div class="field full"><label><span data-i18n="사유 카테고리">사유 카테고리</span><span class="req">*</span></label>
             <div class="seg seg-4" id="f-cat">
-              <button type="button" data-cat="VIP" aria-pressed="false">VIP 예우</button>
-              <button type="button" data-cat="COMPLAINT" aria-pressed="false">컴플레인 보상</button>
-              <button type="button" data-cat="STAFF" aria-pressed="false">직원 복리후생</button>
-              <button type="button" data-cat="PARTNER" aria-pressed="false">제휴 / 마케팅</button>
+              <button type="button" data-cat="VIP" aria-pressed="false" data-i18n="VIP 예우">VIP 예우</button>
+              <button type="button" data-cat="COMPLAINT" aria-pressed="false" data-i18n="컴플레인 보상">컴플레인 보상</button>
+              <button type="button" data-cat="STAFF" aria-pressed="false" data-i18n="직원 복리후생">직원 복리후생</button>
+              <button type="button" data-cat="PARTNER" aria-pressed="false" data-i18n="제휴 / 마케팅">제휴 / 마케팅</button>
             </div>
           </div>
 
-          <div class="field"><label class="chk"><input type="checkbox" id="f-batch"> 연번 여러장 발행</label>
-            <div class="inline"><input type="number" id="f-qty" value="1" min="1" max="200" disabled><input type="text" id="f-serial" placeholder="시작 증서번호"></div>
+          <div class="field"><label class="chk"><input type="checkbox" id="f-batch"> <span data-i18n="연번 여러장 발행">연번 여러장 발행</span></label>
+            <div class="inline"><input type="number" id="f-qty" value="1" min="1" max="200" disabled><input type="text" id="f-serial" data-i18n-ph="시작 증서번호" placeholder="시작 증서번호"></div>
             <div class="hintline" id="serialhint"></div>
           </div>
-          <div class="field"><label>발행일 / 만료일<span class="req">*</span></label>
-            <div class="inline"><span class="datebox"><input type="text" class="datefield" id="f-issued" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span class="datebox"><input type="text" class="datefield" id="f-valid" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span></div>
-            <div class="hintline">만료일 기본값 = 발행일 +1년 (수정 가능)</div>
+          <div class="field"><label><span data-i18n="발행일 / 만료일">발행일 / 만료일</span><span class="req">*</span></label>
+            <div class="inline"><span class="datebox"><input type="text" class="datefield" id="f-issued" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" data-i18n-aria="달력" aria-label="달력"></span><span class="datebox"><input type="text" class="datefield" id="f-valid" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" data-i18n-aria="달력" aria-label="달력"></span></div>
+            <div class="hintline" data-i18n="만료일 기본값 = 발행일 +1년 (수정 가능)">만료일 기본값 = 발행일 +1년 (수정 가능)</div>
           </div>
 
-          <div class="field"><label>요청 부서 / 요청자<span class="req">*</span></label><input type="text" id="f-req" placeholder="접속 담당자가 자동 입력됩니다"><div class="hintline">기본값 = 현재 담당자</div></div>
-          <div class="field full"><label>Black-out 날짜 <span class="opt">(선택 · 여러 건 추가 가능)</span></label>
+          <div class="field"><label><span data-i18n="요청 부서 / 요청자">요청 부서 / 요청자</span><span class="req">*</span></label><input type="text" id="f-req" data-i18n-ph="접속 담당자가 자동 입력됩니다" placeholder="접속 담당자가 자동 입력됩니다"><div class="hintline" data-i18n="기본값 = 현재 담당자">기본값 = 현재 담당자</div></div>
+          <div class="field full"><label><span data-i18n="Black-out 날짜">Black-out 날짜</span> <span class="opt" data-i18n="(선택 · 여러 건 추가 가능)">(선택 · 여러 건 추가 가능)</span></label>
             <div id="f-blackout-editor"></div>
-            <div style="display:flex;justify-content:flex-end"><button class="btn btn-ghost btn-sm" id="btnBlackoutManage" type="button">프리셋 목록 관리</button></div>
+            <div style="display:flex;justify-content:flex-end"><button class="btn btn-ghost btn-sm" id="btnBlackoutManage" type="button" data-i18n="프리셋 목록 관리">프리셋 목록 관리</button></div>
           </div>
 
-          <div class="field"><label>세부 목적<span class="req">*</span></label>
+          <div class="field"><label><span data-i18n="세부 목적">세부 목적</span><span class="req">*</span></label>
             <div style="display:flex;gap:8px;margin-bottom:6px">
-              <select id="f-purpose-preset" style="flex:1"><option value="">자주 쓰는 목적 선택…</option></select>
-              <button class="btn btn-ghost btn-sm" id="btnPurposeManage" type="button" style="white-space:nowrap">목록 관리</button>
+              <select id="f-purpose-preset" style="flex:1"><option value="" data-i18n="자주 쓰는 목적 선택…">자주 쓰는 목적 선택…</option></select>
+              <button class="btn btn-ghost btn-sm" id="btnPurposeManage" type="button" style="white-space:nowrap" data-i18n="목록 관리">목록 관리</button>
             </div>
-            <textarea id="f-purpose" rows="2" placeholder="예: 5th Service Anniversary / Park Hyatt 바우처 교환"></textarea>
+            <textarea id="f-purpose" rows="2" data-i18n-ph="예: 5th Service Anniversary / Park Hyatt 바우처 교환" placeholder="예: 5th Service Anniversary / Park Hyatt 바우처 교환"></textarea>
           </div>
-          <div class="field" id="f-gm-field"><label>GM 승인 <span class="opt" id="f-gm-label-opt">(이미 승인받았다면 바로 활성화)</span></label>
+          <div class="field" id="f-gm-field"><label><span data-i18n="GM 승인">GM 승인</span> <span class="opt" id="f-gm-label-opt">(이미 승인받았다면 바로 활성화)</span></label>
             <div class="approve">
-              <label class="achk" id="f-gm-row"><input type="checkbox" id="f-gm"> GM 승인 완료 <span style="font-weight:400;color:var(--ink-3);font-size:12px">· 미체크 시 승인대기</span></label>
-              <div id="f-gm-note" style="display:none"><b>승인대기</b>로 등록됩니다. Mate 승인번호를 이미 받았다면 함께 적어 올리세요 — 승인자가 확인 후 승인합니다. 아직 못 받았다면 비워두고 요청해도 되고, 번호가 나온 뒤 [수정]으로 채워 넣으면 승인됩니다.</div>
-              <div class="field" style="margin:12px 0 0"><label>Mate 승인번호 <span class="opt" id="f-mate-opt"></span></label><input type="text" id="f-mate" placeholder="예: 2026-4224"></div>
+              <label class="achk" id="f-gm-row"><input type="checkbox" id="f-gm"> <span data-i18n="GM 승인 완료">GM 승인 완료</span> <span style="font-weight:400;color:var(--ink-3);font-size:12px" data-i18n="· 미체크 시 승인대기">· 미체크 시 승인대기</span></label>
+              <div id="f-gm-note" style="display:none" data-i18n="승인대기로 등록됩니다. Mate 승인번호를 이미 받았다면 함께 적어 올리세요 — 승인자가 확인 후 승인합니다. 아직 못 받았다면 비워두고 요청해도 되고, 번호가 나온 뒤 [수정]으로 채워 넣으면 승인됩니다."><b data-i18n="승인대기">승인대기</b>로 등록됩니다. Mate 승인번호를 이미 받았다면 함께 적어 올리세요 — 승인자가 확인 후 승인합니다. 아직 못 받았다면 비워두고 요청해도 되고, 번호가 나온 뒤 [수정]으로 채워 넣으면 승인됩니다.</div>
+              <div class="field" style="margin:12px 0 0"><label><span data-i18n="Mate 승인번호">Mate 승인번호</span> <span class="opt" id="f-mate-opt"></span></label><input type="text" id="f-mate" data-i18n-ph="예: 2026-4224" placeholder="예: 2026-4224"></div>
             </div>
           </div>
 
-          <div class="field full"><label>비고 <span class="opt">(선택)</span></label><input type="text" id="f-remark" placeholder="추가 메모"></div>
+          <div class="field full"><label><span data-i18n="비고">비고</span> <span class="opt" data-i18n="(선택)">(선택)</span></label><input type="text" id="f-remark" data-i18n-ph="추가 메모" placeholder="추가 메모"></div>
 
           <div class="actions">
-            <button class="btn btn-primary" id="btnIssue" type="button">발행 등록</button>
-            <button class="btn btn-ghost" id="btnReset" type="button">초기화</button>
-            <button class="btn btn-ghost" id="btnCancelIssue" type="button">목록으로</button>
+            <button class="btn btn-primary" id="btnIssue" type="button" data-i18n="발행 등록">발행 등록</button>
+            <button class="btn btn-ghost" id="btnReset" type="button" data-i18n="초기화">초기화</button>
+            <button class="btn btn-ghost" id="btnCancelIssue" type="button" data-i18n="목록으로">목록으로</button>
           </div>
           <div class="formerr" id="formerr"></div>
         </div></div>
         </div>
         <div class="panel">
-          <div class="phead"><h3>발행 가능 종류</h3><button class="btn btn-ghost btn-sm" id="btnAddProduct" type="button">＋ 종류 추가</button></div>
+          <div class="phead"><h3 data-i18n="발행 가능 종류">발행 가능 종류</h3><button class="btn btn-ghost btn-sm" id="btnAddProduct" type="button">＋ <span data-i18n="종류 추가">종류 추가</span></button></div>
           <div class="prodmenu-body" id="prodMenu"></div>
         </div>
       </div>
@@ -192,25 +197,25 @@
 
     <!-- INTEGRITY -->
     <section class="view" id="view-integrity">
-      <div class="panel"><div class="pbody" style="font-size:13px;color:var(--ink-3)">증서번호 중복, Mate 승인번호 누락(활성 상태), 만료일이 발행일보다 빠른 경우, 만료됐는데 아직 활성 상태인 건을 자동으로 점검합니다. 증서번호를 클릭하면 상세 정보로 이동합니다.</div></div>
+      <div class="panel"><div class="pbody" style="font-size:13px;color:var(--ink-3)" data-i18n="증서번호 중복, Mate 승인번호 누락(활성 상태), 만료일이 발행일보다 빠른 경우, 만료됐는데 아직 활성 상태인 건을 자동으로 점검합니다. 증서번호를 클릭하면 상세 정보로 이동합니다.">증서번호 중복, Mate 승인번호 누락(활성 상태), 만료일이 발행일보다 빠른 경우, 만료됐는데 아직 활성 상태인 건을 자동으로 점검합니다. 증서번호를 클릭하면 상세 정보로 이동합니다.</div></div>
       <div class="panel">
-        <div class="phead"><h3 id="integTitle">정합성 점검</h3></div>
+        <div class="phead"><h3 id="integTitle" data-i18n="정합성 점검">정합성 점검</h3></div>
         <div class="pbody" style="padding:0"><div class="tablewrap"><table id="integTable"></table></div></div>
       </div>
     </section>
 
     <!-- AUDIT LOG -->
     <section class="view" id="view-auditlog">
-      <div class="panel"><div class="pbody" style="font-size:13px;color:var(--ink-3)">전체 바우처에 걸쳐 발생한 발행·승인·반려·사용·연장·취소·수정·되돌리기 작업을 시간순으로 모아봅니다. 증서번호를 클릭하면 상세 정보로 이동합니다.</div></div>
+      <div class="panel"><div class="pbody" style="font-size:13px;color:var(--ink-3)" data-i18n="전체 바우처에 걸쳐 발생한 발행·승인·반려·사용·연장·취소·수정·되돌리기 작업을 시간순으로 모아봅니다. 증서번호를 클릭하면 상세 정보로 이동합니다.">전체 바우처에 걸쳐 발생한 발행·승인·반려·사용·연장·취소·수정·되돌리기 작업을 시간순으로 모아봅니다. 증서번호를 클릭하면 상세 정보로 이동합니다.</div></div>
       <div class="panel">
         <div class="phead">
-          <h3 id="alTitle">감사 로그</h3>
-          <button class="btn btn-ghost btn-sm" id="btnAlClear" type="button">필터 해제</button>
+          <h3 id="alTitle" data-i18n="감사 로그">감사 로그</h3>
+          <button class="btn btn-ghost btn-sm" id="btnAlClear" type="button" data-i18n="필터 해제">필터 해제</button>
         </div>
         <div class="listfilters" id="alFilters">
-          <input type="search" id="alFilterActor" placeholder="행위자 검색">
-          <select id="alFilterAction"><option value="">전체 작업</option></select>
-          <span class="fl-label">기간</span><span class="datebox"><input type="text" class="datefield" id="alFrom" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span><span class="tilde">~</span><span class="datebox"><input type="text" class="datefield" id="alTo" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" aria-label="달력"></span>
+          <input type="search" id="alFilterActor" data-i18n-ph="행위자 검색" placeholder="행위자 검색">
+          <select id="alFilterAction"><option value="" data-i18n="전체 작업">전체 작업</option></select>
+          <span class="fl-label" data-i18n="기간">기간</span><span class="datebox"><input type="text" class="datefield" id="alFrom" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" data-i18n-aria="달력" aria-label="달력"></span><span class="tilde">~</span><span class="datebox"><input type="text" class="datefield" id="alTo" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" tabindex="-1" data-i18n-aria="달력" aria-label="달력"></span>
         </div>
         <div class="pbody" style="padding:0"><div class="tablewrap"><table id="alTable"></table></div></div>
         <div class="pager" id="alPager"></div>
@@ -219,20 +224,20 @@
 
     <!-- IMPORT / EXPORT -->
     <section class="view" id="view-importexport">
-      <div class="panel"><div class="pbody" style="font-size:13px;color:var(--ink-3)">기존 엑셀 대장(F&amp;B/Room 통합 대장의 EO_FB·EO_RM 시트, 또는 HR Voucher Tracking Sheet)을 업로드해 일괄 등록합니다. 상태값이 불명확하거나 발행일 정보가 없는 행은 자동으로 추정 처리되며, 목록의 비고란에 "[가져오기 검토 필요]" 표시가 남습니다.</div></div>
+      <div class="panel"><div class="pbody" style="font-size:13px;color:var(--ink-3)" data-i18n="ie-desc">기존 엑셀 대장(F&amp;B/Room 통합 대장의 EO_FB·EO_RM 시트, 또는 HR Voucher Tracking Sheet)을 업로드해 일괄 등록합니다. 상태값이 불명확하거나 발행일 정보가 없는 행은 자동으로 추정 처리되며, 목록의 비고란에 "[가져오기 검토 필요]" 표시가 남습니다.</div></div>
       <div class="panel">
-        <div class="phead"><h3>엑셀 가져오기</h3></div>
+        <div class="phead"><h3 data-i18n="엑셀 가져오기">엑셀 가져오기</h3></div>
         <div class="pbody">
-          <div class="field"><label>파일 선택 (.xlsx)</label><input type="file" id="ieFile" accept=".xlsx"></div>
-          <div class="actions"><button class="btn btn-primary" id="btnDoImport" type="button">가져오기</button></div>
+          <div class="field"><label data-i18n="파일 선택 (.xlsx)">파일 선택 (.xlsx)</label><input type="file" id="ieFile" accept=".xlsx"></div>
+          <div class="actions"><button class="btn btn-primary" id="btnDoImport" type="button" data-i18n="가져오기">가져오기</button></div>
           <div id="ieSummary"></div>
         </div>
       </div>
       <div class="panel">
-        <div class="phead"><h3>엑셀 내보내기</h3></div>
+        <div class="phead"><h3 data-i18n="엑셀 내보내기">엑셀 내보내기</h3></div>
         <div class="pbody">
-          <div style="font-size:13px;color:var(--ink-3);margin-bottom:10px">현재 목록 화면에 적용된 필터 기준으로 내보냅니다.</div>
-          <div class="actions"><button class="btn btn-primary" id="btnDoExport" type="button">내보내기</button></div>
+          <div style="font-size:13px;color:var(--ink-3);margin-bottom:10px" data-i18n="현재 목록 화면에 적용된 필터 기준으로 내보냅니다.">현재 목록 화면에 적용된 필터 기준으로 내보냅니다.</div>
+          <div class="actions"><button class="btn btn-primary" id="btnDoExport" type="button" data-i18n="내보내기">내보내기</button></div>
         </div>
       </div>
     </section>
@@ -240,12 +245,12 @@
 </div>
 
 <div class="backdrop" id="opBackdrop"><div class="modal">
-  <h3>담당자 등록</h3><p class="msub">발행·요청자·변경 이력에 기록됩니다. 이 브라우저에 저장돼요.</p>
-  <div class="field"><label>이름<span class="req">*</span></label><input type="text" id="op-name" placeholder="예: 이지은"></div>
-  <div class="field"><label>부서<span class="req">*</span></label><select id="op-dept"></select></div>
-  <div class="field" id="op-custom-wrap" style="display:none"><label>새 부서명</label><input type="text" id="op-custom" placeholder="부서명 입력"></div>
-  <div class="field"><label>이메일 <span class="opt">(픽업 알림 수신용)</span></label><input type="text" id="op-mail" placeholder="예: jieun.lee@hilton.com"></div>
-  <div class="actions" style="margin-top:2px"><button class="btn btn-primary" id="op-save" type="button">저장</button></div>
+  <h3 data-i18n="담당자 등록">담당자 등록</h3><p class="msub" data-i18n="발행·요청자·변경 이력에 기록됩니다. 이 브라우저에 저장돼요.">발행·요청자·변경 이력에 기록됩니다. 이 브라우저에 저장돼요.</p>
+  <div class="field"><label><span data-i18n="이름">이름</span><span class="req">*</span></label><input type="text" id="op-name" data-i18n-ph="예: 이지은" placeholder="예: 이지은"></div>
+  <div class="field"><label><span data-i18n="부서">부서</span><span class="req">*</span></label><select id="op-dept"></select></div>
+  <div class="field" id="op-custom-wrap" style="display:none"><label data-i18n="새 부서명">새 부서명</label><input type="text" id="op-custom" data-i18n-ph="부서명 입력" placeholder="부서명 입력"></div>
+  <div class="field"><label><span data-i18n="이메일">이메일</span> <span class="opt" data-i18n="(픽업 알림 수신용)">(픽업 알림 수신용)</span></label><input type="text" id="op-mail" data-i18n-ph="예: jieun.lee@hilton.com" placeholder="예: jieun.lee@hilton.com"></div>
+  <div class="actions" style="margin-top:2px"><button class="btn btn-primary" id="op-save" type="button" data-i18n="저장">저장</button></div>
   <div class="formerr" id="op-err"></div>
 </div></div>
 
@@ -262,27 +267,28 @@
 
 <script src="js/lib/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/config.js?v=13"></script>
-<script src="js/metaStore.js?v=13"></script>
-<script src="js/schema.js?v=13"></script>
-<script src="js/ui/components.js?v=13"></script>
-<script src="js/operator.js?v=13"></script>
-<script src="js/db.js?v=13"></script>
-<script src="js/db-cloud.js?v=13"></script>
-<script src="js/ui/router.js?v=13"></script>
-<script src="js/import/importMapper.js?v=13"></script>
-<script src="js/import/importCompFB.js?v=13"></script>
-<script src="js/import/importCompRM.js?v=13"></script>
-<script src="js/import/importHR.js?v=13"></script>
-<script src="js/import/importPipeline.js?v=13"></script>
-<script src="js/export/exportWorkbook.js?v=13"></script>
-<script src="js/workflow/voucherWorkflow.js?v=13"></script>
-<script src="js/ui/viewOverview.js?v=13"></script>
-<script src="js/ui/viewList.js?v=13"></script>
-<script src="js/ui/viewIssue.js?v=13"></script>
-<script src="js/ui/viewIntegrity.js?v=13"></script>
-<script src="js/ui/viewImportExport.js?v=13"></script>
-<script src="js/ui/viewAuditLog.js?v=13"></script>
-<script src="js/app.js?v=13"></script>
+<script src="js/config.js?v=16"></script>
+<script src="js/metaStore.js?v=16"></script>
+<script src="js/schema.js?v=16"></script>
+<script src="js/i18n.js?v=16"></script>
+<script src="js/ui/components.js?v=16"></script>
+<script src="js/operator.js?v=16"></script>
+<script src="js/db.js?v=16"></script>
+<script src="js/db-cloud.js?v=16"></script>
+<script src="js/ui/router.js?v=16"></script>
+<script src="js/import/importMapper.js?v=16"></script>
+<script src="js/import/importCompFB.js?v=16"></script>
+<script src="js/import/importCompRM.js?v=16"></script>
+<script src="js/import/importHR.js?v=16"></script>
+<script src="js/import/importPipeline.js?v=16"></script>
+<script src="js/export/exportWorkbook.js?v=16"></script>
+<script src="js/workflow/voucherWorkflow.js?v=16"></script>
+<script src="js/ui/viewOverview.js?v=16"></script>
+<script src="js/ui/viewList.js?v=16"></script>
+<script src="js/ui/viewIssue.js?v=16"></script>
+<script src="js/ui/viewIntegrity.js?v=16"></script>
+<script src="js/ui/viewImportExport.js?v=16"></script>
+<script src="js/ui/viewAuditLog.js?v=16"></script>
+<script src="js/app.js?v=16"></script>
 </body>
 </html>

@@ -6,6 +6,10 @@ window.CompApp = window.CompApp || {};
 (function () {
   "use strict";
 
+  // Wire the language toggle immediately (not inside boot()) so it's responsive even while cloud
+  // data is still loading — it only needs the static DOM, not the record set.
+  if (CompApp.i18n) CompApp.i18n.init();
+
   function boot() {
     CompApp.schema.applyCloudCatalog();
     CompApp.ui.wireDateBoxes(document);

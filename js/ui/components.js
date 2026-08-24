@@ -4,6 +4,7 @@ CompApp.ui = (function () {
   "use strict";
   var esc = CompApp.schema.esc, normDate = CompApp.schema.normDate, validDate = CompApp.schema.validDate;
   var $ = function (id) { return document.getElementById(id); };
+  var t = function (s) { return CompApp.i18n ? CompApp.i18n.t(s) : s; };
 
   // normalize any YYYY-MM-DD text field on blur (bubbles via focusout)
   document.addEventListener('focusout', function (e) {
@@ -17,7 +18,7 @@ CompApp.ui = (function () {
   // YYYY-MM-DD text field + calendar-icon picker
   function dateFieldHTML(id, value) {
     value = value || '';
-    return '<span class="datebox"><input type="text" class="datefield" id="' + id + '" value="' + esc(value) + '" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" value="' + esc(value) + '" tabindex="-1" aria-label="달력에서 선택"></span>';
+    return '<span class="datebox"><input type="text" class="datefield" id="' + id + '" value="' + esc(value) + '" placeholder="YYYY-MM-DD" inputmode="numeric" maxlength="10" autocomplete="off"><input type="date" class="dp-native" value="' + esc(value) + '" tabindex="-1" aria-label="' + esc(t('달력')) + '"></span>';
   }
   function wireDateBoxes(root) {
     (root || document).querySelectorAll('.datebox').forEach(function (box) {
@@ -42,7 +43,7 @@ CompApp.ui = (function () {
     opts = opts || {};
     var t = $('toast');
     var html = '<span class="toast-msg">' + esc(m) + '</span>';
-    if (opts.actionLabel) html += '<button type="button" class="toast-action">' + esc(opts.actionLabel) + '</button><button type="button" class="toast-confirm">확인</button>';
+    if (opts.actionLabel) html += '<button type="button" class="toast-action">' + esc(opts.actionLabel) + '</button><button type="button" class="toast-confirm">' + t('확인') + '</button>';
     t.innerHTML = html;
     t.classList.toggle('has-action', !!opts.actionLabel);
     t.classList.add('show');
@@ -102,11 +103,11 @@ CompApp.ui = (function () {
     function paint() {
       var presets = getPresets ? getPresets() : [];
       containerEl.innerHTML = '<div class="tagrow" id="' + prefix + '-tags"></div>'
-        + '<div style="display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap"><select id="' + prefix + '-preset" style="flex:1;min-width:120px"><option value="">프리셋에서 추가…</option>'
+        + '<div style="display:flex;gap:6px;margin-bottom:5px;flex-wrap:wrap"><select id="' + prefix + '-preset" style="flex:1;min-width:120px"><option value="">' + t('프리셋에서 추가…') + '</option>'
         + presets.map(function (p) { return '<option value="' + esc(p) + '">' + esc(p) + '</option>'; }).join('') + '</select>'
         + dateFieldHTML(prefix + '-from', '') + dateFieldHTML(prefix + '-to', '')
-        + '<button type="button" class="btn btn-ghost btn-sm" id="' + prefix + '-addrange" style="white-space:nowrap">기간 추가</button></div>'
-        + '<div style="display:flex;gap:6px"><input type="text" id="' + prefix + '-text" placeholder="자유 입력 후 추가"><button type="button" class="btn btn-ghost btn-sm" id="' + prefix + '-addtext" style="white-space:nowrap">추가</button></div>';
+        + '<button type="button" class="btn btn-ghost btn-sm" id="' + prefix + '-addrange" style="white-space:nowrap">' + t('기간 추가') + '</button></div>'
+        + '<div style="display:flex;gap:6px"><input type="text" id="' + prefix + '-text" placeholder="' + esc(t('자유 입력 후 추가')) + '"><button type="button" class="btn btn-ghost btn-sm" id="' + prefix + '-addtext" style="white-space:nowrap">' + t('추가') + '</button></div>';
       wireDateBoxes(containerEl);
       paintTags();
       document.getElementById(prefix + '-preset').addEventListener('change', function () {
@@ -127,10 +128,12 @@ CompApp.ui = (function () {
     function refreshPresets() {
       var sel = document.getElementById(prefix + '-preset'); if (!sel) return;
       var presets = getPresets ? getPresets() : [];
-      sel.innerHTML = '<option value="">프리셋에서 추가…</option>' + presets.map(function (p) { return '<option value="' + esc(p) + '">' + esc(p) + '</option>'; }).join('');
+      sel.innerHTML = '<option value="">' + t('프리셋에서 추가…') + '</option>' + presets.map(function (p) { return '<option value="' + esc(p) + '">' + esc(p) + '</option>'; }).join('');
     }
     paint();
-    return { getTags: function () { return tags.slice(); }, refreshPresets: refreshPresets };
+    // relabel: full re-paint from the current `tags` closure (not the DOM), so it's safe to call
+    // after a language switch — existing tags/entered text survive, only the chrome re-translates.
+    return { getTags: function () { return tags.slice(); }, refreshPresets: refreshPresets, relabel: paint };
   }
 
   return { $: $, dateFieldHTML: dateFieldHTML, wireDateBoxes: wireDateBoxes, setDate: setDate, toast: toast, modal: modal, wireBlackoutEditor: wireBlackoutEditor };

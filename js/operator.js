@@ -4,16 +4,18 @@ window.CompApp = window.CompApp || {};
 CompApp.operator = (function () {
   "use strict";
   var $ = CompApp.ui.$, modal = CompApp.ui.modal, toast = CompApp.ui.toast, esc = CompApp.schema.esc;
+  var t = function (s) { return CompApp.i18n ? CompApp.i18n.t(s) : s; };
+  var t2 = function (ko, en) { return CompApp.i18n ? CompApp.i18n.t2(ko, en) : ko; };
   var DEFAULT_DEPTS = CompApp.schema.DEFAULT_DEPTS;
 
   // ---- operator identity ----
   var OP_KEY = 'compVoucherOperator', DEPT_KEY = 'compVoucherDepts', DESIGN_KEY = 'compVoucherDesign';
   function getOp() { try { return JSON.parse(localStorage.getItem(OP_KEY) || 'null'); } catch (e) { return null; } }
   function opLabel() { var o = getOp(); return o ? (o.dept ? o.name + ' (' + o.dept + ')' : o.name) : ''; }
-  function actor() { return opLabel() || '담당자'; }
+  function actor() { return opLabel() || t('담당자'); }
   function getDepts() { var c = []; try { c = JSON.parse(localStorage.getItem(DEPT_KEY) || '[]'); } catch (e) {} return DEFAULT_DEPTS.concat(c.filter(function (d) { return DEFAULT_DEPTS.indexOf(d) < 0; })); }
-  function renderOpCard() { $('opWho').textContent = opLabel() || '미등록'; }
-  function fillDeptSelect() { $('op-dept').innerHTML = getDepts().map(function (d) { return '<option value="' + d + '">' + d + '</option>'; }).join('') + '<option value="__new">+ 새 부서 추가…</option>'; }
+  function renderOpCard() { $('opWho').textContent = opLabel() || t('미등록'); }
+  function fillDeptSelect() { $('op-dept').innerHTML = getDepts().map(function (d) { return '<option value="' + d + '">' + d + '</option>'; }).join('') + '<option value="__new">+ ' + t('새 부서 추가…') + '</option>'; }
   function opEmail() { var o = getOp(); return (o && o.email) || ''; }
   // 담당자 이름이 요청자 칸 안에 들어 있으면 "본인이 낸 요청"으로 본다 — 요청자 칸은 "Hans Kim/Event"
   // 처럼 자유 텍스트라 정확히 일치하지 않기 때문. 남을 대신해 발행한 경우엔 매칭되지 않아 이메일이
@@ -35,14 +37,14 @@ CompApp.operator = (function () {
       if (dept) { var c = []; try { c = JSON.parse(localStorage.getItem(DEPT_KEY) || '[]'); } catch (e) {} if (c.indexOf(dept) < 0) c.push(dept); localStorage.setItem(DEPT_KEY, JSON.stringify(c)); }
     }
     var email = $('op-mail').value.trim();
-    if (!name) { $('op-err').textContent = '이름을 입력하세요.'; return; }
-    if (!dept) { $('op-err').textContent = '부서를 선택하거나 입력하세요.'; return; }
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $('op-err').textContent = '이메일 형식이 올바르지 않습니다.'; return; }
+    if (!name) { $('op-err').textContent = t('이름을 입력하세요.'); return; }
+    if (!dept) { $('op-err').textContent = t('부서를 선택하거나 입력하세요.'); return; }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { $('op-err').textContent = t('이메일 형식이 올바르지 않습니다.'); return; }
     localStorage.setItem(OP_KEY, JSON.stringify({ name: name, dept: dept, email: email }));
     $('opBackdrop').classList.remove('show'); renderOpCard();
     if ($('f-req') && !$('f-req').value.trim()) $('f-req').value = opLabel();
     var r = refreshRole();
-    toast('담당자 등록: ' + opLabel() + ' · ' + ROLE_LABEL[r]);
+    toast(t('담당자 등록: ') + opLabel() + ' · ' + t(ROLE_LABEL[r]));
   });
   $('opCard').addEventListener('click', openOpModal);
 
@@ -106,17 +108,17 @@ CompApp.operator = (function () {
   updateMgmtLinks();
 
   function approverManageModal() {
-    if (!isAdmin()) { toast('승인자 명단 관리 권한이 없습니다. (관리자만 편집 가능)'); return; }
+    if (!isAdmin()) { toast(t('승인자 명단 관리 권한이 없습니다. (관리자만 편집 가능)')); return; }
     var bootstrap = !getAdmins().length;
     function body() {
       var list = getApprovers();
-      return (bootstrap ? '<div class="modal-hint">※ 관리자 명단이 비어 있어 모든 담당자가 편집할 수 있습니다. 관리자를 지정하면 이후 관리자만 편집 가능합니다.</div>' : '')
-        + (list.length ? list.map(function (p, i) { return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)"><span style="flex:1;font-size:13px">' + esc(p) + '</span><button type="button" class="btn btn-danger btn-sm pdel-appr" data-i="' + i + '">삭제</button></div>'; }).join('') : '<div class="empty">등록된 승인자가 없습니다. 이름을 추가하면 해당 담당자로 등록 시 자동으로 승인자 모드가 됩니다.</div>')
-        + '<div style="display:flex;gap:8px;margin-top:12px"><input type="text" id="ap-new" placeholder="담당자 등록 시 사용할 이름 (예: Sam)"><button type="button" class="btn btn-primary btn-sm" id="ap-add" style="white-space:nowrap">추가</button></div>';
+      return (bootstrap ? '<div class="modal-hint">※ ' + t('관리자 명단이 비어 있어 모든 담당자가 편집할 수 있습니다. 관리자를 지정하면 이후 관리자만 편집 가능합니다.') + '</div>' : '')
+        + (list.length ? list.map(function (p, i) { return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)"><span style="flex:1;font-size:13px">' + esc(p) + '</span><button type="button" class="btn btn-danger btn-sm pdel-appr" data-i="' + i + '">' + t('삭제') + '</button></div>'; }).join('') : '<div class="empty">' + t('등록된 승인자가 없습니다. 이름을 추가하면 해당 담당자로 등록 시 자동으로 승인자 모드가 됩니다.') + '</div>')
+        + '<div style="display:flex;gap:8px;margin-top:12px"><input type="text" id="ap-new" placeholder="' + esc(t('담당자 등록 시 사용할 이름 (예: Sam)')) + '"><button type="button" class="btn btn-primary btn-sm" id="ap-add" style="white-space:nowrap">' + t('추가') + '</button></div>';
     }
     modal({
-      title: '승인자 명단 관리', sub: '담당자 등록 화면에서 입력하는 이름과 정확히 일치해야 자동 인식됩니다.', bodyHtml: body(),
-      buttons: [{ label: '닫기', onClick: function () { refreshRole(); } }],
+      title: t('승인자 명단 관리'), sub: t('담당자 등록 화면에서 입력하는 이름과 정확히 일치해야 자동 인식됩니다.'), bodyHtml: body(),
+      buttons: [{ label: t('닫기'), onClick: function () { refreshRole(); } }],
       wire: function wire(b) {
         b.querySelectorAll('.pdel-appr').forEach(function (btn) { btn.addEventListener('click', function () { var arr = getApprovers(); arr.splice(parseInt(btn.dataset.i, 10), 1); saveApprovers(arr); b.innerHTML = body(); wire(b); }); });
         var add = b.querySelector('#ap-add'); if (add) add.addEventListener('click', function () { var v = b.querySelector('#ap-new').value.trim(); if (!v) return; var arr = getApprovers(); if (arr.indexOf(v) < 0) arr.push(v); saveApprovers(arr); b.innerHTML = body(); wire(b); });
@@ -126,17 +128,17 @@ CompApp.operator = (function () {
   $('btnApproverManage').addEventListener('click', approverManageModal);
 
   function adminManageModal() {
-    if (!isAdmin()) { toast('관리자 명단 관리 권한이 없습니다.'); return; }
+    if (!isAdmin()) { toast(t('관리자 명단 관리 권한이 없습니다.')); return; }
     var bootstrap = !getAdmins().length;
     function body() {
       var list = getAdmins();
-      return (bootstrap ? '<div class="modal-hint">※ 관리자 명단이 비어 있어 모든 담당자가 편집할 수 있습니다. 여기서 지정하는 순간부터 명단에 있는 사람만 승인자·관리자 명단을 편집할 수 있습니다.</div>' : '')
-        + (list.length ? list.map(function (p, i) { return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)"><span style="flex:1;font-size:13px">' + esc(p) + '</span><button type="button" class="btn btn-danger btn-sm pdel-admin" data-i="' + i + '">삭제</button></div>'; }).join('') : '<div class="empty">등록된 관리자가 없습니다 (= 현재 모든 담당자가 관리 가능).</div>')
-        + '<div style="display:flex;gap:8px;margin-top:12px"><input type="text" id="ad-new" placeholder="담당자 등록 시 사용할 이름"><button type="button" class="btn btn-primary btn-sm" id="ad-add" style="white-space:nowrap">추가</button></div>';
+      return (bootstrap ? '<div class="modal-hint">※ ' + t('관리자 명단이 비어 있어 모든 담당자가 편집할 수 있습니다. 여기서 지정하는 순간부터 명단에 있는 사람만 승인자·관리자 명단을 편집할 수 있습니다.') + '</div>' : '')
+        + (list.length ? list.map(function (p, i) { return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line)"><span style="flex:1;font-size:13px">' + esc(p) + '</span><button type="button" class="btn btn-danger btn-sm pdel-admin" data-i="' + i + '">' + t('삭제') + '</button></div>'; }).join('') : '<div class="empty">' + t('등록된 관리자가 없습니다 (= 현재 모든 담당자가 관리 가능).') + '</div>')
+        + '<div style="display:flex;gap:8px;margin-top:12px"><input type="text" id="ad-new" placeholder="' + esc(t('담당자 등록 시 사용할 이름')) + '"><button type="button" class="btn btn-primary btn-sm" id="ad-add" style="white-space:nowrap">' + t('추가') + '</button></div>';
     }
     modal({
-      title: '관리자 명단 관리', sub: '승인자 명단·관리자 명단을 편집할 수 있는 사람을 지정합니다.', bodyHtml: body(),
-      buttons: [{ label: '닫기', onClick: function () { refreshRole(); } }],
+      title: t('관리자 명단 관리'), sub: t('승인자 명단·관리자 명단을 편집할 수 있는 사람을 지정합니다.'), bodyHtml: body(),
+      buttons: [{ label: t('닫기'), onClick: function () { refreshRole(); } }],
       wire: function wire(b) {
         b.querySelectorAll('.pdel-admin').forEach(function (btn) { btn.addEventListener('click', function () { var arr = getAdmins(); arr.splice(parseInt(btn.dataset.i, 10), 1); saveAdmins(arr); b.innerHTML = body(); wire(b); }); });
         var add = b.querySelector('#ad-add'); if (add) add.addEventListener('click', function () { var v = b.querySelector('#ad-new').value.trim(); if (!v) return; var arr = getAdmins(); if (arr.indexOf(v) < 0) arr.push(v); saveAdmins(arr); b.innerHTML = body(); wire(b); }); }
@@ -166,7 +168,7 @@ CompApp.operator = (function () {
   }
 
   return {
-    getOp: getOp, opLabel: opLabel, actor: actor, opEmail: opEmail, isSelfRequest: isSelfRequest, getDepts: getDepts, openOpModal: openOpModal,
+    getOp: getOp, opLabel: opLabel, actor: actor, opEmail: opEmail, isSelfRequest: isSelfRequest, getDepts: getDepts, openOpModal: openOpModal, renderOpCard: renderOpCard,
     getRole: function () { return role; }, applyRole: applyRole, computeAutoRole: computeAutoRole,
     refreshRole: refreshRole, canApprove: canApprove, canAdmin: canAdmin,
     getApprovers: getApprovers, isApproverName: isApproverName,

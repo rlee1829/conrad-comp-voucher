@@ -4,6 +4,7 @@ window.CompApp = window.CompApp || {};
 CompApp.viewList = (function () {
   "use strict";
   var $ = CompApp.ui.$, modal = CompApp.ui.modal, toast = CompApp.ui.toast;
+  var t = function (s) { return CompApp.i18n ? CompApp.i18n.t(s) : s; };
   var schema = CompApp.schema;
   var esc = schema.esc, normDate = schema.normDate, effStatus = schema.effStatus;
   var CAT_LABEL = schema.CAT_LABEL, STATUS_LABEL = schema.STATUS_LABEL, STATUS_CLASS = schema.STATUS_CLASS, CATALOG = schema.CATALOG;
@@ -20,13 +21,13 @@ CompApp.viewList = (function () {
     var out = [];
     var fs = $('filterStatus').value, fc = $('filterCat').value, ft = $('filterText').value.trim();
     var dF = normDate($('fDateFrom').value), dT = normDate($('fDateTo').value);
-    var dLabel = { issued: '발행일', valid: '만료일', usedDate: '사용일' }[$('filterDateField').value] || '발행일';
-    if (fs) out.push('상태: ' + (STATUS_LABEL[fs] || fs));
-    if (fc) out.push('사유: ' + (CAT_LABEL[fc] || fc));
-    if (state.filterProductVal) { var p = prodById(state.filterProductVal); out.push('종류: ' + ((p && p.name) || state.filterProductVal)); }
-    if (state.filterPickup) out.push('픽업: ' + (state.filterPickup === 'OPEN' ? '인쇄대기+픽업대기' : (schema.PICKUP_LABEL[state.filterPickup] || state.filterPickup)));
+    var dLabel = { issued: t('발행일'), valid: t('만료일'), usedDate: t('사용일') }[$('filterDateField').value] || t('발행일');
+    if (fs) out.push(t('상태: ') + schema.statusLabel(fs));
+    if (fc) out.push(t('사유: ') + schema.catLabel(fc));
+    if (state.filterProductVal) { var p = prodById(state.filterProductVal); out.push(t('종류: ') + ((p && t(p.name)) || state.filterProductVal)); }
+    if (state.filterPickup) out.push(t('픽업: ') + (state.filterPickup === 'OPEN' ? t('인쇄대기+픽업대기') : schema.pickupLabel(state.filterPickup)));
     if (dF || dT) out.push(dLabel + ': ' + (dF || '…') + ' ~ ' + (dT || '…'));
-    if (ft) out.push('검색: ' + ft);
+    if (ft) out.push(t('검색: ') + ft);
     return out;
   }
   // opts.ignoreStatus — 상태 필터만 빼고 거른다. 미니칩(상태별 건수)이 나머지 필터를 그대로 반영하게
@@ -72,10 +73,10 @@ CompApp.viewList = (function () {
   function pickupBadge(r) {
     var p = schema.pickupState(r);
     if (!p) return '';
-    var tip = p === 'TOPICKUP' ? ('인쇄 ' + (r.printedAt || '') + (r.notifiedAt ? ' · 알림 ' + r.notifiedAt : ' · 알림 전'))
-      : p === 'PICKED' ? ('픽업 ' + (r.pickedUpAt || '') + (r.pickedUpBy ? ' · ' + r.pickedUpBy : ''))
-        : '승인됨 · 인쇄 후 [인쇄완료] 표시 필요';
-    return ' <span class="pkbadge ' + schema.PICKUP_CLASS[p] + '" title="' + esc(tip) + '">' + schema.PICKUP_LABEL[p] + '</span>';
+    var tip = p === 'TOPICKUP' ? (t('인쇄 ') + (r.printedAt || '') + (r.notifiedAt ? t(' · 알림 ') + r.notifiedAt : t(' · 알림 전')))
+      : p === 'PICKED' ? (t('픽업 ') + (r.pickedUpAt || '') + (r.pickedUpBy ? t(' · ') + r.pickedUpBy : ''))
+        : t('승인됨 · 인쇄 후 [인쇄완료] 표시 필요');
+    return ' <span class="pkbadge ' + schema.PICKUP_CLASS[p] + '" title="' + esc(tip) + '">' + schema.pickupLabel(p) + '</span>';
   }
   function th(key, label, cls) {
     var arr = state.sortKey === key ? '<span class="arr">' + (state.sortDir === 'asc' ? '▲' : '▼') + '</span>' : '';
@@ -86,8 +87,8 @@ CompApp.viewList = (function () {
     var rs = filtered({ ignoreStatus: true }), by = { PENDING: 0, ACTIVE: 0, USED: 0, EXPIRED: 0, VOID: 0, REJECTED: 0 };
     rs.forEach(function (r) { by[r.status]++; });
     var data = [
-      { k: '총 발행', v: rs.length, f: '' }, { k: '승인대기', v: by.PENDING, f: 'PENDING' }, { k: '활성', v: by.ACTIVE, f: 'ACTIVE' },
-      { k: '사용', v: by.USED, f: 'USED' }, { k: '반려', v: by.REJECTED, f: 'REJECTED' }, { k: '만료', v: by.EXPIRED, f: 'EXPIRED' }, { k: '취소', v: by.VOID, f: 'VOID' }
+      { k: t('총 발행'), v: rs.length, f: '' }, { k: t('승인대기'), v: by.PENDING, f: 'PENDING' }, { k: t('활성'), v: by.ACTIVE, f: 'ACTIVE' },
+      { k: t('사용'), v: by.USED, f: 'USED' }, { k: t('반려'), v: by.REJECTED, f: 'REJECTED' }, { k: t('만료'), v: by.EXPIRED, f: 'EXPIRED' }, { k: t('취소'), v: by.VOID, f: 'VOID' }
     ];
     var cur = $('filterStatus').value;
     $('chips').innerHTML = data.map(function (d) { return '<button type="button" class="mini-chip' + (cur === d.f ? ' active' : '') + '" data-fstat="' + d.f + '"><b>' + d.v + '</b>' + d.k + '</button>'; }).join('');
@@ -96,8 +97,8 @@ CompApp.viewList = (function () {
     var sel = $('filterProduct'); if (!sel) return;
     var fams = state.fam === 'ALL' ? ['FB', 'RM', 'HR'] : [state.fam];
     if (state.filterProductVal && (!prodById(state.filterProductVal) || (state.fam !== 'ALL' && productFam(state.filterProductVal) !== state.fam))) state.filterProductVal = '';
-    var html = '<option value="">전체 종류</option>';
-    fams.forEach(function (f) { html += '<optgroup label="' + (f === 'FB' ? 'F&B' : (f === 'RM' ? 'Room' : 'HR')) + '">' + CATALOG[f].map(function (p) { return '<option value="' + p.id + '">' + p.name + '</option>'; }).join('') + '</optgroup>'; });
+    var html = '<option value="">' + t('전체 종류') + '</option>';
+    fams.forEach(function (f) { html += '<optgroup label="' + (f === 'FB' ? 'F&B' : (f === 'RM' ? 'Room' : 'HR')) + '">' + CATALOG[f].map(function (p) { return '<option value="' + p.id + '">' + t(p.name) + '</option>'; }).join('') + '</optgroup>'; });
     sel.innerHTML = html; sel.value = state.filterProductVal;
   }
   function render() {
@@ -109,17 +110,17 @@ CompApp.viewList = (function () {
     var allSel = slice.length > 0 && slice.every(function (r) { return state.selected[r.id]; });
     var head = '<thead><tr>'
       + '<th class="chkcol"><input type="checkbox" id="selAll" ' + (allSel ? 'checked' : '') + '></th>'
-      + th('serial', '증서번호') + '<th>타입</th>' + th('product', '바우처 종류') + th('issued', '발행일') + th('valid', '만료일') + '<th>사용일</th>' + th('status', '상태')
-      + '<th>사유 / 세부목적</th><th>요청자</th><th>Mate 승인</th><th>비고</th><th></th></tr></thead>';
+      + th('serial', t('증서번호')) + '<th>' + t('타입') + '</th>' + th('product', t('바우처 종류')) + th('issued', t('발행일')) + th('valid', t('만료일')) + '<th>' + t('사용일') + '</th>' + th('status', t('상태'))
+      + '<th>' + t('사유 / 세부목적') + '</th><th>' + t('요청자 항목') + '</th><th>' + t('Mate 승인') + '</th><th>' + t('비고') + '</th><th></th></tr></thead>';
     var body = slice.map(function (r) {
       var es = effStatus(r), sel = state.selected[r.id];
       var acts = '';
-      if (r.status === 'PENDING' && canApprove) { acts += '<button class="approve-a" data-act="approve" data-id="' + r.id + '">승인</button>'; acts += '<button class="reject-a" data-act="reject" data-id="' + r.id + '">반려</button>'; }
+      if (r.status === 'PENDING' && canApprove) { acts += '<button class="approve-a" data-act="approve" data-id="' + r.id + '">' + t('승인') + '</button>'; acts += '<button class="reject-a" data-act="reject" data-id="' + r.id + '">' + CompApp.i18n.t2('반려', 'Reject') + '</button>'; }
       // 만료 건도 사용 처리 대상 — 만료일 전에 실제로 사용한 걸 뒤늦게 등록하는 경우가 많다(사용일 검증은 useModal에서).
-      if ((r.status === 'ACTIVE' || r.status === 'EXPIRED') && canAdmin) acts += '<button data-act="use" data-id="' + r.id + '">사용</button>';
-      if ((r.status === 'ACTIVE' || r.status === 'EXPIRED') && canApprove) acts += '<button data-act="extend" data-id="' + r.id + '">연장</button>';
-      if ((r.status === 'PENDING' || r.status === 'ACTIVE') && canAdmin) acts += '<button data-act="void" data-id="' + r.id + '">취소</button>';
-      acts += '<button data-act="edit" data-id="' + r.id + '">수정</button>';
+      if ((r.status === 'ACTIVE' || r.status === 'EXPIRED') && canAdmin) acts += '<button data-act="use" data-id="' + r.id + '">' + CompApp.i18n.t2('사용', 'Use') + '</button>';
+      if ((r.status === 'ACTIVE' || r.status === 'EXPIRED') && canApprove) acts += '<button data-act="extend" data-id="' + r.id + '">' + t('연장') + '</button>';
+      if ((r.status === 'PENDING' || r.status === 'ACTIVE') && canAdmin) acts += '<button data-act="void" data-id="' + r.id + '">' + t('취소') + '</button>';
+      acts += '<button data-act="edit" data-id="' + r.id + '">' + t('수정') + '</button>';
       var prodLabel = schema.recordProductLabel(r);
       return '<tr class="' + (sel ? 'sel' : '') + '">'
         + '<td class="chkcol"><input type="checkbox" class="rowchk" data-id="' + r.id + '" ' + (sel ? 'checked' : '') + '></td>'
@@ -127,8 +128,8 @@ CompApp.viewList = (function () {
         + '<td>' + famBadge(r.fam) + '</td>'
         + '<td class="prod" title="' + esc(prodLabel) + '">' + esc(prodLabel) + '</td>'
         + '<td class="date">' + r.issued + '</td><td class="date">' + r.valid + '</td><td class="date">' + (r.usedDate || '—') + '</td>'
-        + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + STATUS_LABEL[es] + '</span>' + pickupBadge(r) + '</td>'
-        + '<td class="cat-purpose" title="' + esc((CAT_LABEL[r.cat] || r.cat) + ' — ' + (r.purpose || '')) + '"><span class="cat">' + (CAT_LABEL[r.cat] || r.cat) + '</span> <span class="purpose-inline">' + esc(r.purpose) + '</span></td>'
+        + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + schema.statusLabel(es) + '</span>' + pickupBadge(r) + '</td>'
+        + '<td class="cat-purpose" title="' + esc(schema.catLabel(r.cat) + ' — ' + (r.purpose || '')) + '"><span class="cat">' + schema.catLabel(r.cat) + '</span> <span class="purpose-inline">' + esc(r.purpose) + '</span></td>'
         + '<td class="req-by">' + esc(r.req || '') + '</td>'
         + '<td class="mate-no">' + esc(r.mate || '—') + '</td>'
         + '<td class="remark-cell" title="' + esc(schema.displayRemark(r.remark)) + '">' + (schema.displayRemark(r.remark) ? esc(schema.displayRemark(r.remark)) : '—') + '</td>'
@@ -137,22 +138,22 @@ CompApp.viewList = (function () {
     // 비었을 때는 "왜" 비었는지까지 보여준다 — 필터가 걸려 있으면 그 조건과 해제 버튼을 함께.
     var af = activeFilters();
     var emptyHtml = af.length
-      ? '<div class="empty">필터 조건에 맞는 바우처가 없습니다.<div class="empty-filters">적용 중: ' + esc(af.join(' · ')) + ' <span class="dim">(' + CompApp.router.famLabel(state.fam) + ' 전체 ' + records().filter(famMatch).length + '건)</span></div><button type="button" class="btn btn-ghost btn-sm" id="emptyClearFilter">필터 해제</button></div>'
-      : '<div class="empty">표시할 바우처가 없습니다.</div>';
+      ? '<div class="empty">' + t('필터 조건에 맞는 바우처가 없습니다.') + '<div class="empty-filters">' + t('적용 중: ') + esc(af.join(' · ')) + ' <span class="dim">(' + CompApp.router.famLabel(state.fam) + ' ' + t('전체 ') + records().filter(famMatch).length + t('건') + ')</span></div><button type="button" class="btn btn-ghost btn-sm" id="emptyClearFilter">' + t('필터 해제') + '</button></div>'
+      : '<div class="empty">' + t('표시할 바우처가 없습니다.') + '</div>';
     $('listTable').innerHTML = head + '<tbody>' + (slice.length ? body : '<tr><td colspan="13">' + emptyHtml + '</td></tr>') + '</tbody>';
     var ecf = $('emptyClearFilter'); if (ecf) ecf.addEventListener('click', clearFilters);
     var cf = $('btnClearFilter');
-    cf.textContent = af.length ? '필터 해제 (' + af.length + ')' : '필터 해제';
+    cf.textContent = af.length ? t('필터 해제') + ' (' + af.length + ')' : t('필터 해제');
     cf.classList.toggle('filter-on', af.length > 0);
-    cf.title = af.length ? '적용 중: ' + af.join(' · ') : '';
+    cf.title = af.length ? t('적용 중: ') + af.join(' · ') : '';
     renderBulkbar();
     var pg = $('pager');
-    if (total <= state.perPage) { pg.innerHTML = '<span class="pinfo">' + total + '건</span>'; }
+    if (total <= state.perPage) { pg.innerHTML = '<span class="pinfo">' + total + t('건') + '</span>'; }
     else {
-      pg.innerHTML = '<span class="pinfo">' + total + '건</span>'
-        + '<button id="pgFirst" ' + (state.page === 1 ? 'disabled' : '') + '>«</button><button id="pgPrev" ' + (state.page === 1 ? 'disabled' : '') + '>‹ 이전</button>'
+      pg.innerHTML = '<span class="pinfo">' + total + t('건') + '</span>'
+        + '<button id="pgFirst" ' + (state.page === 1 ? 'disabled' : '') + '>«</button><button id="pgPrev" ' + (state.page === 1 ? 'disabled' : '') + '>‹ ' + t('이전') + '</button>'
         + '<span class="pg-jump-wrap"><input type="number" id="pgJump" class="pg-jump" min="1" max="' + pages + '" value="' + state.page + '"> / ' + pages + '</span>'
-        + '<button id="pgNext" ' + (state.page === pages ? 'disabled' : '') + '>다음 ›</button><button id="pgLast" ' + (state.page === pages ? 'disabled' : '') + '>»</button>';
+        + '<button id="pgNext" ' + (state.page === pages ? 'disabled' : '') + '>' + t('다음') + ' ›</button><button id="pgLast" ' + (state.page === pages ? 'disabled' : '') + '>»</button>';
       $('pgFirst').onclick = function () { state.page = 1; render(); }; $('pgPrev').onclick = function () { state.page--; render(); };
       $('pgNext').onclick = function () { state.page++; render(); }; $('pgLast').onclick = function () { state.page = pages; render(); };
       var jumpEl = $('pgJump');
@@ -170,15 +171,15 @@ CompApp.viewList = (function () {
     var ids = Object.keys(state.selected).filter(function (id) { return state.selected[id]; });
     var w = $('bulkbarWrap');
     if (!ids.length) { w.innerHTML = ''; return; }
-    w.innerHTML = '<div class="bulkbar"><span class="cntsel">' + ids.length + '건 선택</span>'
-      + (canApprove ? '<button data-bulk="approve">승인</button><button data-bulk="reject">반려</button>' : '')
-      + (canAdmin ? '<button data-bulk="use">사용처리</button>' : '')
-      + (canApprove ? '<button data-bulk="extend">기간연장</button>' : '')
-      + (canAdmin ? '<button data-bulk="void">발행취소</button>' : '')
-      + (canApprove ? '<button data-bulk="printed">인쇄완료</button><button data-bulk="notify">픽업 알림</button><button data-bulk="pickedup">픽업완료</button>' : '')
-      + '<button data-bulk="field">일괄입력</button>'
-      + (canAdmin ? '<button data-bulk="delete" class="reject-a">삭제</button>' : '')
-      + '<button data-bulk="clear">선택해제</button></div>';
+    w.innerHTML = '<div class="bulkbar"><span class="cntsel">' + ids.length + t('건 선택') + '</span>'
+      + (canApprove ? '<button data-bulk="approve">' + t('승인') + '</button><button data-bulk="reject">' + CompApp.i18n.t2('반려', 'Reject') + '</button>' : '')
+      + (canAdmin ? '<button data-bulk="use">' + t('사용처리') + '</button>' : '')
+      + (canApprove ? '<button data-bulk="extend">' + t('기간연장') + '</button>' : '')
+      + (canAdmin ? '<button data-bulk="void">' + t('발행취소') + '</button>' : '')
+      + (canApprove ? '<button data-bulk="printed">' + t('인쇄완료') + '</button><button data-bulk="notify">' + t('픽업 알림') + '</button><button data-bulk="pickedup">' + t('픽업완료') + '</button>' : '')
+      + '<button data-bulk="field">' + t('일괄입력') + '</button>'
+      + (canAdmin ? '<button data-bulk="delete" class="reject-a">' + t('삭제') + '</button>' : '')
+      + '<button data-bulk="clear">' + t('선택해제') + '</button></div>';
   }
   function clearFilters() { CompApp.router.resetFilterInputs(); state.page = 1; render(); }
   $('btnClearFilter').addEventListener('click', clearFilters);

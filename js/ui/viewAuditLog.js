@@ -5,6 +5,7 @@ window.CompApp = window.CompApp || {};
 CompApp.viewAuditLog = (function () {
   "use strict";
   var $ = CompApp.ui.$;
+  var t = function (s) { return CompApp.i18n ? CompApp.i18n.t(s) : s; };
   var schema = CompApp.schema;
   var esc = schema.esc, normDate = schema.normDate;
   var state = CompApp.state;
@@ -45,7 +46,7 @@ CompApp.viewAuditLog = (function () {
     var seen = {}, actions = [];
     entries().forEach(function (e) { if (e.action && !seen[e.action]) { seen[e.action] = true; actions.push(e.action); } });
     actions.sort();
-    sel.innerHTML = '<option value="">전체 작업</option>' + actions.map(function (a) { return '<option value="' + esc(a) + '">' + esc(a) + '</option>'; }).join('');
+    sel.innerHTML = '<option value="">' + t('전체 작업') + '</option>' + actions.map(function (a) { return '<option value="' + esc(a) + '">' + esc(t(a)) + '</option>'; }).join('');
     sel.value = actions.indexOf(cur) >= 0 ? cur : '';
   }
 
@@ -55,22 +56,22 @@ CompApp.viewAuditLog = (function () {
     var total = groups.length, pages = Math.max(1, Math.ceil(total / perPage));
     if (page > pages) page = pages;
     var slice = groups.slice((page - 1) * perPage, page * perPage);
-    $('alTitle').textContent = '감사 로그 · ' + total + '건';
-    var head = '<thead><tr><th>시각</th><th>행위자</th><th>작업</th><th>증서번호</th><th>상세</th></tr></thead>';
+    $('alTitle').textContent = t('감사 로그') + ' · ' + total + t('건');
+    var head = '<thead><tr><th>' + t('시각') + '</th><th>' + t('행위자') + '</th><th>' + t('작업') + '</th><th>' + t('증서번호') + '</th><th>' + t('상세') + '</th></tr></thead>';
     var body = slice.map(function (g) {
       var e = g.items[0], n = g.items.length;
-      var detail = n > 1 ? ('증서번호 ' + esc(e.serial || '') + ' 외 ' + (n - 1) + '건') : esc(e.detail || '');
-      return '<tr><td class="date">' + esc(e.ts || '') + '</td><td>' + esc(e.actor || '') + '</td><td><span class="cat">' + esc(e.action || '') + '</span></td>'
+      var detail = n > 1 ? (t('증서번호 ') + esc(e.serial || '') + (CompApp.i18n ? CompApp.i18n.t2(' 외 ' + (n - 1) + '건', ' and ' + (n - 1) + ' more') : ' 외 ' + (n - 1) + '건')) : esc(e.detail || '');
+      return '<tr><td class="date">' + esc(e.ts || '') + '</td><td>' + esc(e.actor || '') + '</td><td><span class="cat">' + esc(t(e.action || '')) + '</span></td>'
         + '<td class="serial">' + (e.recordId ? '<button data-detail="' + e.recordId + '">' + esc(e.serial || '') + '</button>' : esc(e.serial || '—')) + '</td>'
         + '<td>' + detail + '</td></tr>';
     }).join('');
-    $('alTable').innerHTML = head + '<tbody>' + (slice.length ? body : '<tr><td colspan="5"><div class="empty">기록이 없습니다.</div></td></tr>') + '</tbody>';
+    $('alTable').innerHTML = head + '<tbody>' + (slice.length ? body : '<tr><td colspan="5"><div class="empty">' + t('기록이 없습니다.') + '</div></td></tr>') + '</tbody>';
     var pg = $('alPager');
-    if (total <= perPage) { pg.innerHTML = '<span class="pinfo">' + total + '건</span>'; }
+    if (total <= perPage) { pg.innerHTML = '<span class="pinfo">' + total + t('건') + '</span>'; }
     else {
-      pg.innerHTML = '<span class="pinfo">' + total + '건 · ' + page + '/' + pages + '</span>'
-        + '<button id="alPgFirst" ' + (page === 1 ? 'disabled' : '') + '>«</button><button id="alPgPrev" ' + (page === 1 ? 'disabled' : '') + '>‹ 이전</button>'
-        + '<button id="alPgNext" ' + (page === pages ? 'disabled' : '') + '>다음 ›</button><button id="alPgLast" ' + (page === pages ? 'disabled' : '') + '>»</button>';
+      pg.innerHTML = '<span class="pinfo">' + total + t('건') + ' · ' + page + '/' + pages + '</span>'
+        + '<button id="alPgFirst" ' + (page === 1 ? 'disabled' : '') + '>«</button><button id="alPgPrev" ' + (page === 1 ? 'disabled' : '') + '>‹ ' + t('이전') + '</button>'
+        + '<button id="alPgNext" ' + (page === pages ? 'disabled' : '') + '>' + t('다음') + ' ›</button><button id="alPgLast" ' + (page === pages ? 'disabled' : '') + '>»</button>';
       $('alPgFirst').onclick = function () { page = 1; render(); }; $('alPgPrev').onclick = function () { page--; render(); };
       $('alPgNext').onclick = function () { page++; render(); }; $('alPgLast').onclick = function () { page = pages; render(); };
     }
