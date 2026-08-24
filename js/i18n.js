@@ -170,6 +170,7 @@ CompApp.i18n = (function () {
     '목록으로': 'Back to List',
     '발행 가능 종류': 'Issuable Types',
     '종류 추가': 'Add Type',
+    '세부 목적으로 자동 추천됨 — 직접 선택 시 고정됩니다.': 'Auto-suggested from the purpose text — pick one directly to lock it in.',
     '예: 201268 임서영 / Atrio Kitchen (사번·이름·부서)': 'e.g. 201268 Name / Dept (ID · name · department)',
     '기본 유효기간': 'Default validity',
     '개월': ' months',

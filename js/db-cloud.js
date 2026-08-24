@@ -68,13 +68,27 @@ CompApp.dbCloud = (function () {
     var row = { id: entry.id || CompApp.schema.uid(), data: entry };
     return client().from('audit_log').insert(row).then(chk);
   }
-  // Boot-time hydrate for the 감사 로그 view — most recent first, capped (avoid pulling unbounded history).
+  // Boot-time hydrate for the 감사 로그 view — most recent first, capped (avoid pulling unbounded
+  // history forever as it grows over years). A single .limit(N) request silently returns at most
+  // the project's PostgREST "db-max-rows" setting (1000 here) no matter what N is — confirmed the
+  // hard way when a handful of oversized same-batchId bulk data-cleanup writes (thousands of rows
+  // in one sitting) alone filled that 1000-row window and every older audit_log entry briefly
+  // disappeared from this view. Page through with .range() like getAllVouchers() so `limit` (raised
+  // to comfortably clear the current total, ~6,500 as of 2026-08-24) actually holds.
   function getAuditLog(limit) {
-    limit = limit || 2000;
-    return client().from('audit_log').select('id,data,created_at').order('created_at', { ascending: false }).limit(limit).then(function (res) {
-      chk(res);
-      return (res.data || []).map(function (row) { var d = row.data; d.id = d.id || row.id; return d; });
-    });
+    limit = limit || 10000;
+    var out = [];
+    function page(from) {
+      var to = Math.min(from + PAGE, limit) - 1;
+      if (from > to) return out;
+      return client().from('audit_log').select('id,data,created_at').order('created_at', { ascending: false }).range(from, to).then(function (res) {
+        chk(res);
+        var rows = (res.data || []).map(function (row) { var d = row.data; d.id = d.id || row.id; return d; });
+        out = out.concat(rows);
+        return (rows.length === PAGE && out.length < limit) ? page(from + PAGE) : out;
+      });
+    }
+    return page(0);
   }
 
   // Import batch summaries (E, used in a later phase).

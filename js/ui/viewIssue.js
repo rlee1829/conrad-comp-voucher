@@ -12,6 +12,7 @@ CompApp.viewIssue = (function () {
   var state = CompApp.state;
   var operator = CompApp.operator;
   var blackoutEditor = null;
+  var catUserPicked = false; // true once the operator has explicitly clicked a 사유 카테고리 button — blocks further auto-suggestion from overriding their choice
 
   function records() { return CompApp.db.cache.records; }
 
@@ -44,11 +45,14 @@ CompApp.viewIssue = (function () {
     state.issueFam = f;
     document.querySelectorAll('#f-type button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.fam === f ? 'true' : 'false'); });
     if (f === 'HR') {
-      state.selectedCat = 'STAFF';
-      document.querySelectorAll('#f-cat button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.cat === 'STAFF' ? 'true' : 'false'); });
+      catUserPicked = true; applyCatSelection('STAFF', false);
       $('f-remark').placeholder = t('예: 201268 임서영 / Atrio Kitchen (사번·이름·부서)');
       $('f-req').value = $('f-req').value || operator.opLabel();
-    } else { $('f-remark').placeholder = t('추가 메모'); }
+    } else {
+      // HR을 떠나면 강제 지정을 풀어서, 새 타입에서 세부 목적 기반 자동 추천이 다시 동작하게 함.
+      if (catUserPicked && state.selectedCat === 'STAFF') { catUserPicked = false; applyCatSelection('', false); }
+      $('f-remark').placeholder = t('추가 메모');
+    }
     populatePurposePresets(); renderProductSelect(); renderSerialHint();
   }
   // right-side catalog menu — full issuable list; click to select, ✎ edit, ✕ delete
@@ -126,7 +130,24 @@ CompApp.viewIssue = (function () {
   $('f-issued').addEventListener('change', recalcValid);
   $('f-qty').addEventListener('input', renderSerialHint);
   $('f-serial').addEventListener('input', renderSerialHint);
-  document.querySelectorAll('#f-cat button').forEach(function (b) { b.addEventListener('click', function () { state.selectedCat = b.dataset.cat; document.querySelectorAll('#f-cat button').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); }); });
+  // 사유 카테고리 선택 반영 — auto=true는 세부목적 텍스트로부터의 자동 추천(아직 직접 고른 게
+  // 아니면 계속 덮어쓸 수 있음), auto=false는 버튼을 직접 클릭한 경우(그 뒤로는 자동 추천이
+  // 절대 덮어쓰지 않음 — catUserPicked로 잠금).
+  function applyCatSelection(cat, auto) {
+    state.selectedCat = cat;
+    document.querySelectorAll('#f-cat button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.cat === cat ? 'true' : 'false'); });
+    var hint = $('cathint');
+    if (hint) hint.textContent = auto ? t('세부 목적으로 자동 추천됨 — 직접 선택 시 고정됩니다.') : '';
+  }
+  document.querySelectorAll('#f-cat button').forEach(function (b) { b.addEventListener('click', function () { catUserPicked = true; applyCatSelection(b.dataset.cat, false); }); });
+  // 세부 목적을 입력할 때마다 키워드로 카테고리를 추천 — HR은 항상 STAFF로 고정이라 대상 아님,
+  // 이미 사람이 직접 고른 뒤에는(catUserPicked) 건드리지 않음. 매칭 실패 시 마지막 추천을
+  // 그대로 두고(깜빡임 방지), 매칭되면 그 값으로 갱신.
+  $('f-purpose').addEventListener('input', function () {
+    if (state.issueFam === 'HR' || catUserPicked) return;
+    var guess = CompApp.importMapper.suggestCategory(this.value);
+    if (guess && guess !== state.selectedCat) applyCatSelection(guess, true);
+  });
   $('f-type').addEventListener('click', function (e) { var b = e.target.closest('button[data-fam]'); if (!b) return; setIssueFam(b.dataset.fam); });
   $('prodMenu').addEventListener('click', function (e) {
     var ed = e.target.closest('.pedit'); if (ed) { productModal(CATALOG[ed.dataset.fam].find(function (x) { return x.id === ed.dataset.id; })); return; }
@@ -192,11 +213,10 @@ CompApp.viewIssue = (function () {
     $('f-mate').value = ''; $('f-remark').value = ''; $('f-gm').checked = false;
     applyRoleUI();
     blackoutEditor = CompApp.ui.wireBlackoutEditor('f-bo', $('f-blackout-editor'), [], getBlackouts);
-    state.selectedCat = ''; document.querySelectorAll('#f-cat button').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); }); $('formerr').textContent = '';
+    catUserPicked = false; applyCatSelection('', false); $('formerr').textContent = '';
     document.querySelectorAll('#f-type button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.fam === state.issueFam ? 'true' : 'false'); });
     if (state.issueFam === 'HR') {
-      state.selectedCat = 'STAFF';
-      document.querySelectorAll('#f-cat button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.cat === 'STAFF' ? 'true' : 'false'); });
+      catUserPicked = true; applyCatSelection('STAFF', false);
       $('f-remark').placeholder = t('예: 201268 임서영 / Atrio Kitchen (사번·이름·부서)');
     } else { $('f-remark').placeholder = t('추가 메모'); }
     renderProductSelect(); renderSerialHint();
@@ -215,6 +235,8 @@ CompApp.viewIssue = (function () {
     renderProdMenu(); populatePurposePresets(); applyRoleUI(); renderSerialHint();
     $('f-remark').placeholder = state.issueFam === 'HR' ? t('예: 201268 임서영 / Atrio Kitchen (사번·이름·부서)') : t('추가 메모');
     if (blackoutEditor && blackoutEditor.relabel) blackoutEditor.relabel();
+    var hint = $('cathint');
+    if (hint && hint.textContent) hint.textContent = t('세부 목적으로 자동 추천됨 — 직접 선택 시 고정됩니다.');
   }
 
   function getBlackoutTags() { return blackoutEditor ? blackoutEditor.getTags() : []; }

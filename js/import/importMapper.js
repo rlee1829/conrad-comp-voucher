@@ -44,6 +44,18 @@ CompApp.importMapper = (function () {
     }
     return { cat: 'VIP', needsReview: true };
   }
+  // Live-issuance variant (viewIssue.js, as the operator types 세부 목적) — same keyword table/
+  // priority as inferCategory(), but returns null on no match instead of falling back to VIP.
+  // VIP is the "nothing recognizable" catch-all; it should never be *suggested*, only chosen.
+  function suggestCategory(text) {
+    if (!text) return null;
+    var cats = Object.keys(CAT_KEYWORDS);
+    for (var i = 0; i < cats.length; i++) {
+      var pats = CAT_KEYWORDS[cats[i]];
+      for (var j = 0; j < pats.length; j++) if (pats[j].test(text)) return cats[i];
+    }
+    return null;
+  }
 
   // ---- date parsing: real Date objects (SheetJS w/ cellDates:true) or 'YYYY.MM.DD'/'YYYY-MM-DD' text ----
   // SheetJS builds date-only cells as a Date at LOCAL midnight — read the calendar fields with the
@@ -83,7 +95,7 @@ CompApp.importMapper = (function () {
   }
 
   return {
-    mapStatus: mapStatus, inferCategory: inferCategory, excelDateToStr: excelDateToStr,
+    mapStatus: mapStatus, inferCategory: inferCategory, suggestCategory: suggestCategory, excelDateToStr: excelDateToStr,
     extractAmount: extractAmount, appendReviewNote: appendReviewNote, joinNonEmpty: joinNonEmpty,
     cleanBlackoutText: cleanBlackoutText
   };
