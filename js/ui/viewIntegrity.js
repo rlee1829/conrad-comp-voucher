@@ -87,7 +87,7 @@ CompApp.viewIntegrity = (function () {
   });
 
   $('integBulkbarWrap') && $('integBulkbarWrap').addEventListener('click', function (e) {
-    if (e.target.closest('button[data-bulkclear]')) { selected = {}; renderBulkbar(); render(); return; }
+    if (e.target.closest('button[data-bulkclear]')) { selected = {}; render(); return; }
     var bc = e.target.closest('button[data-bulkconfirm]');
     if (bc) {
       var ids = Object.keys(selected).filter(function (id) { return selected[id]; });

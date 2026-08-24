@@ -89,7 +89,12 @@
   .shell{display:grid;grid-template-columns:246px minmax(0,1fr);min-height:100vh;}
   @media (max-width:880px){.shell{grid-template-columns:1fr;}.sidebar{position:static;height:auto;}}
 
-  .sidebar{background:var(--side-bg);color:var(--side-fg);padding:22px 15px;display:flex;flex-direction:column;gap:3px;position:sticky;top:0;height:100vh;border-right:1px solid var(--side-border);}
+  /* 사이드바는 100vh로 고정폭이지만, 내용 높이(메뉴+모드토글+명단관리+디자인토글+담당자카드)가
+     화면보다 큰 PC(작은 노트북, 낮은 배율 등)에서는 넘치는 부분이 어디로도 스크롤되지 않고
+     그냥 잘려서 안 보였다(메뉴 항목이나 담당자 카드가 화면 밖으로 사라짐). 특정 해상도에
+     맞춰 여백을 손보는 대신, 사이드바 자체가 내부 스크롤을 갖게 해서 어떤 화면 크기에서도
+     전체 메뉴가 항상 도달 가능하도록 함 — 화면이 넉넉하면 스크롤바 자체가 안 보임. */
+  .sidebar{background:var(--side-bg);color:var(--side-fg);padding:22px 15px;display:flex;flex-direction:column;gap:3px;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--side-border);}
   .sb-brand{padding:0 8px 6px;cursor:pointer;border-radius:9px;}
   .sb-brand:hover{background:var(--side-hover);}
   .sb-brand .eyebrow{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700;}
@@ -335,8 +340,11 @@
   .issue-layout>.panel>.pbody{flex:1;}
   /* form panel stretches to match the product-menu panel's height (both fit one screen, no scroll) */
   #view-issue .prodmenu-body{max-height:calc(100vh - 176px);}
-  /* new-issue form: compact but comfortable — fits one screen without scrolling */
-  #view-issue .pbody{padding:5px 14px;}
+  /* new-issue form: compact but comfortable — fits one screen on the resolutions this was tuned
+     for, but on a shorter/narrower window the field stack can still be taller than the space
+     available (matched to the catalog panel's height). overflow-y:auto is the safety net so it
+     scrolls internally instead of the bottom fields/buttons silently clipping off-screen. */
+  #view-issue .pbody{padding:5px 14px;overflow-y:auto;}
   .issue-form{gap:0 18px;height:100%;align-content:space-between;}
   .issue-form .field{margin-bottom:6px;}
   .issue-form .field>label{font-size:10.5px;margin-bottom:1px;}

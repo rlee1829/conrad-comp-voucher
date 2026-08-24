@@ -13,6 +13,7 @@ CompApp.viewIssue = (function () {
   var operator = CompApp.operator;
   var blackoutEditor = null;
   var catUserPicked = false; // true once the operator has explicitly clicked a 사유 카테고리 button — blocks further auto-suggestion from overriding their choice
+  var catForcedByHR = false; // true only while the STAFF lock came from switching to HR (not a real click) — lets leaving HR safely unlock without clobbering a genuine manual STAFF pick made outside HR
 
   function records() { return CompApp.db.cache.records; }
 
@@ -45,12 +46,18 @@ CompApp.viewIssue = (function () {
     state.issueFam = f;
     document.querySelectorAll('#f-type button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.fam === f ? 'true' : 'false'); });
     if (f === 'HR') {
+      // STAFF가 이미 진짜 사람이 고른 값이었다면(FB/RM에서 직접 클릭, catForcedByHR===false)
+      // 그 사실을 덮어쓰지 않는다 — 안 그러면 HR을 잠깐 들렀다 나올 때 원래 하던 선택이
+      // 지워진다(HR 강제 지정과 우연히 같은 값이라 구분이 안 갔던 게 버그였음).
+      var alreadyGenuineStaff = catUserPicked && !catForcedByHR && state.selectedCat === 'STAFF';
+      if (!alreadyGenuineStaff) catForcedByHR = true;
       catUserPicked = true; applyCatSelection('STAFF', false);
       $('f-remark').placeholder = t('예: 201268 임서영 / Atrio Kitchen (사번·이름·부서)');
       $('f-req').value = $('f-req').value || operator.opLabel();
     } else {
       // HR을 떠나면 강제 지정을 풀어서, 새 타입에서 세부 목적 기반 자동 추천이 다시 동작하게 함.
-      if (catUserPicked && state.selectedCat === 'STAFF') { catUserPicked = false; applyCatSelection('', false); }
+      // catForcedByHR로만 판단 — FB/RM에서 직접 STAFF를 고른 경우(정당한 선택)는 안 풀림.
+      if (catForcedByHR) { catUserPicked = false; catForcedByHR = false; applyCatSelection('', false); }
       $('f-remark').placeholder = t('추가 메모');
     }
     populatePurposePresets(); renderProductSelect(); renderSerialHint();
@@ -139,7 +146,7 @@ CompApp.viewIssue = (function () {
     var hint = $('cathint');
     if (hint) hint.textContent = auto ? t('세부 목적으로 자동 추천됨 — 직접 선택 시 고정됩니다.') : '';
   }
-  document.querySelectorAll('#f-cat button').forEach(function (b) { b.addEventListener('click', function () { catUserPicked = true; applyCatSelection(b.dataset.cat, false); }); });
+  document.querySelectorAll('#f-cat button').forEach(function (b) { b.addEventListener('click', function () { catUserPicked = true; catForcedByHR = false; applyCatSelection(b.dataset.cat, false); }); });
   // 세부 목적을 입력할 때마다 키워드로 카테고리를 추천 — HR은 항상 STAFF로 고정이라 대상 아님,
   // 이미 사람이 직접 고른 뒤에는(catUserPicked) 건드리지 않음. 매칭 실패 시 마지막 추천을
   // 그대로 두고(깜빡임 방지), 매칭되면 그 값으로 갱신.
@@ -213,10 +220,10 @@ CompApp.viewIssue = (function () {
     $('f-mate').value = ''; $('f-remark').value = ''; $('f-gm').checked = false;
     applyRoleUI();
     blackoutEditor = CompApp.ui.wireBlackoutEditor('f-bo', $('f-blackout-editor'), [], getBlackouts);
-    catUserPicked = false; applyCatSelection('', false); $('formerr').textContent = '';
+    catUserPicked = false; catForcedByHR = false; applyCatSelection('', false); $('formerr').textContent = '';
     document.querySelectorAll('#f-type button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.fam === state.issueFam ? 'true' : 'false'); });
     if (state.issueFam === 'HR') {
-      catUserPicked = true; applyCatSelection('STAFF', false);
+      catUserPicked = true; catForcedByHR = true; applyCatSelection('STAFF', false);
       $('f-remark').placeholder = t('예: 201268 임서영 / Atrio Kitchen (사번·이름·부서)');
     } else { $('f-remark').placeholder = t('추가 메모'); }
     renderProductSelect(); renderSerialHint();
