@@ -209,8 +209,16 @@ CompApp.i18n = (function () {
     '장 · ': ' · ',
 
     // ---- integrity ----
-    '증서번호 중복, Mate 승인번호 누락(활성 상태), 만료일이 발행일보다 빠른 경우, 만료됐는데 아직 활성 상태인 건을 자동으로 점검합니다. 증서번호를 클릭하면 상세 정보로 이동합니다.':
-      'Automatically checks for duplicate serial numbers, missing Mate approval numbers (on active vouchers), expiry dates earlier than issue dates, and vouchers still active past expiry. Click a serial number to view its details.',
+    '증서번호 중복, Mate 승인번호 누락(활성 상태), 만료일이 발행일보다 빠른 경우, 만료됐는데 아직 활성 상태인 건, 가져오기 시 사유 카테고리를 자동추정한 건을 자동으로 점검합니다. 증서번호를 클릭하면 상세 정보로 이동합니다. 사유 카테고리 항목은 확인 후 [확인]을 누르면 목록에서 사라집니다.':
+      'Automatically checks for duplicate serial numbers, missing Mate approval numbers (on active vouchers), expiry dates earlier than issue dates, vouchers still active past expiry, and records whose reason category was auto-guessed on import. Click a serial number to view its details. For reason-category items, click [Confirm] after reviewing to remove them from the list.',
+    '사유 카테고리 미확인': 'Reason Category Unverified',
+    '가져오기 시 사유 카테고리를 자동추정함 — 실제 사유가 맞는지 확인 필요': 'Reason category was auto-guessed on import — confirm it actually matches',
+    '사유 카테고리 검토 확인': 'Confirm Reason Category Review',
+    '건의 검토 표시를 제거합니다.': ' item(s) will have the review flag removed.',
+    '사유 카테고리를 확인했다는 표시로, 정합성 점검 목록에서 제거합니다. 카테고리 자체를 바꾸려면 각 건을 [수정]으로 먼저 변경하세요.':
+      'Marks these as reviewed and removes them from the Integrity Check list. To change the category itself, use [Edit] on each record first.',
+    '건 검토 확인 완료': ' item(s) marked reviewed',
+    '선택 확인': 'Confirm Selected',
     '정합성 점검': 'Integrity Check',
     '문제유형': 'Issue Type',
     '설명': 'Description',
@@ -484,6 +492,7 @@ CompApp.i18n = (function () {
     // ---- audit / history action labels (display-only translation of stored KO markers) ----
     '가져오기': 'Import',
     '가져오기 갱신': 'Import Update',
+    '검토완료': 'Review Confirmed',
     '되돌리기': 'Undo',
     '되돌리기 완료': 'Undo complete',
     '자동 만료': 'Auto-expire',

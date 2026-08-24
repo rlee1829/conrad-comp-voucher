@@ -82,6 +82,24 @@ CompApp.schema = (function () {
     return REVIEW_MARKER_ONLY_RE.test(remark) ? '' : remark;
   }
 
+  // Removes one specific reason from the "[가져오기 검토 필요: r1; r2; ...]" bracket appended by
+  // appendReviewNote() (importMapper.js) — used when a reviewer confirms just that one concern
+  // (e.g. 정합성 점검's "사유 카테고리 자동추정 불확실" queue) without disturbing the rest of the
+  // remark or any other still-open reasons in the same bracket. No-op if the reason isn't present.
+  var REVIEW_MARKER_RE = /\[가져오기 검토 필요: ([^\]]*)\]/;
+  function removeReviewReason(remark, reasonText) {
+    if (!remark) return remark;
+    var m = REVIEW_MARKER_RE.exec(remark);
+    if (!m) return remark;
+    var reasons = m[1].split('; ').map(function (s) { return s.trim(); }).filter(Boolean);
+    var idx = reasons.indexOf(reasonText);
+    if (idx === -1) return remark;
+    reasons.splice(idx, 1);
+    var before = remark.slice(0, m.index), after = remark.slice(m.index + m[0].length);
+    if (reasons.length) return (before + '[가져오기 검토 필요: ' + reasons.join('; ') + ']' + after).trim();
+    return (before.replace(/\s*·\s*$/, '') + after).trim();
+  }
+
   var CATALOG_KEY = 'compVoucherCatalog';
   function saveCatalog() {
     try { localStorage.setItem(CATALOG_KEY, JSON.stringify(CATALOG)); } catch (e) {}
@@ -164,6 +182,7 @@ CompApp.schema = (function () {
     catLabel: catLabel, statusLabel: statusLabel, pickupLabel: pickupLabel,
     PICKUP_LABEL: PICKUP_LABEL, PICKUP_CLASS: PICKUP_CLASS, pickupState: pickupState, wasImported: wasImported,
     prodById: prodById, prod: prod, prodName: prodName, productFam: productFam, recordProductLabel: recordProductLabel, displayRemark: displayRemark,
+    removeReviewReason: removeReviewReason,
     saveCatalog: saveCatalog, loadCatalog: loadCatalog, applyCloudCatalog: applyCloudCatalog, saveRetired: saveRetired,
     getRetired: function () { return retired; },
     uid: uid, money: money, esc: esc, todayStr: todayStr, normDate: normDate, validDate: validDate,

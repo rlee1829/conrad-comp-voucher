@@ -560,6 +560,29 @@ CompApp.workflow = (function () {
     setTimeout(function () { window.print(); }, 50);
   }
 
+  // D: 정합성 점검의 "사유 카테고리 미확인" 큐 전용 — 가져오기 시 자동추정된 사유 카테고리를
+  // 사람이 확인했다는 표시로 remark의 해당 검토 사유만 지운다(다른 검토 사유나 원래 비고는 그대로
+  // 유지). 카테고리 값 자체를 바꾸는 건 아니다 — 바꾸려면 [수정]을 따로 써야 함.
+  function confirmCatReviewModal(list) {
+    modal({
+      title: t('사유 카테고리 검토 확인'), sub: list.length + t('건의 검토 표시를 제거합니다.'),
+      bodyHtml: '<div class="modal-hint">' + t('사유 카테고리를 확인했다는 표시로, 정합성 점검 목록에서 제거합니다. 카테고리 자체를 바꾸려면 각 건을 [수정]으로 먼저 변경하세요.') + '</div>',
+      buttons: [{ label: t2('취소', 'Cancel') }, {
+        label: t('확인'), cls: 'btn-primary', onClick: function () {
+          var before = snapshotBefore(list);
+          var batchId = schema.uid();
+          list.forEach(function (r) {
+            r.remark = schema.removeReviewReason(r.remark, '사유 카테고리 자동추정 불확실');
+            logHist(r, '검토완료', '사유 카테고리 자동추정 표시 확인 처리', batchId);
+          });
+          persist(list);
+          CompApp.router.renderCounts(); CompApp.router.refresh();
+          finishAction('restore', before, '검토확인 (' + list.length + '건)', list.length + t('건 검토 확인 완료'));
+        }
+      }]
+    });
+  }
+
   // 자동 만료 처리: 상태가 ACTIVE인데 만료일이 오늘보다 지난 건을 자동으로 EXPIRED로 전환.
   // 앱 로드 시(app.js boot) 매번 한 번 실행되어, 정합성 점검의 "만료 미처리" 항목이 쌓이지 않게 한다.
   function autoExpireStale() {
@@ -577,6 +600,7 @@ CompApp.workflow = (function () {
     approveModal: approveModal, rejectModal: rejectModal, useModal: useModal, extendModal: extendModal, voidModal: voidModal,
     fieldSetModal: fieldSetModal, editModal: editModal, showDetail: showDetail, printRecord: printRecord,
     markPrintedModal: markPrintedModal, notifyPickupModal: notifyPickupModal, markPickedUpModal: markPickedUpModal,
+    confirmCatReviewModal: confirmCatReviewModal,
     recById: recById, selIds: selIds, autoExpireStale: autoExpireStale
   };
 })();

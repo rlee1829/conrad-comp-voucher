@@ -41,28 +41,28 @@ CompApp.ui = (function () {
   // disappears before the user decides whether to undo it.
   function toast(m, opts) {
     opts = opts || {};
-    var t = $('toast');
+    var el = $('toast');
     var html = '<span class="toast-msg">' + esc(m) + '</span>';
     if (opts.actionLabel) html += '<button type="button" class="toast-action">' + esc(opts.actionLabel) + '</button><button type="button" class="toast-confirm">' + t('확인') + '</button>';
-    t.innerHTML = html;
-    t.classList.toggle('has-action', !!opts.actionLabel);
-    t.classList.add('show');
-    clearTimeout(t._t);
+    el.innerHTML = html;
+    el.classList.toggle('has-action', !!opts.actionLabel);
+    el.classList.add('show');
+    clearTimeout(el._t);
     if (opts.actionLabel) {
       if (opts.onAction) {
-        t.querySelector('.toast-action').addEventListener('click', function (e) {
+        el.querySelector('.toast-action').addEventListener('click', function (e) {
           e.stopPropagation();
-          t.classList.remove('show');
+          el.classList.remove('show');
           opts.onAction();
         });
       }
-      t.querySelector('.toast-confirm').addEventListener('click', function (e) {
+      el.querySelector('.toast-confirm').addEventListener('click', function (e) {
         e.stopPropagation();
-        t.classList.remove('show');
+        el.classList.remove('show');
       });
       // no auto-dismiss — stays until 되돌리기 or 확인 is clicked
     } else {
-      t._t = setTimeout(function () { t.classList.remove('show'); }, 2200);
+      el._t = setTimeout(function () { el.classList.remove('show'); }, 2200);
     }
   }
 

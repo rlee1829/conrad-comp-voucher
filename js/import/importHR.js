@@ -8,7 +8,7 @@ CompApp.importHR = (function () {
   "use strict";
   var schema = CompApp.schema, mapper = CompApp.importMapper;
   var HEADER_ROW_INDEX = 6, DATA_START_INDEX = 7;
-  var REQ_LABEL = 'HR (Team Member Relations)'; // no per-row requester column in the source sheet
+  var REQ_LABEL = 'HR'; // no per-row requester column in the source sheet, no person name either — keep it bare
 
   // Signature check so the pipeline never blindly assumes a single-sheet workbook is the HR file.
   function looksLikeHRSheet(rows) {
