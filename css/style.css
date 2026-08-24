@@ -1,8 +1,7 @@
   /* ============ Design tokens ============
-     Two design systems selectable at runtime via data-design:
-       (default) "bronze" — warm cream + bronze, dark sidebar
-       "slate"           — cool gray + slate-blue, light sidebar (clean/professional)
-     Each supports light & dark. Semantic status colors are shared. */
+     Warm cream + bronze, dark sidebar. Light & dark theme variants. Semantic status colors
+     shared. (A second "slate" design was selectable here until 2026-08-25 — removed as unused;
+     restorable from git history if ever wanted again.) */
   :root {
     --bg:#f6f5f2; --surface:#fff; --surface-2:#faf9f6;
     --ink:#1e1c19; --ink-2:#55504a; --ink-3:#8a847c;
@@ -59,29 +58,6 @@
   :root[data-theme="dark"]{--hr:#d98aa8;--hr-soft:#301e26;}
   :root[data-theme="light"]{--hr:#a24d6e;--hr-soft:#f6e4ec;}
 
-  /* ===== SLATE design: light (clean/professional, light sidebar) ===== */
-  :root[data-design="slate"], :root[data-design="slate"][data-theme="light"]{
-    --bg:#eef1f4;--surface:#fff;--surface-2:#f6f8fa;
-    --ink:#1a2129;--ink-2:#48525d;--ink-3:#8592a0;--line:#e2e7ec;--line-2:#cfd6dd;
-    --accent:#37597a;--accent-ink:#294460;--accent-soft:#e4edf4;
-    --side-bg:#fbfcfd;--side-fg:#2c3742;--side-dim:#8592a0;
-    --side-hover:#eef2f6;--side-border:#e2e7ec;--side-card:#f2f6f9;--side-brand:#1a2129;
-    --shadow:0 1px 2px rgba(20,30,45,.05),0 8px 24px rgba(20,30,45,.06);}
-  /* ===== SLATE design: dark ===== */
-  @media (prefers-color-scheme: dark){:root[data-design="slate"]{
-    --bg:#12171d;--surface:#1a222b;--surface-2:#161d24;
-    --ink:#e8edf2;--ink-2:#aab6c2;--ink-3:#79858f;--line:#28323c;--line-2:#344049;
-    --accent:#6f9fc9;--accent-ink:#8bb4d8;--accent-soft:#1d2b38;
-    --side-bg:#0f151b;--side-fg:#cdd7e0;--side-dim:#6b7883;
-    --side-hover:rgba(255,255,255,.05);--side-border:#233039;--side-card:rgba(255,255,255,.05);--side-brand:#fff;
-    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);}}
-  :root[data-design="slate"][data-theme="dark"]{
-    --bg:#12171d;--surface:#1a222b;--surface-2:#161d24;
-    --ink:#e8edf2;--ink-2:#aab6c2;--ink-3:#79858f;--line:#28323c;--line-2:#344049;
-    --accent:#6f9fc9;--accent-ink:#8bb4d8;--accent-soft:#1d2b38;
-    --side-bg:#0f151b;--side-fg:#cdd7e0;--side-dim:#6b7883;
-    --side-hover:rgba(255,255,255,.05);--side-border:#233039;--side-card:rgba(255,255,255,.05);--side-brand:#fff;
-    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);}
 
   *{box-sizing:border-box;}
   html{font-size:16px;}

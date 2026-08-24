@@ -34,7 +34,6 @@ CompApp.i18n = (function () {
     '담당자 이름이 승인자·관리자 명단에 있으면 자동으로 해당 모드가 적용됩니다.': 'If your name is on the approver/admin list, that mode is applied automatically.',
     '승인자 명단 관리…': 'Manage approver list…',
     '관리자 명단 관리…': 'Manage admin list…',
-    '디자인': 'Design',
     '담당자': 'Operator',
     '미등록': 'Not set',
     '클릭하여 변경': 'Click to change',

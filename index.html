@@ -4,17 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COMP Voucher Manager · Conrad Seoul</title>
-<link rel="stylesheet" href="css/style.css?v=21">
+<link rel="stylesheet" href="css/style.css?v=22">
 </head>
 <body>
 <div class="shell">
   <aside class="sidebar">
     <div class="sb-brand" id="brandHome" data-i18n-title="새로고침 · 개요로 이동" title="새로고침 · 개요로 이동"><div class="eyebrow">Conrad Seoul</div><h1>COMP Voucher</h1></div>
-    <div class="sb-sec" data-i18n="언어">언어</div>
-    <div class="design-switch" id="langSwitch">
-      <button type="button" data-lang="ko" aria-pressed="true">한국어</button>
-      <button type="button" data-lang="en" aria-pressed="false">English</button>
-    </div>
     <div class="sb-sec" data-i18n="메뉴">메뉴</div>
     <div class="navitem" data-view="overview" aria-current="true"><span class="ic">◧</span> <span data-i18n="개요">개요</span></div>
     <div class="navitem" data-view="list"><span class="ic">▤</span> <span data-i18n="바우처 목록">바우처 목록</span> <span class="n" id="nav-list-n"></span></div>
@@ -34,10 +29,10 @@
     <div class="sb-hint" data-i18n="담당자 이름이 승인자·관리자 명단에 있으면 자동으로 해당 모드가 적용됩니다.">담당자 이름이 승인자·관리자 명단에 있으면 자동으로 해당 모드가 적용됩니다.</div>
     <button type="button" class="sb-link" id="btnApproverManage" data-i18n="승인자 명단 관리…">승인자 명단 관리…</button>
     <button type="button" class="sb-link" id="btnAdminManage" data-i18n="관리자 명단 관리…">관리자 명단 관리…</button>
-    <div class="sb-sec" data-i18n="디자인">디자인</div>
-    <div class="design-switch" id="designSwitch">
-      <button data-design="bronze" aria-pressed="true">Bronze</button>
-      <button data-design="slate" aria-pressed="false">Slate</button>
+    <div class="sb-sec" data-i18n="언어">언어</div>
+    <div class="design-switch" id="langSwitch">
+      <button type="button" data-lang="ko" aria-pressed="true">한국어</button>
+      <button type="button" data-lang="en" aria-pressed="false">English</button>
     </div>
     <div class="op-card" id="opCard"><div class="l" data-i18n="담당자">담당자</div><div class="who" id="opWho">—</div><div class="chg" data-i18n="클릭하여 변경">클릭하여 변경</div></div>
     <button class="sb-theme" id="themeBtn" type="button">◐ <span data-i18n="라이트/다크">라이트/다크</span></button>
@@ -271,28 +266,28 @@
 
 <script src="js/lib/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/config.js?v=21"></script>
-<script src="js/metaStore.js?v=21"></script>
-<script src="js/schema.js?v=21"></script>
-<script src="js/i18n.js?v=21"></script>
-<script src="js/ui/components.js?v=21"></script>
-<script src="js/operator.js?v=21"></script>
-<script src="js/db.js?v=21"></script>
-<script src="js/db-cloud.js?v=21"></script>
-<script src="js/ui/router.js?v=21"></script>
-<script src="js/import/importMapper.js?v=21"></script>
-<script src="js/import/importCompFB.js?v=21"></script>
-<script src="js/import/importCompRM.js?v=21"></script>
-<script src="js/import/importHR.js?v=21"></script>
-<script src="js/import/importPipeline.js?v=21"></script>
-<script src="js/export/exportWorkbook.js?v=21"></script>
-<script src="js/workflow/voucherWorkflow.js?v=21"></script>
-<script src="js/ui/viewOverview.js?v=21"></script>
-<script src="js/ui/viewList.js?v=21"></script>
-<script src="js/ui/viewIssue.js?v=21"></script>
-<script src="js/ui/viewIntegrity.js?v=21"></script>
-<script src="js/ui/viewImportExport.js?v=21"></script>
-<script src="js/ui/viewAuditLog.js?v=21"></script>
-<script src="js/app.js?v=21"></script>
+<script src="js/config.js?v=22"></script>
+<script src="js/metaStore.js?v=22"></script>
+<script src="js/schema.js?v=22"></script>
+<script src="js/i18n.js?v=22"></script>
+<script src="js/ui/components.js?v=22"></script>
+<script src="js/operator.js?v=22"></script>
+<script src="js/db.js?v=22"></script>
+<script src="js/db-cloud.js?v=22"></script>
+<script src="js/ui/router.js?v=22"></script>
+<script src="js/import/importMapper.js?v=22"></script>
+<script src="js/import/importCompFB.js?v=22"></script>
+<script src="js/import/importCompRM.js?v=22"></script>
+<script src="js/import/importHR.js?v=22"></script>
+<script src="js/import/importPipeline.js?v=22"></script>
+<script src="js/export/exportWorkbook.js?v=22"></script>
+<script src="js/workflow/voucherWorkflow.js?v=22"></script>
+<script src="js/ui/viewOverview.js?v=22"></script>
+<script src="js/ui/viewList.js?v=22"></script>
+<script src="js/ui/viewIssue.js?v=22"></script>
+<script src="js/ui/viewIntegrity.js?v=22"></script>
+<script src="js/ui/viewImportExport.js?v=22"></script>
+<script src="js/ui/viewAuditLog.js?v=22"></script>
+<script src="js/app.js?v=22"></script>
 </body>
 </html>

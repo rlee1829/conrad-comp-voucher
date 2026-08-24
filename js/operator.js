@@ -9,7 +9,7 @@ CompApp.operator = (function () {
   var DEFAULT_DEPTS = CompApp.schema.DEFAULT_DEPTS;
 
   // ---- operator identity ----
-  var OP_KEY = 'compVoucherOperator', DEPT_KEY = 'compVoucherDepts', DESIGN_KEY = 'compVoucherDesign';
+  var OP_KEY = 'compVoucherOperator', DEPT_KEY = 'compVoucherDepts';
   function getOp() { try { return JSON.parse(localStorage.getItem(OP_KEY) || 'null'); } catch (e) { return null; } }
   function opLabel() { var o = getOp(); return o ? (o.dept ? o.name + ' (' + o.dept + ')' : o.name) : ''; }
   function actor() { return opLabel() || t('담당자'); }
@@ -146,14 +146,6 @@ CompApp.operator = (function () {
   }
   $('btnAdminManage').addEventListener('click', adminManageModal);
 
-
-  // ---- design switch ----
-  function applyDesign(d) {
-    document.documentElement.setAttribute('data-design', d);
-    document.querySelectorAll('#designSwitch button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.design === d ? 'true' : 'false'); });
-    localStorage.setItem(DESIGN_KEY, d);
-  }
-  $('designSwitch').addEventListener('click', function (e) { var b = e.target.closest('button[data-design]'); if (!b) return; applyDesign(b.dataset.design); });
   $('themeBtn').addEventListener('click', function () {
     var root = document.documentElement, cur = root.getAttribute('data-theme');
     if (!cur) cur = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -161,7 +153,6 @@ CompApp.operator = (function () {
   });
 
   function init() {
-    applyDesign(localStorage.getItem(DESIGN_KEY) || 'bronze');
     renderOpCard();
     refreshRole();   // 공유 명단(metaStore)이 로딩된 뒤 자동 판정을 다시 돌린다
     if (!getOp()) openOpModal();
@@ -173,6 +164,6 @@ CompApp.operator = (function () {
     refreshRole: refreshRole, canApprove: canApprove, canAdmin: canAdmin,
     getApprovers: getApprovers, isApproverName: isApproverName,
     getAdmins: getAdmins, isAdmin: isAdmin,
-    DESIGN_KEY: DESIGN_KEY, applyDesign: applyDesign, init: init
+    init: init
   };
 })();
