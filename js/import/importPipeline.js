@@ -63,5 +63,33 @@ CompApp.importPipeline = (function () {
     return out;
   }
 
-  return { importFile: importFile };
+  // Lightweight pre-check for doImport()'s duplicate-warning: just the serial numbers the file
+  // would produce (same sheet-detection + column-0 + whitespace-strip as the real importers
+  // below), without building records or touching CompApp.db.cache. Lets the caller compare
+  // against what's already loaded and warn *before* committing anything — this pipeline has no
+  // update/merge mode, every row always becomes a brand-new record with a fresh id.
+  function previewSerials(file) {
+    return readFile(file).then(function (buf) {
+      var wb = XLSX.read(buf, { type: 'array', cellDates: true });
+      var serials = [];
+      function collect(ws, startRow) {
+        var rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        for (var i = startRow; i < rows.length; i++) {
+          var v = (rows[i] || [])[0];
+          if (v == null || String(v).trim() === '') continue;
+          serials.push(String(v).trim().replace(/\s+/g, ''));
+        }
+      }
+      if (wb.Sheets['EO_FB']) collect(wb.Sheets['EO_FB'], 1);
+      if (wb.Sheets['EO_RM']) collect(wb.Sheets['EO_RM'], 1);
+      if (!serials.length && wb.SheetNames.length === 1) {
+        var ws = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        if (CompApp.importHR.looksLikeHRSheet(rows)) collect(ws, 7);
+      }
+      return serials;
+    });
+  }
+
+  return { importFile: importFile, previewSerials: previewSerials };
 })();

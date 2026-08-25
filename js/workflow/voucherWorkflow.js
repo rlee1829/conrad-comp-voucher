@@ -601,6 +601,6 @@ CompApp.workflow = (function () {
     fieldSetModal: fieldSetModal, editModal: editModal, showDetail: showDetail, printRecord: printRecord,
     markPrintedModal: markPrintedModal, notifyPickupModal: notifyPickupModal, markPickedUpModal: markPickedUpModal,
     confirmCatReviewModal: confirmCatReviewModal,
-    recById: recById, selIds: selIds, autoExpireStale: autoExpireStale
+    recById: recById, selIds: selIds, autoExpireStale: autoExpireStale, pushAuditEntry: pushAuditEntry
   };
 })();
