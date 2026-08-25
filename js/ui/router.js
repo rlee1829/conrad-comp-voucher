@@ -42,6 +42,7 @@ CompApp.router = (function () {
     else if (v === 'integrity') { $('viewTitle').textContent = famN + ' ' + t('정합성 점검'); $('viewDesc').textContent = t('데이터 이상 여부 자동 점검'); }
     else if (v === 'importexport') { $('viewTitle').textContent = t('가져오기 / 내보내기'); $('viewDesc').textContent = t('엑셀 대장 일괄 등록 · 현재 필터 내보내기'); }
     else if (v === 'auditlog') { $('viewTitle').textContent = t('감사 로그'); $('viewDesc').textContent = t('전체 바우처에 걸친 작업 이력'); }
+    else if (v === 'guide') { $('viewTitle').textContent = t('사용자 가이드'); $('viewDesc').textContent = t('요청자 · 승인자 · 관리자 모드별 기능 안내'); }
   }
   function go(v) {
     if (v === 'importexport' && CompApp.operator && !CompApp.operator.isAdmin()) {
@@ -53,8 +54,8 @@ CompApp.router = (function () {
     if (v === 'list') state.listOpts = null;
     state.view = v; state.selected = {};
     document.querySelectorAll('.navitem').forEach(function (n) { n.setAttribute('aria-current', n.dataset.view === v ? 'true' : 'false'); });
-    ['overview', 'list', 'issue', 'integrity', 'importexport', 'auditlog'].forEach(function (k) { $('view-' + k).classList.toggle('active', k === v); });
-    $('scopeSeg').style.display = (v === 'issue') ? 'none' : '';
+    ['overview', 'list', 'issue', 'integrity', 'importexport', 'auditlog', 'guide'].forEach(function (k) { $('view-' + k).classList.toggle('active', k === v); });
+    $('scopeSeg').style.display = (v === 'issue' || v === 'guide') ? 'none' : '';
     if (v === 'issue' && state.fam !== 'ALL') state.issueFam = state.fam;
     renderTitle();
     if (v === 'overview') CompApp.viewOverview.render();

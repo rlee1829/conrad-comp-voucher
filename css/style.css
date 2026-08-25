@@ -387,6 +387,24 @@
   .bo-tag button:hover{background:rgba(0,0,0,.08);}
   @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
 
+  /* guide view: role tags + numbered flow steps, built from existing tokens (no new colors) */
+  #view-guide .phead h3{display:flex;align-items:center;gap:9px;}
+  #view-guide .roletag{display:inline-block;font-size:10.5px;font-weight:680;padding:2.5px 9px;border-radius:20px;letter-spacing:.02em;white-space:nowrap;}
+  #view-guide .rt-req{background:var(--pend-soft);color:var(--pend);}
+  #view-guide .rt-appr{background:var(--ok-soft);color:var(--ok);}
+  #view-guide .rt-admin{background:var(--accent-soft);color:var(--accent-ink);}
+  #view-guide th.rt-req-h{color:var(--pend);} #view-guide th.rt-appr-h{color:var(--ok);} #view-guide th.rt-admin-h{color:var(--accent-ink);}
+  #view-guide .gsteps{list-style:none;margin:0;padding:0;counter-reset:gstep;}
+  #view-guide .gsteps li{counter-increment:gstep;position:relative;padding:0 0 14px 30px;border-left:2px solid var(--line);}
+  #view-guide .gsteps li:last-child{border-color:transparent;padding-bottom:0;}
+  #view-guide .gsteps li::before{content:counter(gstep);position:absolute;left:-13px;top:-1px;width:24px;height:24px;border-radius:50%;background:var(--surface);border:2px solid var(--gs-c,var(--accent));color:var(--gs-c,var(--accent-ink));font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;}
+  #view-guide .gs-req{--gs-c:var(--pend);} #view-guide .gs-appr{--gs-c:var(--ok);} #view-guide .gs-admin{--gs-c:var(--accent-ink);}
+  #view-guide .gsteps .gt{font-weight:640;font-size:13.5px;margin-bottom:2px;}
+  #view-guide .gsteps .gd{font-size:12.5px;color:var(--ink-2);line-height:1.55;}
+  #view-guide .gsteps .gd b{color:var(--ink);}
+  #view-guide .gnote{font-size:12px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;padding:9px 11px;margin-top:10px;}
+  #view-guide .minitable th.num,#view-guide .minitable td.num{text-align:center;}
+
   /* E: import/export view + print confirmation slip */
   .ie-result{font-size:13.5px;line-height:1.7;}
   #print-slip{display:none;}
