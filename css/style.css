@@ -388,10 +388,11 @@
   @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
 
   /* guide view: role tags + numbered flow steps, built from existing tokens (no new colors).
-     main has no width cap elsewhere (the list/issue views want the space), but a short step
-     sentence wraps at roughly half a wide monitor's width, leaving a big empty gutter on the
-     right of each full-bleed panel — cap the guide's own reading measure instead. */
-  #view-guide{max-width:860px;}
+     Keep each panel full-bleed (matches every other view — capping the box itself read as
+     the panel "sticking to the left" on a wide monitor), but pad its *content* in from both
+     edges by an amount that grows with the window, so the readable text column centers
+     around ~780px instead of hugging the left edge of a very wide box. */
+  #view-guide .panel>.phead,#view-guide .panel>.pbody{padding-left:max(18px,calc((100% - 780px) / 2));padding-right:max(18px,calc((100% - 780px) / 2));}
   #view-guide .phead h3{display:flex;align-items:center;gap:9px;}
   #view-guide .roletag{display:inline-block;font-size:10.5px;font-weight:680;padding:2.5px 9px;border-radius:20px;letter-spacing:.02em;white-space:nowrap;}
   #view-guide .rt-req{background:var(--pend-soft);color:var(--pend);}
