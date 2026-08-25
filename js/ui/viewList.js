@@ -69,15 +69,6 @@ CompApp.viewList = (function () {
     });
     return rows;
   }
-  // 픽업 단계 뱃지 — 상태 뱃지 옆에 작게. 해당 없는 건(이관 이력 등)엔 아무것도 안 붙인다.
-  function pickupBadge(r) {
-    var p = schema.pickupState(r);
-    if (!p) return '';
-    var tip = p === 'TOPICKUP' ? (t('인쇄 ') + (r.printedAt || '') + (r.notifiedAt ? t(' · 알림 ') + r.notifiedAt : t(' · 알림 전')))
-      : p === 'PICKED' ? (t('픽업 ') + (r.pickedUpAt || '') + (r.pickedUpBy ? t(' · ') + r.pickedUpBy : ''))
-        : t('승인됨 · 인쇄 후 [인쇄완료] 표시 필요');
-    return ' <span class="pkbadge ' + schema.PICKUP_CLASS[p] + '" title="' + esc(tip) + '">' + schema.pickupLabel(p) + '</span>';
-  }
   function th(key, label, cls) {
     var arr = state.sortKey === key ? '<span class="arr">' + (state.sortDir === 'asc' ? '▲' : '▼') + '</span>' : '';
     return '<th class="sortable' + (cls ? ' ' + cls : '') + '" data-sort="' + key + '">' + label + arr + '</th>';
@@ -88,7 +79,7 @@ CompApp.viewList = (function () {
     rs.forEach(function (r) { by[r.status]++; });
     var data = [
       { k: t('총 발행'), v: rs.length, f: '' }, { k: t('승인대기'), v: by.PENDING, f: 'PENDING' }, { k: t('활성'), v: by.ACTIVE, f: 'ACTIVE' },
-      { k: t('사용'), v: by.USED, f: 'USED' }, { k: t('반려'), v: by.REJECTED, f: 'REJECTED' }, { k: t('만료'), v: by.EXPIRED, f: 'EXPIRED' }, { k: t('취소'), v: by.VOID, f: 'VOID' }
+      { k: t('사용완료'), v: by.USED, f: 'USED' }, { k: t('반려'), v: by.REJECTED, f: 'REJECTED' }, { k: t('만료'), v: by.EXPIRED, f: 'EXPIRED' }, { k: t('취소'), v: by.VOID, f: 'VOID' }
     ];
     var cur = $('filterStatus').value;
     $('chips').innerHTML = data.map(function (d) { return '<button type="button" class="mini-chip' + (cur === d.f ? ' active' : '') + '" data-fstat="' + d.f + '"><b>' + d.v + '</b>' + d.k + '</button>'; }).join('');
@@ -128,7 +119,7 @@ CompApp.viewList = (function () {
         + '<td>' + famBadge(r.fam) + '</td>'
         + '<td class="prod" title="' + esc(prodLabel) + '">' + esc(prodLabel) + '</td>'
         + '<td class="date">' + r.issued + '</td><td class="date">' + r.valid + '</td><td class="date">' + (r.usedDate || '—') + '</td>'
-        + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + schema.statusLabel(es) + '</span>' + pickupBadge(r) + '</td>'
+        + '<td><span class="badge ' + STATUS_CLASS[es] + '">' + schema.statusLabel(es) + '</span></td>'
         + '<td class="cat-purpose" title="' + esc(schema.catLabel(r.cat) + ' — ' + (r.purpose || '')) + '"><span class="cat">' + schema.catLabel(r.cat) + '</span> <span class="purpose-inline">' + esc(r.purpose) + '</span></td>'
         + '<td class="req-by">' + esc(r.req || '') + '</td>'
         + '<td class="mate-no">' + esc(r.mate || '—') + '</td>'

@@ -20,7 +20,7 @@ CompApp.viewOverview = (function () {
     var by = { PENDING: 0, ACTIVE: 0, USED: 0, EXPIRED: 0, VOID: 0, REJECTED: 0 }; var amt = 0;
     rs.forEach(function (r) { by[r.status]++; amt += (r.amount || 0); });
     var expp = rs.filter(function (r) { return effStatus(r) === 'EXPIRED_PENDING'; }).length;
-    var chips = [{ k: t('총 발행'), v: rs.length + t('건'), s: '' }, { k: t('금액권 합계'), v: money(amt), s: '' }, { k: t('활성'), v: (by.ACTIVE - expp) + t('건'), s: 'ACTIVE' }, { k: t('사용'), v: by.USED + t('건'), s: 'USED' }, { k: t('반려'), v: by.REJECTED + t('건'), s: '' }, { k: t('만료·미처리/취소'), v: (by.EXPIRED + by.VOID + expp) + t('건'), s: '' }];
+    var chips = [{ k: t('총 발행'), v: rs.length + t('건'), s: '' }, { k: t('금액권 합계'), v: money(amt), s: '' }, { k: t('활성'), v: (by.ACTIVE - expp) + t('건'), s: 'ACTIVE' }, { k: t('사용완료'), v: by.USED + t('건'), s: 'USED' }, { k: t('반려'), v: by.REJECTED + t('건'), s: '' }, { k: t('만료·미처리/취소'), v: (by.EXPIRED + by.VOID + expp) + t('건'), s: '' }];
     $('ov-chips').innerHTML = chips.map(function (d) { return '<div class="chip"><div class="k">' + d.k + '</div><div class="v" style="font-size:19px">' + d.v + '</div></div>'; }).join('');
     var cats = {}; Object.keys(CAT_LABEL).forEach(function (c) { cats[c] = { n: 0, amt: 0 }; });
     rs.forEach(function (r) { if (!cats[r.cat]) cats[r.cat] = { n: 0, amt: 0 }; cats[r.cat].n++; cats[r.cat].amt += (r.amount || 0); });
@@ -39,7 +39,7 @@ CompApp.viewOverview = (function () {
     $('ov-prod').innerHTML = parr.length ? '<table class="minitable"><thead><tr><th>' + t('바우처 종류') + '</th><th class="num">' + t('발행') + '</th></tr></thead><tbody>'
       + parr.map(function (x) { return '<tr class="clickable" data-drill="text" data-val="' + esc(x.p) + '"><td><span class="link-btn">' + esc(x.p) + '</span></td><td class="num">' + x.n + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">' + t('데이터 없음') + '</div>';
     var uarr = pkeys.map(function (p) { return { p: p, used: prods[p].used, iss: prods[p].iss }; }).filter(function (x) { return x.used > 0; }).sort(function (a, b) { return b.used - a.used; }).slice(0, 4);
-    $('ov-usage').innerHTML = uarr.length ? '<table class="minitable"><thead><tr><th>' + t('바우처 종류') + '</th><th class="num">' + t('사용') + '</th></tr></thead><tbody>'
+    $('ov-usage').innerHTML = uarr.length ? '<table class="minitable"><thead><tr><th>' + t('바우처 종류') + '</th><th class="num">' + t('사용완료') + '</th></tr></thead><tbody>'
       + uarr.map(function (x) { return '<tr class="clickable" data-drill="used" data-val="' + esc(x.p) + '"><td><span class="link-btn">' + esc(x.p) + '</span></td><td class="num">' + x.used + '</td></tr>'; }).join('') + '</tbody></table>' : '<div class="empty">' + t('사용 내역 없음') + '</div>';
   }
   $('ov-apply').addEventListener('click', function () {

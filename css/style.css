@@ -58,6 +58,14 @@
   :root[data-theme="dark"]{--hr:#d98aa8;--hr-soft:#301e26;}
   :root[data-theme="light"]{--hr:#a24d6e;--hr-soft:#f6e4ec;}
 
+  /* USED status accent — b-used previously reused --ok (green), which reads too close to
+     b-active's --fb (also green/teal) at a glance. A clear blue reads apart from every other
+     status/family color (fb teal, rm indigo, hr magenta, ok green, warn amber, stop red, pend purple). */
+  :root{--used:#2f6ea3;--used-soft:#e2ecf6;}
+  @media (prefers-color-scheme:dark){:root{--used:#8bb4e0;--used-soft:#1c2837;}}
+  :root[data-theme="dark"]{--used:#8bb4e0;--used-soft:#1c2837;}
+  :root[data-theme="light"]{--used:#2f6ea3;--used-soft:#e2ecf6;}
+
 
   *{box-sizing:border-box;}
   html{font-size:16px;}
@@ -219,7 +227,7 @@
   .badge{display:inline-block;font-size:10.5px;font-weight:680;letter-spacing:.03em;padding:2.5px 8px;border-radius:20px;white-space:nowrap;}
   .b-pending{background:var(--pend-soft);color:var(--pend);}
   .b-active{background:var(--fb-soft);color:var(--fb);}
-  .b-used{background:var(--ok-soft);color:var(--ok);}
+  .b-used{background:var(--used-soft);color:var(--used);}
   .b-expired{background:var(--warn-soft);color:var(--warn);}
   .b-void{background:var(--stop-soft);color:var(--stop);}
   .b-rejected{background:var(--stop-soft);color:var(--stop);}
