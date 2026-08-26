@@ -1,0 +1,27 @@
+name: Daily voucher backup
+
+# 20:00 KST daily (11:00 UTC). GitHub disables scheduled workflows automatically after
+# 60 days with no repo activity — a push (like this file) or a manual "Run workflow"
+# re-arms it, so if backups silently stop, check Settings > Actions first.
+on:
+  schedule:
+    - cron: '0 11 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch vouchers from Supabase and write dated JSON snapshot
+        run: node scripts/backup-vouchers.js
+      - name: Commit backup
+        run: |
+          git config user.name "voucher-backup-bot"
+          git config user.email "actions@github.com"
+          git add backups/
+          git diff --cached --quiet || git commit -m "chore: daily voucher backup $(date -u +%F)"
+          git push

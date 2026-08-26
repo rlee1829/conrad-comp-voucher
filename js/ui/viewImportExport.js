@@ -71,7 +71,11 @@ CompApp.viewImportExport = (function () {
     });
   }
 
+  // 2026-08-25 사고 이후: 파일 입력·버튼 모두 index.html에서 disabled 처리됨(사용자 요청).
+  // 여기서도 한 번 더 막아서, 혹시 disabled가 우회되더라도(개발자도구 등) 실행되지 않게 한다.
+  var IMPORT_LOCKED = true;
   function doImport() {
+    if (IMPORT_LOCKED) { toast(t('가져오기는 현재 잠겨 있습니다.')); return; }
     var input = $('ieFile');
     if (!input.files || !input.files[0]) { toast(t('가져올 파일을 선택하세요.')); return; }
     var file = input.files[0];
@@ -106,10 +110,91 @@ CompApp.viewImportExport = (function () {
     toast(n + t('건 내보내기 완료 (현재 필터 기준)'));
   }
 
+  function doExportOriginal() {
+    var byFam = CompApp.exportWorkbook.exportOriginalFormat();
+    toast(t('원본 형식 내보내기 완료 (F&B ') + byFam.FB + t(' · Room ') + byFam.RM + t(' · HR ') + byFam.HR + ')');
+  }
+
+  // 백업에서 복원 — .github/workflows/daily-backup.yml이 매일 밤 8시 저장하는 vouchers_*.json
+  // (레코드 배열, 각 항목에 id 포함)을 읽어 id 기준으로 upsert한다. 엑셀 가져오기와 달리 새 id를
+  // 발급하지 않으므로 몇 번을 다시 올려도 중복이 생기지 않는다 — 2026-08-25 사고 이후 도입.
+  function renderRestoreSummary(msg, isError) {
+    var box = $('restoreSummary'); if (!box) return;
+    box.innerHTML = msg ? '<div style="font-size:13px;color:' + (isError ? 'var(--stop)' : 'var(--ok)') + '">' + msg + '</div>' : '';
+  }
+
+  function readFileText(file) {
+    return new Promise(function (resolve, reject) {
+      var fr = new FileReader();
+      fr.onload = function () { resolve(fr.result); };
+      fr.onerror = function () { reject(fr.error || new Error(t('파일을 읽을 수 없습니다.'))); };
+      fr.readAsText(file);
+    });
+  }
+
+  function applyRestore(records) {
+    var byId = {}; CompApp.db.cache.records.forEach(function (r) { byId[r.id] = r; });
+    var updated = 0, added = 0;
+    records.forEach(function (r) {
+      if (byId[r.id]) { var idx = CompApp.db.cache.records.indexOf(byId[r.id]); CompApp.db.cache.records[idx] = r; updated++; }
+      else { CompApp.db.cache.records.unshift(r); added++; }
+    });
+    return { updated: updated, added: added };
+  }
+
+  function doRestore() {
+    var input = $('restoreFile');
+    if (!input.files || !input.files[0]) { toast(t('복원할 백업 파일을 선택하세요.')); return; }
+    var file = input.files[0];
+    var btn = $('btnDoRestore'); btn.disabled = true; btn.textContent = t('확인 중…');
+    readFileText(file).then(function (text) {
+      btn.disabled = false; btn.textContent = t('복원');
+      var records;
+      try { records = JSON.parse(text); } catch (e) { throw new Error(t('JSON 형식이 아닙니다.')); }
+      if (!Array.isArray(records) || !records.length) throw new Error(t('백업 파일이 비어 있거나 형식이 올바르지 않습니다.'));
+      var bad = records.some(function (r) { return !r || !r.id || !r.serial; });
+      if (bad) throw new Error(t('레코드 형식이 올바르지 않습니다(id·serial 누락).'));
+
+      modal({
+        title: t('백업에서 복원'),
+        sub: file.name + ' · ' + records.length + t('건'),
+        bodyHtml: '<div style="font-size:13px;color:var(--ink-2)">' + t('id가 같은 레코드는 이 백업 내용으로 덮어쓰고, 없던 id는 새로 추가합니다. 계속할까요?') + '</div>',
+        buttons: [
+          { label: t2('취소', 'Cancel') },
+          { label: t('복원 실행'), cls: 'btn-danger', onClick: function () {
+            var doBtn = $('btnDoRestore'); doBtn.disabled = true; doBtn.textContent = t('복원 중…');
+            var applied = applyRestore(records);
+            var finish = function () {
+              doBtn.disabled = false; doBtn.textContent = t('복원');
+              $('restoreFile').value = '';
+              renderRestoreSummary(applied.updated + t('건 덮어씀 · ') + applied.added + t('건 추가됨'));
+              toast(records.length + t('건 복원 완료'));
+              CompApp.router.renderCounts(); CompApp.router.refresh();
+              if (CompApp.workflow && CompApp.workflow.pushAuditEntry) {
+                CompApp.workflow.pushAuditEntry({ action: '백업복원', detail: file.name + ' · ' + records.length + t('건 (덮어씀 ') + applied.updated + t(' · 추가 ') + applied.added + ')', batchId: CompApp.schema.uid() });
+              }
+            };
+            if (CompApp.cloudEnabled && CompApp.cloudEnabled()) {
+              CompApp.dbCloud.putMany(records).then(finish).catch(function (e) {
+                doBtn.disabled = false; doBtn.textContent = t('복원');
+                renderRestoreSummary(t('클라우드 저장 실패: ') + (e && e.message ? e.message : e), true);
+              });
+            } else { finish(); }
+          } }
+        ]
+      });
+    }).catch(function (e) {
+      btn.disabled = false; btn.textContent = t('복원');
+      renderRestoreSummary((e && e.message) || String(e), true);
+    });
+  }
+
   function render() { renderSummary(null); }
 
   $('btnDoImport').addEventListener('click', doImport);
   $('btnDoExport').addEventListener('click', doExport);
+  $('btnDoExportOriginal').addEventListener('click', doExportOriginal);
+  $('btnDoRestore').addEventListener('click', doRestore);
 
   return { render: render };
 })();

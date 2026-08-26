@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COMP Voucher Manager · Conrad Seoul</title>
-<link rel="stylesheet" href="css/style.css?v=30">
+<link rel="stylesheet" href="css/style.css?v=31">
 </head>
 <body>
 <div class="shell">
@@ -224,12 +224,13 @@
 
     <!-- IMPORT / EXPORT -->
     <section class="view" id="view-importexport">
-      <div class="panel"><div class="pbody" style="font-size:13px;color:var(--ink-3)" data-i18n="ie-desc">기존 엑셀 대장(F&amp;B/Room 통합 대장의 EO_FB·EO_RM 시트, 또는 HR Voucher Tracking Sheet)을 업로드해 일괄 등록합니다. 상태값이 불명확하거나 발행일 정보가 없는 행은 자동으로 추정 처리되며, 목록의 비고란에 "[가져오기 검토 필요]" 표시가 남습니다.</div></div>
+      <div class="panel"><div class="pbody" style="font-size:13px;color:var(--ink-3)" data-i18n="기존 엑셀 대장(F&amp;B/Room 통합 대장의 EO_FB·EO_RM 시트, 또는 HR Voucher Tracking Sheet)을 업로드해 일괄 등록합니다. 상태값이 불명확하거나 발행일 정보가 없는 행은 자동으로 추정 처리되며, 목록의 비고란에 "[가져오기 검토 필요]" 표시가 남습니다.">기존 엑셀 대장(F&amp;B/Room 통합 대장의 EO_FB·EO_RM 시트, 또는 HR Voucher Tracking Sheet)을 업로드해 일괄 등록합니다. 상태값이 불명확하거나 발행일 정보가 없는 행은 자동으로 추정 처리되며, 목록의 비고란에 "[가져오기 검토 필요]" 표시가 남습니다.</div></div>
       <div class="panel">
         <div class="phead"><h3 data-i18n="엑셀 가져오기">엑셀 가져오기</h3></div>
         <div class="pbody">
-          <div class="field"><label data-i18n="파일 선택 (.xlsx)">파일 선택 (.xlsx)</label><input type="file" id="ieFile" accept=".xlsx"></div>
-          <div class="actions"><button class="btn btn-primary" id="btnDoImport" type="button" data-i18n="가져오기">가져오기</button></div>
+          <div class="modal-hint" data-i18n="2026-08-25 재삽입 사고로 이 기능은 잠겨 있습니다. 파일 선택·가져오기 버튼 모두 비활성화되어 있으며, 코드를 직접 수정해야 다시 켤 수 있습니다.">2026-08-25 재삽입 사고로 이 기능은 잠겨 있습니다. 파일 선택·가져오기 버튼 모두 비활성화되어 있으며, 코드를 직접 수정해야 다시 켤 수 있습니다.</div>
+          <div class="field"><label data-i18n="파일 선택 (.xlsx)">파일 선택 (.xlsx)</label><input type="file" id="ieFile" accept=".xlsx" disabled></div>
+          <div class="actions"><button class="btn btn-primary" id="btnDoImport" type="button" data-i18n="가져오기" disabled>가져오기</button></div>
           <div id="ieSummary"></div>
         </div>
       </div>
@@ -238,6 +239,22 @@
         <div class="pbody">
           <div style="font-size:13px;color:var(--ink-3);margin-bottom:10px" data-i18n="현재 목록 화면에 적용된 필터 기준으로 내보냅니다.">현재 목록 화면에 적용된 필터 기준으로 내보냅니다.</div>
           <div class="actions"><button class="btn btn-primary" id="btnDoExport" type="button" data-i18n="내보내기">내보내기</button></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="phead"><h3 data-i18n="원본 형식으로 전체 내보내기">원본 형식으로 전체 내보내기</h3></div>
+        <div class="pbody">
+          <div style="font-size:13px;color:var(--ink-3);margin-bottom:10px" data-i18n="필터와 무관하게 전체 데이터를, 원래 대장 엑셀과 같은 열 구성으로 EO_FB·EO_RM·HR 시트로 나눠 내보냅니다. 대조·백업용입니다 — 다시 가져오면 새 레코드로 중복 등록되니 복원 용도로 쓰지 마세요.">필터와 무관하게 전체 데이터를, 원래 대장 엑셀과 같은 열 구성으로 EO_FB·EO_RM·HR 시트로 나눠 내보냅니다. 대조·백업용입니다 — 다시 가져오면 새 레코드로 중복 등록되니 복원 용도로 쓰지 마세요.</div>
+          <div class="actions"><button class="btn btn-primary" id="btnDoExportOriginal" type="button" data-i18n="원본 형식 내보내기">원본 형식 내보내기</button></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="phead"><h3 data-i18n="백업에서 복원">백업에서 복원</h3></div>
+        <div class="pbody">
+          <div style="font-size:13px;color:var(--ink-3);margin-bottom:10px" data-i18n="매일 저녁 8시 자동 저장되는 백업(.json)에서 복원합니다. id가 같으면 덮어쓰고, 없으면 추가합니다 — 몇 번을 다시 올려도 중복이 생기지 않습니다.">매일 저녁 8시 자동 저장되는 백업(.json)에서 복원합니다. id가 같으면 덮어쓰고, 없으면 추가합니다 — 몇 번을 다시 올려도 중복이 생기지 않습니다.</div>
+          <div class="field"><label data-i18n="백업 파일 선택 (.json)">백업 파일 선택 (.json)</label><input type="file" id="restoreFile" accept=".json"></div>
+          <div class="actions"><button class="btn btn-primary" id="btnDoRestore" type="button" data-i18n="복원">복원</button></div>
+          <div id="restoreSummary"></div>
         </div>
       </div>
     </section>
@@ -328,28 +345,28 @@
 
 <script src="js/lib/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/config.js?v=30"></script>
-<script src="js/metaStore.js?v=30"></script>
-<script src="js/schema.js?v=30"></script>
-<script src="js/i18n.js?v=30"></script>
-<script src="js/ui/components.js?v=30"></script>
-<script src="js/operator.js?v=30"></script>
-<script src="js/db.js?v=30"></script>
-<script src="js/db-cloud.js?v=30"></script>
-<script src="js/ui/router.js?v=30"></script>
-<script src="js/import/importMapper.js?v=30"></script>
-<script src="js/import/importCompFB.js?v=30"></script>
-<script src="js/import/importCompRM.js?v=30"></script>
-<script src="js/import/importHR.js?v=30"></script>
-<script src="js/import/importPipeline.js?v=30"></script>
-<script src="js/export/exportWorkbook.js?v=30"></script>
-<script src="js/workflow/voucherWorkflow.js?v=30"></script>
-<script src="js/ui/viewOverview.js?v=30"></script>
-<script src="js/ui/viewList.js?v=30"></script>
-<script src="js/ui/viewIssue.js?v=30"></script>
-<script src="js/ui/viewIntegrity.js?v=30"></script>
-<script src="js/ui/viewImportExport.js?v=30"></script>
-<script src="js/ui/viewAuditLog.js?v=30"></script>
-<script src="js/app.js?v=30"></script>
+<script src="js/config.js?v=31"></script>
+<script src="js/metaStore.js?v=31"></script>
+<script src="js/schema.js?v=31"></script>
+<script src="js/i18n.js?v=31"></script>
+<script src="js/ui/components.js?v=31"></script>
+<script src="js/operator.js?v=31"></script>
+<script src="js/db.js?v=31"></script>
+<script src="js/db-cloud.js?v=31"></script>
+<script src="js/ui/router.js?v=31"></script>
+<script src="js/import/importMapper.js?v=31"></script>
+<script src="js/import/importCompFB.js?v=31"></script>
+<script src="js/import/importCompRM.js?v=31"></script>
+<script src="js/import/importHR.js?v=31"></script>
+<script src="js/import/importPipeline.js?v=31"></script>
+<script src="js/export/exportWorkbook.js?v=31"></script>
+<script src="js/workflow/voucherWorkflow.js?v=31"></script>
+<script src="js/ui/viewOverview.js?v=31"></script>
+<script src="js/ui/viewList.js?v=31"></script>
+<script src="js/ui/viewIssue.js?v=31"></script>
+<script src="js/ui/viewIntegrity.js?v=31"></script>
+<script src="js/ui/viewImportExport.js?v=31"></script>
+<script src="js/ui/viewAuditLog.js?v=31"></script>
+<script src="js/app.js?v=31"></script>
 </body>
 </html>
