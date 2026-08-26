@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COMP Voucher Manager · Conrad Seoul</title>
-<link rel="stylesheet" href="css/style.css?v=34">
+<link rel="stylesheet" href="css/style.css?v=35">
 </head>
 <body>
 <div class="shell">
@@ -286,9 +286,9 @@
           <ol class="gsteps gs-appr">
             <li><div class="gt">✓ 승인 대기함에서 검토</div><div class="gd">각 건에서 [승인] 또는 [반려]를 누르거나, 여러 건을 선택해 상단에 뜨는 버튼으로 한 번에 처리할 수 있습니다.</div></li>
             <li><div class="gt">승인 = Mate 승인번호 확인</div><div class="gd">요청자가 미리 적어둔 번호가 있으면 자동으로 채워집니다 — 맞으면 그대로, 다르면 정확한 번호로 고쳐서 승인합니다. 번호가 없으면 승인할 수 없고 대기함에 남겨둡니다.</div></li>
-            <li><div class="gt">반려 = 사유 필수</div><div class="gd">입력한 사유는 감사 로그와 해당 건 상세에 기록됩니다.</div></li>
+            <li><div class="gt">반려 = 사유 필수</div><div class="gd">사유를 입력해 [반려 처리]를 누르면 곧바로 요청자에게 보낼 반려 알림 메일 작성 화면이 열립니다(주소 입력 후 [메일 열기] → 보내기는 직접 클릭). 입력한 사유는 감사 로그와 해당 건 상세에도 기록됩니다.</div></li>
             <li><div class="gt">연장</div><div class="gd"><b>ACTIVE</b> 또는 <b>EXPIRED</b> 상태인 바우처의 [연장] → 새 Mate 승인번호를 입력합니다.</div></li>
-            <li><div class="gt">🖨 픽업 대기함 관리</div><div class="gd">실물 인쇄 후 [인쇄완료]를 누르고, [픽업 알림]으로 요청자 이메일 앞으로 보낼 메일을 자동으로 채워 엽니다(전송은 직접 클릭). 전달 후 [픽업완료]로 마무리합니다.</div></li>
+            <li><div class="gt">🖨 픽업 대기함 관리</div><div class="gd">실물 인쇄 후 [인쇄완료]를 누르면 곧바로 픽업 알림 메일 작성 화면이 이어서 열립니다(요청자 이메일 앞으로 채워짐, 전송은 직접 클릭). 나중에 다시 보내려면 목록 일괄바의 [픽업 알림]을 따로 눌러도 됩니다. 전달 후 [픽업완료]로 마무리합니다.</div></li>
           </ol>
           <div class="gnote" data-i18n="발행도 직접 할 수 있습니다 — 새 발행 화면에서 GM 승인 완료를 체크하면 승인 절차 없이 바로 ACTIVE 상태로 발행됩니다(Mate 번호 필수).">발행도 직접 할 수 있습니다 — 새 발행 화면에서 GM 승인 완료를 체크하면 승인 절차 없이 바로 ACTIVE 상태로 발행됩니다(Mate 번호 필수).</div>
         </div>
@@ -350,28 +350,28 @@
 
 <script src="js/lib/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/config.js?v=34"></script>
-<script src="js/metaStore.js?v=34"></script>
-<script src="js/schema.js?v=34"></script>
-<script src="js/i18n.js?v=34"></script>
-<script src="js/ui/components.js?v=34"></script>
-<script src="js/operator.js?v=34"></script>
-<script src="js/db.js?v=34"></script>
-<script src="js/db-cloud.js?v=34"></script>
-<script src="js/ui/router.js?v=34"></script>
-<script src="js/import/importMapper.js?v=34"></script>
-<script src="js/import/importCompFB.js?v=34"></script>
-<script src="js/import/importCompRM.js?v=34"></script>
-<script src="js/import/importHR.js?v=34"></script>
-<script src="js/import/importPipeline.js?v=34"></script>
-<script src="js/export/exportWorkbook.js?v=34"></script>
-<script src="js/workflow/voucherWorkflow.js?v=34"></script>
-<script src="js/ui/viewOverview.js?v=34"></script>
-<script src="js/ui/viewList.js?v=34"></script>
-<script src="js/ui/viewIssue.js?v=34"></script>
-<script src="js/ui/viewIntegrity.js?v=34"></script>
-<script src="js/ui/viewImportExport.js?v=34"></script>
-<script src="js/ui/viewAuditLog.js?v=34"></script>
-<script src="js/app.js?v=34"></script>
+<script src="js/config.js?v=35"></script>
+<script src="js/metaStore.js?v=35"></script>
+<script src="js/schema.js?v=35"></script>
+<script src="js/i18n.js?v=35"></script>
+<script src="js/ui/components.js?v=35"></script>
+<script src="js/operator.js?v=35"></script>
+<script src="js/db.js?v=35"></script>
+<script src="js/db-cloud.js?v=35"></script>
+<script src="js/ui/router.js?v=35"></script>
+<script src="js/import/importMapper.js?v=35"></script>
+<script src="js/import/importCompFB.js?v=35"></script>
+<script src="js/import/importCompRM.js?v=35"></script>
+<script src="js/import/importHR.js?v=35"></script>
+<script src="js/import/importPipeline.js?v=35"></script>
+<script src="js/export/exportWorkbook.js?v=35"></script>
+<script src="js/workflow/voucherWorkflow.js?v=35"></script>
+<script src="js/ui/viewOverview.js?v=35"></script>
+<script src="js/ui/viewList.js?v=35"></script>
+<script src="js/ui/viewIssue.js?v=35"></script>
+<script src="js/ui/viewIntegrity.js?v=35"></script>
+<script src="js/ui/viewImportExport.js?v=35"></script>
+<script src="js/ui/viewAuditLog.js?v=35"></script>
+<script src="js/app.js?v=35"></script>
 </body>
 </html>

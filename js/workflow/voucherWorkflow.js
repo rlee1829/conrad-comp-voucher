@@ -241,6 +241,11 @@ CompApp.workflow = (function () {
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('restore', before, '반려 (' + list.length + '건)', list.length + t('건 반려'));
+          // 반려 모달과 알림 모달이 같은 모달 DOM(#genBackdrop)을 공유해서, 지금 모달의 onClick이
+          // 끝난 직후 바깥 클릭 핸들러가 자동으로 close()를 부른다 — 그 close()보다 먼저 새 modal()을
+          // 열면 방금 연 알림 모달까지 같이 닫혀버린다. setTimeout으로 한 틱 미뤄서 그 close() 이후에
+          // 열리게 한다(반려 목록이 자동으로 바뀌지 않으므로 list 그대로 재사용 가능 — rn도 알림 본문에 실음).
+          setTimeout(function () { rejectNotifyModal(list, rn); }, 0);
         }
       }]
     });
@@ -299,18 +304,17 @@ CompApp.workflow = (function () {
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('restore', before, '인쇄완료 (' + list.length + '건)', list.length + t('건 인쇄 완료 · 픽업 대기'));
+          // 인쇄완료 → 픽업 알림으로 바로 이어준다(같은 모달 DOM을 공유하므로 close() 다음 틱에).
+          setTimeout(function () { notifyPickupModal(list); }, 0);
         }
       }]
     });
   }
 
-  // 요청자별로 묶어 Outlook 새 메일을 열어 준다(mailto). 서버·API 키 없이 회사 메일 그대로 나가고,
-  // 발신자가 실제 담당자라 회신도 자연스럽다. 보내기는 사람이 누른다.
-  function notifyPickupModal(list) {
-    var PLACE_KEY = 'compVoucherPickupPlace';
-    var place = CompApp.metaStore.get(PLACE_KEY, '4층 Finance Office (평일 09:00–17:00)');
-    // 주소는 레코드에 실려 있다(요청자가 담당자 등록 때 적은 이메일). 없는 건 — 과거 이관분이나
-    // 대리 발행분 — 은 여기서 한 번 입력하면 그 레코드에 저장돼 다음부터는 자동으로 잡힌다.
+  // 요청자별로 묶는다 — 픽업 알림·반려 알림이 공유하는 그룹핑 로직. 주소는 레코드에 실려 있다
+  // (요청자가 담당자 등록 때 적은 이메일). 없는 건 — 과거 이관분이나 대리 발행분 — 은 알림 모달에서
+  // 한 번 입력하면 그 레코드에 저장돼 다음부터는 자동으로 잡힌다.
+  function groupByRequester(list) {
     var groups = [];
     list.forEach(function (r) {
       var req = (r.req || '').trim() || t('(요청자 미기재)');
@@ -321,56 +325,99 @@ CompApp.workflow = (function () {
       if (!g) { g = { key: key, name: req, req: req, email: mail, recs: [] }; groups.push(g); }
       g.recs.push(r);
     });
+    return groups;
+  }
+
+  // 요청자별로 묶어 Outlook 새 메일을 열어 준다(mailto). 서버·API 키 없이 회사 메일 그대로 나가고,
+  // 발신자가 실제 담당자라 회신도 자연스럽다. 보내기는 사람이 누른다. 픽업 알림·반려 알림이 이 한
+  // 함수를 공유하고, cfg로 제목/본문/기록 필드만 다르게 준다.
+  //   cfg: { title, extraFieldHtml, extraFieldRead(b, cur), subject(g, extra), mailBody(g, extra),
+  //          notifiedAtField, notifiedToField, historyAction, historyDetail(mail, extra), afterOpenToast(g) }
+  function openNotifyGroups(list, cfg) {
+    var groups = groupByRequester(list);
+    var extra = cfg.extraFieldInit;
     function body() {
-      return '<div class="modal-hint">' + t('요청자별로 메일을 나눠 엽니다. [메일 열기]를 누르면 Outlook에 내용이 채워진 새 메일이 뜨고, ') + '<b>' + t('보내기는 직접') + '</b>' + t(' 누르시면 됩니다. 주소는 요청자가 담당자 등록 때 적은 이메일이 자동으로 들어오고, 비어 있으면 여기서 입력하면 ') + '<b>' + t('해당 건에 저장') + '</b>' + t('돼 다음부터 자동으로 잡힙니다.') + '</div>'
-        + '<div class="field"><label>' + t('픽업 안내 문구') + '</label><input type="text" id="pk-place" value="' + esc(place) + '"></div>'
+      return '<div class="modal-hint">' + t('요청자별로 메일을 나눠 엽니다. [메일 열기]를 누르면 메일 프로그램에 내용이 채워진 새 메일이 뜨고, ') + '<b>' + t('보내기는 직접') + '</b>' + t(' 누르시면 됩니다. 주소는 요청자가 담당자 등록 때 적은 이메일이 자동으로 들어오고, 비어 있으면 여기서 입력하면 ') + '<b>' + t('해당 건에 저장') + '</b>' + t('돼 다음부터 자동으로 잡힙니다.') + '</div>'
+        + (cfg.extraFieldHtml ? cfg.extraFieldHtml(extra) : '')
         + groups.map(function (g, i) {
           return '<div class="pkrow" data-i="' + i + '">'
             + '<div class="pkrow-h"><b>' + esc(g.name) + '</b> <span class="dim">· ' + g.recs.length + t('건') + '</span>'
-            + (g.recs[0] && g.recs[0].notifiedAt ? ' <span class="dim">' + t2('(알림 ' + esc(g.recs[0].notifiedAt) + ')', '(notified ' + esc(g.recs[0].notifiedAt) + ')') + '</span>' : '') + '</div>'
+            + (g.recs[0] && g.recs[0][cfg.notifiedAtField] ? ' <span class="dim">' + t2('(알림 ' + esc(g.recs[0][cfg.notifiedAtField]) + ')', '(notified ' + esc(g.recs[0][cfg.notifiedAtField]) + ')') + '</span>' : '') + '</div>'
             + '<div class="pkrow-b"><input type="text" class="pk-mail" data-i="' + i + '" placeholder="' + esc(t('이메일 주소')) + '" value="' + esc(g.email) + '">'
             + '<button type="button" class="btn btn-primary btn-sm pk-open" data-i="' + i + '">' + t('메일 열기') + '</button></div>'
             + '<div class="pkrow-s">' + esc(g.recs.map(function (r) { return r.serial; }).slice(0, 6).join(', ')) + (g.recs.length > 6 ? t2(' 외 ' + (g.recs.length - 6) + '건', ' and ' + (g.recs.length - 6) + ' more') : '') + '</div>'
             + '</div>';
         }).join('');
     }
-    function mailBody(g, placeText) {
-      var lines = ['안녕하세요, ' + g.name + '님', '', '요청하신 COMP 바우처가 준비되었습니다. 아래 안내에 따라 수령해 주세요.', ''];
-      g.recs.slice(0, 30).forEach(function (r) {
-        lines.push('· ' + r.serial + ' | ' + schema.recordProductLabel(r) + ' | 유효기간 ~' + (r.valid || '') + (r.purpose ? ' | ' + r.purpose : ''));
-      });
-      if (g.recs.length > 30) lines.push('· 외 ' + (g.recs.length - 30) + '건');
-      lines.push('', '픽업 장소: ' + placeText, '', '감사합니다.', 'Conrad Seoul Finance');
-      return lines.join('\r\n');
-    }
     modal({
-      title: t('픽업 알림'), sub: list.length + t('건') + t(' · 요청자 ') + groups.length + t('명'), bodyHtml: body(),
+      title: cfg.title, sub: list.length + t('건') + t(' · 요청자 ') + groups.length + t('명'), bodyHtml: body(),
       buttons: [{ label: t('닫기') }],
       wire: function wire(b) {
+        if (cfg.extraFieldHtml) { var ef = b.querySelector('#notify-extra'); if (ef) ef.addEventListener('change', function () { extra = cfg.extraFieldRead(b, extra); }); }
         b.querySelectorAll('.pk-open').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var i = parseInt(btn.dataset.i, 10), g = groups[i];
             var mail = b.querySelector('.pk-mail[data-i="' + i + '"]').value.trim();
             if (!mail) { toast(t('이메일 주소를 입력하세요.')); return; }
-            var placeText = b.querySelector('#pk-place').value.trim();
-            if (placeText !== place) { place = placeText; CompApp.metaStore.set(PLACE_KEY, place); }
-            var subject = '[Conrad Seoul] COMP 바우처 ' + g.recs.length + '건 픽업 안내';
+            if (cfg.extraFieldRead) extra = cfg.extraFieldRead(b, extra);
             window.location.href = 'mailto:' + encodeURIComponent(mail)
-              + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(mailBody(g, placeText));
+              + '?subject=' + encodeURIComponent(cfg.subject(g, extra)) + '&body=' + encodeURIComponent(cfg.mailBody(g, extra));
             var today = todayStr(), batchId = schema.uid();
             g.recs.forEach(function (r) {
-              r.notifiedAt = today; r.notifiedTo = mail;
+              r[cfg.notifiedAtField] = today; r[cfg.notifiedToField] = mail;
               if (!r.reqEmail) r.reqEmail = mail;   // 다음 알림 때 다시 묻지 않도록 레코드에 남긴다
-              logHist(r, '픽업 알림', mail + ' 앞 메일 작성', batchId);
+              logHist(r, cfg.historyAction, cfg.historyDetail(mail, extra), batchId);
             });
             persist(g.recs);
             g.email = mail;
             CompApp.router.refresh();
-            toast(g.name + t('님 앞 메일을 열었습니다 (') + g.recs.length + t('건) — Outlook에서 보내기를 눌러주세요.'));
+            toast(g.name + t('님 앞 메일을 열었습니다 (') + g.recs.length + t('건) — 메일 프로그램에서 보내기를 눌러주세요.'));
             b.innerHTML = body(); wire(b);
           });
         });
       }
+    });
+  }
+
+  function notifyPickupModal(list) {
+    var PLACE_KEY = 'compVoucherPickupPlace';
+    openNotifyGroups(list, {
+      title: t('픽업 알림'),
+      extraFieldInit: CompApp.metaStore.get(PLACE_KEY, '4층 Finance Office (평일 09:00–17:00)'),
+      extraFieldHtml: function (place) { return '<div class="field"><label>' + t('픽업 안내 문구') + '</label><input type="text" id="notify-extra" value="' + esc(place) + '"></div>'; },
+      extraFieldRead: function (b, cur) { var v = b.querySelector('#notify-extra').value.trim(); if (v !== cur) CompApp.metaStore.set(PLACE_KEY, v); return v; },
+      subject: function (g) { return '[Conrad Seoul] COMP 바우처 ' + g.recs.length + '건 픽업 안내'; },
+      mailBody: function (g, place) {
+        var lines = ['안녕하세요, ' + g.name + '님', '', '요청하신 COMP 바우처가 준비되었습니다. 아래 안내에 따라 수령해 주세요.', ''];
+        g.recs.slice(0, 30).forEach(function (r) {
+          lines.push('· ' + r.serial + ' | ' + schema.recordProductLabel(r) + ' | 유효기간 ~' + (r.valid || '') + (r.purpose ? ' | ' + r.purpose : ''));
+        });
+        if (g.recs.length > 30) lines.push('· 외 ' + (g.recs.length - 30) + '건');
+        lines.push('', '픽업 장소: ' + place, '', '감사합니다.', 'Conrad Seoul Finance');
+        return lines.join('\r\n');
+      },
+      notifiedAtField: 'notifiedAt', notifiedToField: 'notifiedTo',
+      historyAction: '픽업 알림', historyDetail: function (mail) { return mail + ' 앞 메일 작성'; }
+    });
+  }
+
+  // 반려 알림 — 픽업 알림과 같은 mailto 방식·그룹핑을 그대로 재사용한다. rejectModal에서 반려
+  // 처리 직후 자동으로 이어서 연다(2026-08-26 추가) — 반려된 건이 이제 목록에서 아예 안 보이므로,
+  // 이 메일이 요청자가 반려 사실을 아는 사실상 유일한 통지 수단이다.
+  function rejectNotifyModal(list, reason) {
+    openNotifyGroups(list, {
+      title: t('반려 알림'),
+      subject: function (g) { return '[Conrad Seoul] COMP 바우처 요청 반려 안내'; },
+      mailBody: function (g) {
+        var lines = ['안녕하세요, ' + g.name + '님', '', '요청하신 COMP 바우처 발행이 반려되었습니다.', '', '· 반려 사유: ' + reason, ''];
+        g.recs.forEach(function (r) {
+          lines.push('· ' + r.serial + ' | ' + schema.recordProductLabel(r) + (r.purpose ? ' | ' + r.purpose : ''));
+        });
+        lines.push('', '문의사항이 있으시면 회신 부탁드립니다.', '', '감사합니다.', 'Conrad Seoul Finance');
+        return lines.join('\r\n');
+      },
+      notifiedAtField: 'rejectNotifiedAt', notifiedToField: 'rejectNotifiedTo',
+      historyAction: '반려 알림', historyDetail: function (mail) { return mail + ' 앞 메일 작성'; }
     });
   }
 
