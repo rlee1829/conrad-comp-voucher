@@ -81,11 +81,14 @@ CompApp.viewList = (function () {
   }
   function renderChips() {
     // 상태 필터를 제외한 나머지 필터를 반영한다 — 상태 필터가 없으면 "총 발행" 칩 = 목록 건수.
-    var rs = filtered({ ignoreStatus: true }), by = { PENDING: 0, ACTIVE: 0, USED: 0, EXPIRED: 0, VOID: 0, REJECTED: 0 };
+    // 목록 자체가 기본적으로 승인대기·반려를 뺀 발행완료 건만 보여주므로(filtered() 참고), 이
+    // 미니칩도 승인대기·반려를 빼고 집계해야 "총 발행" 숫자가 실제 목록 건수와 어긋나지 않는다.
+    var rs = filtered({ ignoreStatus: true }).filter(function (r) { return r.status !== 'PENDING' && r.status !== 'REJECTED'; });
+    var by = { ACTIVE: 0, USED: 0, EXPIRED: 0, VOID: 0 };
     rs.forEach(function (r) { by[r.status]++; });
     var data = [
-      { k: t('총 발행'), v: rs.length, f: '' }, { k: t('승인대기'), v: by.PENDING, f: 'PENDING' }, { k: t('ACTIVE'), v: by.ACTIVE, f: 'ACTIVE' },
-      { k: t('USED'), v: by.USED, f: 'USED' }, { k: t('반려'), v: by.REJECTED, f: 'REJECTED' }, { k: t('EXPIRED'), v: by.EXPIRED, f: 'EXPIRED' }, { k: t('VOID'), v: by.VOID, f: 'VOID' }
+      { k: t('총 발행'), v: rs.length, f: '' }, { k: t('ACTIVE'), v: by.ACTIVE, f: 'ACTIVE' },
+      { k: t('USED'), v: by.USED, f: 'USED' }, { k: t('EXPIRED'), v: by.EXPIRED, f: 'EXPIRED' }, { k: t('VOID'), v: by.VOID, f: 'VOID' }
     ];
     var cur = $('filterStatus').value;
     $('chips').innerHTML = data.map(function (d) { return '<button type="button" class="mini-chip' + (cur === d.f ? ' active' : '') + '" data-fstat="' + d.f + '"><b>' + d.v + '</b>' + d.k + '</button>'; }).join('');
