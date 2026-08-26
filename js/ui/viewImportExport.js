@@ -53,10 +53,32 @@ CompApp.viewImportExport = (function () {
     });
   }
 
+  // 2026-08-25 재삽입 사고 이후 추가된 잠금 — 실제 인증이 아니라(비밀번호가 소스에 그대로
+  // 노출됨) "실수로 다시 누르는 것"을 막는 마지막 확인 단계일 뿐이다. 진짜 권한 통제는 관리자
+  // 명단(navImportExport 노출 여부)이 이미 하고 있다.
+  var IMPORT_PASSWORD = '1234';
+  function askImportPassword(onOk) {
+    modal({
+      title: t('가져오기 잠금'), sub: t('이 화면은 사고 이력이 있어 비밀번호로 한 번 더 확인합니다.'),
+      bodyHtml: '<div class="field"><label>' + t('비밀번호') + '</label><input type="password" id="ie-pw" autocomplete="off"></div>',
+      buttons: [
+        { label: t2('취소', 'Cancel') },
+        { label: t('확인'), cls: 'btn-primary', onClick: function (b, setErr) {
+          if (b.querySelector('#ie-pw').value !== IMPORT_PASSWORD) { setErr(t('비밀번호가 올바르지 않습니다.')); return false; }
+          onOk();
+        } }
+      ]
+    });
+  }
+
   function doImport() {
     var input = $('ieFile');
     if (!input.files || !input.files[0]) { toast(t('가져올 파일을 선택하세요.')); return; }
     var file = input.files[0];
+    askImportPassword(function () { doImportConfirmed(file); });
+  }
+
+  function doImportConfirmed(file) {
     var btn = $('btnDoImport'); btn.disabled = true; btn.textContent = t('확인 중…');
     CompApp.importPipeline.previewSerials(file).then(function (serials) {
       var existing = {}; CompApp.db.cache.records.forEach(function (r) { existing[r.serial] = true; });
