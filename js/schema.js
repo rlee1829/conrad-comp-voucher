@@ -38,7 +38,7 @@ CompApp.schema = (function () {
   };
 
   var CAT_LABEL = { VIP: 'For VIP', COMPLAINT: '컴플레인 보상', STAFF: '직원 복리후생', PARTNER: '제휴/마케팅', WEDDING: '웨딩' };
-  var STATUS_LABEL = { PENDING: '승인대기', ACTIVE: '활성', USED: '사용완료', EXPIRED: '만료', VOID: '취소', EXPIRED_PENDING: '만료(미처리)', REJECTED: '반려' };
+  var STATUS_LABEL = { PENDING: '승인대기', ACTIVE: 'ACTIVE', USED: 'USED', EXPIRED: 'EXPIRED', VOID: 'VOID', EXPIRED_PENDING: '만료(미처리)', REJECTED: '반려' };
   var STATUS_CLASS = { PENDING: 'b-pending', ACTIVE: 'b-active', USED: 'b-used', EXPIRED: 'b-expired', VOID: 'b-void', EXPIRED_PENDING: 'b-expired', REJECTED: 'b-rejected' };
   var DEFAULT_DEPTS = ['FO', 'FB', 'Finance', 'RSVN', 'Sales', 'HR', 'MarComm', 'BD', 'HK', 'Event Sales', 'Concierge', 'GM'];
   // 픽업 흐름 — status(승인/사용/만료)와 별개의 축이다. 승인된 바우처를 실물로 인쇄해서 요청자에게

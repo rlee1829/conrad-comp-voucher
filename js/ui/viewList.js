@@ -49,7 +49,13 @@ CompApp.viewList = (function () {
         if (dF && dv < dF) return false;
         if (dT && dv > dT) return false;
       }
-      if (!opts.ignoreStatus && fs && r.status !== fs) return false;
+      // "전체 상태"(fs가 빈 값)일 때는 승인대기·반려를 목록에서 뺀다 — 이 목록은 발행이 완료된
+      // 건(ACTIVE/USED/EXPIRED/VOID)만 다루고, 승인대기는 승인 대기함에서 따로 본다. 미니칩
+      // 집계(ignoreStatus)는 그대로 전체를 세서 승인대기·반려 칩 숫자는 계속 정확하게 보여준다.
+      if (!opts.ignoreStatus) {
+        if (fs) { if (r.status !== fs) return false; }
+        else if (r.status === 'PENDING' || r.status === 'REJECTED') return false;
+      }
       if (ft && (r.serial + ' ' + r.purpose + ' ' + r.req + ' ' + schema.recordProductLabel(r)).toLowerCase().indexOf(ft) < 0) return false;
       return true;
     });
@@ -78,8 +84,8 @@ CompApp.viewList = (function () {
     var rs = filtered({ ignoreStatus: true }), by = { PENDING: 0, ACTIVE: 0, USED: 0, EXPIRED: 0, VOID: 0, REJECTED: 0 };
     rs.forEach(function (r) { by[r.status]++; });
     var data = [
-      { k: t('총 발행'), v: rs.length, f: '' }, { k: t('승인대기'), v: by.PENDING, f: 'PENDING' }, { k: t('활성'), v: by.ACTIVE, f: 'ACTIVE' },
-      { k: t('사용완료'), v: by.USED, f: 'USED' }, { k: t('반려'), v: by.REJECTED, f: 'REJECTED' }, { k: t('만료'), v: by.EXPIRED, f: 'EXPIRED' }, { k: t('취소'), v: by.VOID, f: 'VOID' }
+      { k: t('총 발행'), v: rs.length, f: '' }, { k: t('승인대기'), v: by.PENDING, f: 'PENDING' }, { k: t('ACTIVE'), v: by.ACTIVE, f: 'ACTIVE' },
+      { k: t('USED'), v: by.USED, f: 'USED' }, { k: t('반려'), v: by.REJECTED, f: 'REJECTED' }, { k: t('EXPIRED'), v: by.EXPIRED, f: 'EXPIRED' }, { k: t('VOID'), v: by.VOID, f: 'VOID' }
     ];
     var cur = $('filterStatus').value;
     $('chips').innerHTML = data.map(function (d) { return '<button type="button" class="mini-chip' + (cur === d.f ? ' active' : '') + '" data-fstat="' + d.f + '"><b>' + d.v + '</b>' + d.k + '</button>'; }).join('');
