@@ -80,6 +80,7 @@ CompApp.router = (function () {
     $('sc-hr').textContent = records.filter(function (r) { return r.fam === 'HR'; }).length;
     $('nav-list-n').textContent = records.filter(famMatch).length;
     $('nav-appr-n').textContent = records.filter(function (r) { return famMatch(r) && r.status === 'PENDING'; }).length;
+    $('nav-rejected-n').textContent = records.filter(function (r) { return famMatch(r) && r.status === 'REJECTED'; }).length;
     $('nav-pickup-n').textContent = records.filter(function (r) {
       if (!famMatch(r)) return false;
       var p = CompApp.schema.pickupState(r);
@@ -123,6 +124,10 @@ CompApp.router = (function () {
         // 픽업 대기함 = 인쇄대기 + 픽업대기(아직 요청자 손에 안 넘어간 건). title/desc는 goListFiltered
         // 안에서 t()로 번역되므로, 여기 리터럴은 원문 그대로 두고 그 자체를 사전 키로 쓴다.
         if (n.dataset.view === 'pickup') { goListFiltered({ pickup: 'OPEN', nav: 'pickup', silent: true, title: '픽업 대기함', desc: '인쇄완료 표시 → 요청자 알림 → 픽업완료' }); return; }
+        // 반려함 — 반려된 요청은 평소 목록/미니칩에서 빠져 있어(viewList.filtered 참고) 이 메뉴가
+        // 유일한 접근로다. 실물 바우처(증서번호 찍힌 용지)가 승인자 손에 그대로 남아있는 경우,
+        // [수정]에서 증서번호를 정리(비우기/변경)한 뒤 재발행하면 그 번호를 다시 쓸 수 있다.
+        if (n.dataset.view === 'rejected') { goListFiltered({ status: 'REJECTED', nav: 'rejected', silent: true, title: '반려함', desc: '실물 바우처가 남아있다면 [수정]에서 증서번호를 정리한 뒤 재발행하세요' }); return; }
         if (n.dataset.view === 'list') { resetFilterInputs(); state.page = 1; go('list'); return; }
         go(n.dataset.view);
       });

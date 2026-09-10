@@ -111,9 +111,24 @@ CompApp.workflow = (function () {
     if (!req) { err.textContent = t('요청 부서/요청자를 입력하세요.'); return; }
     if (gm && !mate) { err.textContent = t('GM 승인 완료 시 Mate 승인번호는 필수입니다.'); return; }
     var status = gm ? 'ACTIVE' : 'PENDING', m = /^([A-Za-z]+)(\s?)(\d+)$/.exec(start);
+    // 직접 입력(또는 반려·파손 정리 후 재사용)한 증서번호가 기존 레코드나 같은 배치 안 다른 건과
+    // 겹치는지 미리 확인한다 — 예전 "증서번호 중복" 사고가 가져오기뿐 아니라 수기 입력으로도 다시
+    // 날 수 있어서, 실제로 레코드를 만들기 전에 배치 전체를 검사하고 하나라도 겹치면 통째로 막는다.
+    var newSerials = [];
+    for (var p = 0; p < qty; p++) {
+      newSerials.push(m ? m[1] + m[2] + String(parseInt(m[3], 10) + p).padStart(m[3].length, '0') : start + (qty > 1 ? '-' + (p + 1) : ''));
+    }
+    var existing = records();
+    for (var s = 0; s < newSerials.length; s++) {
+      var clean = newSerials[s].replace(/\s+/g, '').toLowerCase();
+      if (existing.some(function (x) { return x.serial && x.serial.replace(/\s+/g, '').toLowerCase() === clean; }) || newSerials.indexOf(newSerials[s]) !== s) {
+        err.textContent = t('이미 사용 중인 증서번호입니다 — ') + newSerials[s] + t('. 번호를 확인하세요(반려·파손건은 [반려함]/[수정]에서 먼저 정리해야 합니다).');
+        return;
+      }
+    }
     var issued = [];
     for (var k = 0; k < qty; k++) {
-      var serial = m ? m[1] + m[2] + String(parseInt(m[3], 10) + k).padStart(m[3].length, '0') : start + (qty > 1 ? '-' + (k + 1) : '');
+      var serial = newSerials[k];
       var r = { id: schema.uid(), fam: issueFam, serial: serial, product: product, amount: amount, issued: iss, valid: val, cat: state.selectedCat, purpose: purpose, req: req, reqEmail: reqEmail, mate: mate, remark: $('f-remark').value.trim(), blackoutTags: blackoutTags.slice(), status: status, history: [] };
       logHist(r, '발행', gm ? ('발행·즉시활성 · Mate ' + mate) : ('발행 요청 (승인대기) · ' + (mate ? 'Mate ' + mate : 'Mate 번호 미기재')));
       records().unshift(r);
@@ -529,8 +544,16 @@ CompApp.workflow = (function () {
     var catOpts = Object.keys(CAT_LABEL).map(function (c) { return '<option value="' + c + '" ' + (r.cat === c ? 'selected' : '') + '>' + schema.catLabel(c) + '</option>'; }).join('');
     var prodOpts = (r.product ? '' : '<option value="" selected>' + t('가져온 원문 유지: ') + esc(r.productText || '') + '</option>') + CATALOG[r.fam].map(function (p) { return '<option value="' + p.id + '" ' + (r.product === p.id ? 'selected' : '') + '>' + t(p.name) + '</option>'; }).join('');
     var boEditor = null;
+    // 증서번호 수정은 승인자·관리자만 — 반려 후 재발행 시 실물 바우처(번호 찍힌 용지)가 승인자
+    // 손에 그대로 남아있거나, 인쇄 중 훼손돼 그 번호를 다시 쓸 수 없게 된 경우를 바로잡는 용도.
+    // 값을 비우면(다른 번호로 재사용 예정) 이 레코드는 [다음 발행 번호] 계산에서 빠진다.
+    var serialField = operator.canApprove()
+      ? '<div class="field"><label>' + t('증서번호') + '</label><input type="text" id="e-serial" value="' + esc(r.serial || '') + '">'
+        + '<div style="font-size:11px;color:var(--ink-3);margin-top:4px">' + t('반려·파손 등으로 실물 바우처를 다시 써야 하면 여기서 번호를 비우거나 새 번호로 바꾸세요. 다른 건과 겹치는 번호는 저장할 수 없습니다.') + '</div></div>'
+      : '';
     modal({
       title: t('바우처 수정 · ') + r.serial, sub: t('변경 사유를 반드시 입력해야 저장됩니다.'), bodyHtml: '<div class="form-grid">'
+        + serialField
         + '<div class="field full"><label>' + t('바우처 종류') + '</label><select id="e-product">' + prodOpts + '</select></div>'
         + '<div class="field"><label>' + t('금액 (원)') + '</label><input type="number" id="e-amount" value="' + (r.amount || 0) + '" step="1000"></div>'
         + '<div class="field"><label>' + t('만료일') + '</label>' + dateFieldHTML('e-valid', r.valid || '') + '</div>'
@@ -546,8 +569,17 @@ CompApp.workflow = (function () {
       buttons: [{ label: t2('취소', 'Cancel') }, {
         label: t('저장'), cls: 'btn-primary', onClick: function (b, setErr) {
           var reason = b.querySelector('#e-reason').value.trim(); if (!reason) { setErr(t('변경 사유를 입력해야 저장할 수 있습니다.')); return false; }
+          var eSerialEl = b.querySelector('#e-serial'), newSerial = null;
+          if (eSerialEl) {
+            newSerial = eSerialEl.value.trim().replace(/\s+/g, '');
+            if (newSerial) {
+              var dupRec = records().find(function (x) { return x.id !== r.id && x.serial && x.serial.replace(/\s+/g, '').toLowerCase() === newSerial.toLowerCase(); });
+              if (dupRec) { setErr(t('이미 사용 중인 증서번호입니다 — ') + dupRec.serial); return false; }
+            }
+          }
           var before = snapshotBefore(r)[0];
           var changes = []; function set(f, nv, lbl) { if (String(r[f] || '') !== String(nv || '')) { changes.push(lbl + ': ' + (r[f] || '—') + ' → ' + (nv || '—')); r[f] = nv; } }
+          if (eSerialEl) set('serial', newSerial, '증서번호');
           set('product', b.querySelector('#e-product').value, '종류'); set('amount', parseInt(b.querySelector('#e-amount').value, 10) || 0, '금액');
           set('valid', normDate(b.querySelector('#e-valid').value), '만료일'); set('cat', b.querySelector('#e-cat').value, '사유');
           set('req', b.querySelector('#e-req').value.trim(), '요청자'); set('purpose', b.querySelector('#e-purpose').value.trim(), '목적');
@@ -558,7 +590,8 @@ CompApp.workflow = (function () {
           if (oldBoSummary !== newBoSummary) changes.push('Black-out: ' + (oldBoSummary || '—') + ' → ' + (newBoSummary || '—'));
           if (!changes.length) { toast(t('변경된 내용이 없습니다.')); return; }
           logHist(r, '수정', reason + ' [' + changes.join(', ') + ']'); persist(r); CompApp.router.refresh();
-          finishAction('restore', [before], '수정 (' + r.serial + ')', r.serial + t(' 수정 저장'));
+          var lbl = before.serial || t('(증서번호 없음)');
+          finishAction('restore', [before], '수정 (' + lbl + ')', lbl + t(' 수정 저장'));
         }
       }]
     });

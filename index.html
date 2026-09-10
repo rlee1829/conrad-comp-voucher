@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COMP Voucher Manager · Conrad Seoul</title>
-<link rel="stylesheet" href="css/style.css?v=35">
+<link rel="stylesheet" href="css/style.css?v=36">
 </head>
 <body>
 <div class="shell">
@@ -16,6 +16,7 @@
     <div class="navitem" data-view="issue"><span class="ic">＋</span> <span data-i18n="새 발행">새 발행</span></div>
     <div class="navitem" data-view="approvals"><span class="ic">✓</span> <span data-i18n="승인 대기함">승인 대기함</span> <span class="n" id="nav-appr-n"></span></div>
     <div class="navitem" data-view="pickup"><span class="ic">🖨</span> <span data-i18n="픽업 대기함">픽업 대기함</span> <span class="n" id="nav-pickup-n"></span></div>
+    <div class="navitem" data-view="rejected"><span class="ic">✕</span> <span data-i18n="반려함">반려함</span> <span class="n" id="nav-rejected-n"></span></div>
     <div class="navitem" data-view="integrity"><span class="ic">⚠</span> <span data-i18n="정합성 점검">정합성 점검</span> <span class="n" id="nav-integ-n"></span></div>
     <div class="navitem" data-view="importexport" id="navImportExport"><span class="ic">⇅</span> <span data-i18n="가져오기/내보내기">가져오기/내보내기</span></div>
     <div class="navitem" data-view="auditlog"><span class="ic">▦</span> <span data-i18n="감사 로그">감사 로그</span></div>
@@ -275,7 +276,7 @@
             <li><div class="gt">＋ 새 발행 → 신청서 작성</div><div class="gd">타입(F&amp;B/Room/HR) → 바우처 종류 → 사유 카테고리 → 발행일/만료일 → 세부 목적을 입력합니다. Mate 승인번호는 <b>이미 받은 경우에만</b> 적으면 됩니다.</div></li>
             <li><div class="gt">[발행 요청] 클릭</div><div class="gd">요청자 모드에는 GM 승인 체크박스가 없어 <b>승인대기</b> 상태로 등록되고, 화면이 자동으로 승인 대기함으로 이동합니다.</div></li>
             <li><div class="gt">✓ 승인 대기함에서 진행 확인</div><div class="gd">승인 전에는 바우처 목록에 나타나지 않고 승인 대기함에만 보입니다. 승인되면 상태가 <b>ACTIVE</b>로 바뀌면서 바우처 목록에도 나타납니다. 목적·번호를 고쳐야 하면 [수정]으로 보완할 수 있습니다.</div></li>
-            <li><div class="gt">반려됐다면</div><div class="gd">반려된 건은 승인 대기함·바우처 목록 어디에도 남지 않습니다 — 반려 사유는 사이드바 <b>감사 로그</b>에서 증서번호나 담당자 이름으로 검색해 확인할 수 있습니다.</div></li>
+            <li><div class="gt">반려됐다면</div><div class="gd">반려된 건은 승인 대기함·바우처 목록에는 남지 않지만 사이드바 <b>✕ 반려함</b>에서 볼 수 있고, 반려 사유는 감사 로그에서 증서번호나 담당자 이름으로 검색해도 확인할 수 있습니다. 반려와 동시에 요청자에게 반려 알림 메일 작성 화면도 열립니다.</div></li>
           </ol>
         </div>
       </div>
@@ -289,6 +290,7 @@
             <li><div class="gt">반려 = 사유 필수</div><div class="gd">사유를 입력해 [반려 처리]를 누르면 곧바로 요청자에게 보낼 반려 알림 메일 작성 화면이 열립니다(주소 입력 후 [메일 열기] → 보내기는 직접 클릭). 입력한 사유는 감사 로그와 해당 건 상세에도 기록됩니다.</div></li>
             <li><div class="gt">연장</div><div class="gd"><b>ACTIVE</b> 또는 <b>EXPIRED</b> 상태인 바우처의 [연장] → 새 Mate 승인번호를 입력합니다.</div></li>
             <li><div class="gt">🖨 픽업 대기함 관리</div><div class="gd">실물 인쇄 후 [인쇄완료]를 누르면 곧바로 픽업 알림 메일 작성 화면이 이어서 열립니다(요청자 이메일 앞으로 채워짐, 전송은 직접 클릭). 나중에 다시 보내려면 목록 일괄바의 [픽업 알림]을 따로 눌러도 됩니다. 전달 후 [픽업완료]로 마무리합니다.</div></li>
+            <li><div class="gt">✕ 반려함 · 증서번호 정정</div><div class="gd">반려한 건에 이미 적어둔 실물 바우처(증서번호 찍힌 용지)가 그대로 남아있거나, 인쇄 중 훼손돼 그 번호를 다시 쓸 수 없게 된 경우 — 해당 건을 [수정]으로 열어 <b>증서번호</b>를 비우거나 새 번호로 바꿔두면 다음 발행 때 그 번호를 다시 쓸 수 있습니다. 다른 건과 겹치는 번호는 저장·발행 모두 막힙니다.</div></li>
           </ol>
           <div class="gnote" data-i18n="발행도 직접 할 수 있습니다 — 새 발행 화면에서 GM 승인 완료를 체크하면 승인 절차 없이 바로 ACTIVE 상태로 발행됩니다(Mate 번호 필수).">발행도 직접 할 수 있습니다 — 새 발행 화면에서 GM 승인 완료를 체크하면 승인 절차 없이 바로 ACTIVE 상태로 발행됩니다(Mate 번호 필수).</div>
         </div>
@@ -350,28 +352,28 @@
 
 <script src="js/lib/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="js/config.js?v=35"></script>
-<script src="js/metaStore.js?v=35"></script>
-<script src="js/schema.js?v=35"></script>
-<script src="js/i18n.js?v=35"></script>
-<script src="js/ui/components.js?v=35"></script>
-<script src="js/operator.js?v=35"></script>
-<script src="js/db.js?v=35"></script>
-<script src="js/db-cloud.js?v=35"></script>
-<script src="js/ui/router.js?v=35"></script>
-<script src="js/import/importMapper.js?v=35"></script>
-<script src="js/import/importCompFB.js?v=35"></script>
-<script src="js/import/importCompRM.js?v=35"></script>
-<script src="js/import/importHR.js?v=35"></script>
-<script src="js/import/importPipeline.js?v=35"></script>
-<script src="js/export/exportWorkbook.js?v=35"></script>
-<script src="js/workflow/voucherWorkflow.js?v=35"></script>
-<script src="js/ui/viewOverview.js?v=35"></script>
-<script src="js/ui/viewList.js?v=35"></script>
-<script src="js/ui/viewIssue.js?v=35"></script>
-<script src="js/ui/viewIntegrity.js?v=35"></script>
-<script src="js/ui/viewImportExport.js?v=35"></script>
-<script src="js/ui/viewAuditLog.js?v=35"></script>
-<script src="js/app.js?v=35"></script>
+<script src="js/config.js?v=36"></script>
+<script src="js/metaStore.js?v=36"></script>
+<script src="js/schema.js?v=36"></script>
+<script src="js/i18n.js?v=36"></script>
+<script src="js/ui/components.js?v=36"></script>
+<script src="js/operator.js?v=36"></script>
+<script src="js/db.js?v=36"></script>
+<script src="js/db-cloud.js?v=36"></script>
+<script src="js/ui/router.js?v=36"></script>
+<script src="js/import/importMapper.js?v=36"></script>
+<script src="js/import/importCompFB.js?v=36"></script>
+<script src="js/import/importCompRM.js?v=36"></script>
+<script src="js/import/importHR.js?v=36"></script>
+<script src="js/import/importPipeline.js?v=36"></script>
+<script src="js/export/exportWorkbook.js?v=36"></script>
+<script src="js/workflow/voucherWorkflow.js?v=36"></script>
+<script src="js/ui/viewOverview.js?v=36"></script>
+<script src="js/ui/viewList.js?v=36"></script>
+<script src="js/ui/viewIssue.js?v=36"></script>
+<script src="js/ui/viewIntegrity.js?v=36"></script>
+<script src="js/ui/viewImportExport.js?v=36"></script>
+<script src="js/ui/viewAuditLog.js?v=36"></script>
+<script src="js/app.js?v=36"></script>
 </body>
 </html>

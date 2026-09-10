@@ -24,6 +24,8 @@ CompApp.i18n = (function () {
     '새 발행': 'New Issue',
     '승인 대기함': 'Approval Queue',
     '픽업 대기함': 'Pickup Queue',
+    '반려함': 'Rejected Queue',
+    '실물 바우처가 남아있다면 [수정]에서 증서번호를 정리한 뒤 재발행하세요': 'If the physical voucher is still on hand, clear its serial no. in [Edit], then reissue',
     '정합성 점검': 'Integrity Check',
     '가져오기/내보내기': 'Import/Export',
     '감사 로그': 'Audit Log',
@@ -223,6 +225,12 @@ CompApp.i18n = (function () {
     '설명': 'Description',
     '발견된 문제가 없습니다.': 'No issues found.',
     '증서번호 중복': 'Duplicate Serial No.',
+    '반려·파손 등으로 실물 바우처를 다시 써야 하면 여기서 번호를 비우거나 새 번호로 바꾸세요. 다른 건과 겹치는 번호는 저장할 수 없습니다.':
+      'If the physical voucher needs to be reused after a rejection or damage, clear this field or change it here. A number already used elsewhere cannot be saved.',
+    '이미 사용 중인 증서번호입니다 — ': 'This serial no. is already in use — ',
+    '. 번호를 확인하세요(반려·파손건은 [반려함]/[수정]에서 먼저 정리해야 합니다).':
+      '. Check the number (a rejected/damaged one must be cleared in [Rejected Queue]/[Edit] first).',
+    '(증서번호 없음)': '(no serial no.)',
     'Mate 승인번호 누락': 'Missing Mate Approval No.',
     '만료일<발행일': 'Expiry < Issue Date',
     '만료 미처리': 'Expiry Unprocessed',
