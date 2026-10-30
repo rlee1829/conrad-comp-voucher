@@ -163,6 +163,12 @@ CompApp.workflow = (function () {
     if (kind === 'use') { var a = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'EXPIRED'; }); if (!a.length) { toast(t('사용 처리 가능한(활성·만료) 선택 항목이 없습니다.')); return; } return useModal(a); }
     if (kind === 'extend') { var a2 = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'PENDING' || r.status === 'EXPIRED'; }); if (!a2.length) { toast(t('연장 가능한 항목이 없습니다.')); return; } return extendModal(a2); }
     if (kind === 'void') { var v = rs.filter(function (r) { return r.status === 'ACTIVE' || r.status === 'PENDING'; }); if (!v.length) { toast(t('취소 가능한 항목이 없습니다.')); return; } return voidModal(v); }
+    if (kind === 'voucher') {
+      if (!operator.canApprove()) { toast(t('픽업 처리 권한이 없습니다. (승인자·관리자만 가능)')); return; }
+      var vp = rs.filter(function (r) { return r.status === 'ACTIVE'; });
+      if (!vp.length) { toast(t('인쇄할 수 있는 ACTIVE 항목이 없습니다.')); return; }
+      return CompApp.voucherPrint.open(vp);
+    }
     // 픽업 흐름 — 승인자/관리자만. 각 단계에 해당하는 건만 골라서 넘긴다.
     if (kind === 'printed' || kind === 'notify' || kind === 'pickedup') {
       if (!operator.canApprove()) { toast(t('픽업 처리 권한이 없습니다. (승인자·관리자만 가능)')); return; }
@@ -303,8 +309,11 @@ CompApp.workflow = (function () {
     });
   }
   // ---- 픽업 흐름: 인쇄완료 → (요청자 알림) → 픽업완료 ----
-  // 인쇄 자체는 전용 용지·프린터로 따로 하므로 앱은 "인쇄했다"는 표시만 받는다.
-  function markPrintedModal(list) {
+  // snaps는 [바우처 인쇄]에서 넘어온 실제 인쇄 문구 — 나중에 무엇이 찍혔는지 레코드에서 확인할 수 있게 남긴다.
+  // 브라우저는 실제로 출력됐는지 알려주지 않으므로 인쇄 뒤에도 사람이 완료를 확인한다.
+  // 이미 인쇄된 건은 재인쇄로만 기록하고 픽업 단계는 건드리지 않는다.
+  function markPrintedModal(list, snaps) {
+    var fresh = list.filter(function (r) { return schema.pickupState(r) === 'TOPRINT'; });
     modal({
       title: t('인쇄 완료 표시'), sub: list.length + t('건을 인쇄 완료(픽업 대기)로 표시합니다.'),
       bodyHtml: '<div class="modal-hint">' + t('실물 인쇄가 끝난 건만 표시하세요. 표시하면 ') + '<b>' + t('픽업 대기함') + '</b>' + t('으로 넘어가고, 요청자에게 픽업 알림을 보낼 수 있습니다.') + '</div>'
@@ -315,12 +324,16 @@ CompApp.workflow = (function () {
           if (!validDate(d)) { setErr(t('인쇄일을 입력하세요.')); return false; }
           var before = snapshotBefore(list);
           var batchId = schema.uid();
-          list.forEach(function (r) { r.printedAt = d; r.printedBy = operator.actor(); logHist(r, '인쇄완료', '인쇄일 ' + d, batchId); });
+          list.forEach(function (r) {
+            if (snaps && snaps[r.id]) r.printText = snaps[r.id];
+            if (fresh.indexOf(r) === -1) { logHist(r, '재인쇄', '재인쇄일 ' + d, batchId); return; }
+            r.printedAt = d; r.printedBy = operator.actor(); logHist(r, '인쇄완료', '인쇄일 ' + d, batchId);
+          });
           persist(list);
           state.selected = {}; CompApp.router.renderCounts(); CompApp.router.refresh();
           finishAction('restore', before, '인쇄완료 (' + list.length + '건)', list.length + t('건 인쇄 완료 · 픽업 대기'));
           // 인쇄완료 → 픽업 알림으로 바로 이어준다(같은 모달 DOM을 공유하므로 close() 다음 틱에).
-          setTimeout(function () { notifyPickupModal(list); }, 0);
+          if (fresh.length) setTimeout(function () { notifyPickupModal(fresh); }, 0);
         }
       }]
     });
@@ -616,8 +629,11 @@ CompApp.workflow = (function () {
         + (r.rejectReason ? '<dt>' + t('반려 사유') + '</dt><dd>' + esc(r.rejectReason) + '</dd>' : '')
         + (schema.blackoutSummary(r) ? '<dt>Black-out</dt><dd>' + esc(schema.blackoutSummary(r)) + '</dd>' : '')
         + (schema.displayRemark(r.remark) ? '<dt>' + t('비고') + '</dt><dd>' + esc(schema.displayRemark(r.remark)) + '</dd>' : '')
+        + (r.printText ? '<dt>' + t('인쇄 문구') + '</dt><dd>' + esc(r.printText.title) + '<br>' + esc(r.printText.valid) + (r.printText.blackout ? '<br>(**Black-out dates; ' + esc(r.printText.blackout) + ')' : '') + '</dd>' : '')
         + '</dl><div class="hist"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:6px">' + t('변경 이력') + '</div>' + hist + '</div>',
-      buttons: [{ label: t('닫기') }, { label: t('인쇄'), onClick: function () { setTimeout(function () { printRecord(r); }, 60); } }, { label: t('수정'), cls: 'btn-primary', onClick: function () { setTimeout(function () { editModal(r); }, 60); } }]
+      buttons: [{ label: t('닫기') }, { label: t('확인서 인쇄'), onClick: function () { setTimeout(function () { printRecord(r); }, 60); } }].concat(
+        r.status === 'ACTIVE' && operator.canApprove() ? [{ label: t('바우처 인쇄'), onClick: function () { setTimeout(function () { CompApp.voucherPrint.open([r]); }, 60); } }] : [],
+        [{ label: t('수정'), cls: 'btn-primary', onClick: function () { setTimeout(function () { editModal(r); }, 60); } }])
     });
   }
 

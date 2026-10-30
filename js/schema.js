@@ -27,7 +27,11 @@ CompApp.schema = (function () {
       { id: 'rm_king_1n', name: 'King Deluxe Corner Suite 1박 (조식 포함)', amount: 0, defMonths: 12 },
       { id: 'rm_val_10', name: 'Room & F&B 금액권 ₩10,000', amount: 10000, defMonths: 12 },
       { id: 'rm_val_50', name: 'Room & F&B 금액권 ₩50,000', amount: 50000, defMonths: 12 },
-      { id: 'rm_val_100', name: 'Room & F&B 금액권 ₩100,000', amount: 100000, defMonths: 12 }
+      { id: 'rm_val_100', name: 'Room & F&B 금액권 ₩100,000', amount: 100000, defMonths: 12 },
+      { id: 'rm_premium_river_1n', name: 'Premium River View 1박 (조식 포함)', amount: 0, defMonths: 12 },
+      { id: 'rm_exec_river_1n', name: 'Executive River View 1박 (라운지 포함)', amount: 0, defMonths: 12 },
+      { id: 'rm_premium_corner_1n', name: 'Premium Corner Suite 1박 (라운지 포함)', amount: 0, defMonths: 12 },
+      { id: 'rm_conrad_suite_1n', name: 'Conrad Suite 1박 (라운지 포함)', amount: 0, defMonths: 12 }
     ],
     HR: [
       { id: 'hr_fb100', name: 'F&B 금액권 ₩100,000', amount: 100000, defMonths: 6, prefix: 'HRF' },
@@ -42,7 +46,7 @@ CompApp.schema = (function () {
   var STATUS_CLASS = { PENDING: 'b-pending', ACTIVE: 'b-active', USED: 'b-used', EXPIRED: 'b-expired', VOID: 'b-void', EXPIRED_PENDING: 'b-expired', REJECTED: 'b-rejected' };
   var DEFAULT_DEPTS = ['FO', 'FB', 'Finance', 'RSVN', 'Sales', 'HR', 'MarComm', 'BD', 'HK', 'Event Sales', 'Concierge', 'GM'];
   // 픽업 흐름 — status(승인/사용/만료)와 별개의 축이다. 승인된 바우처를 실물로 인쇄해서 요청자에게
-  // 건네주기까지의 단계만 다룬다. 인쇄는 별도 프린터·용지로 하므로 앱은 "인쇄했다"는 표시만 받는다.
+  // 건네주기까지의 단계만 다룬다. 실제 인쇄는 CompApp.voucherPrint가 담당한다.
   var PICKUP_LABEL = { TOPRINT: '인쇄대기', TOPICKUP: '픽업대기', PICKED: '픽업완료' };
   var PICKUP_CLASS = { TOPRINT: 'pk-toprint', TOPICKUP: 'pk-topickup', PICKED: 'pk-picked' };
   function catLabel(c) { var l = CAT_LABEL[c]; return l == null ? c : (CompApp.i18n ? CompApp.i18n.t(l) : l); }
@@ -100,6 +104,13 @@ CompApp.schema = (function () {
     return (before.replace(/\s*·\s*$/, '') + after).trim();
   }
 
+  // 저장된 카탈로그가 코드의 기본값을 통째로 덮어쓰므로, 인쇄 시안이 있는 객실 상품은 여기서 다시 넣어준다.
+  var TEMPLATE_PRODUCT_IDS = ['rm_premium_river_1n', 'rm_exec_river_1n', 'rm_premium_corner_1n', 'rm_conrad_suite_1n'];
+  var TEMPLATE_PRODUCTS = CATALOG.RM.filter(function (p) { return TEMPLATE_PRODUCT_IDS.indexOf(p.id) !== -1; });
+  function mergeTemplateProducts() {
+    TEMPLATE_PRODUCTS.forEach(function (p) { if (!CATALOG.RM.some(function (x) { return x.id === p.id; })) CATALOG.RM.push(p); });
+  }
+
   var CATALOG_KEY = 'compVoucherCatalog';
   function saveCatalog() {
     try { localStorage.setItem(CATALOG_KEY, JSON.stringify(CATALOG)); } catch (e) {}
@@ -114,7 +125,7 @@ CompApp.schema = (function () {
     } catch (e) {}
     try {
       var s = JSON.parse(localStorage.getItem(CATALOG_KEY));
-      if (s && s.FB && s.RM) { CATALOG.FB = s.FB; CATALOG.RM = s.RM; if (s.HR) CATALOG.HR = s.HR; }
+      if (s && s.FB && s.RM) { CATALOG.FB = s.FB; CATALOG.RM = s.RM; if (s.HR) CATALOG.HR = s.HR; mergeTemplateProducts(); }
     } catch (e) {}
     try {
       var rr = JSON.parse(localStorage.getItem('compVoucherRetired'));
@@ -127,7 +138,7 @@ CompApp.schema = (function () {
   function applyCloudCatalog() {
     if (!(CompApp.cloudEnabled && CompApp.cloudEnabled()) || !CompApp.metaStore) return;
     var s = CompApp.metaStore.get(CATALOG_KEY, null);
-    if (s && s.FB && s.RM) { CATALOG.FB = s.FB; CATALOG.RM = s.RM; if (s.HR) CATALOG.HR = s.HR; }
+    if (s && s.FB && s.RM) { CATALOG.FB = s.FB; CATALOG.RM = s.RM; if (s.HR) CATALOG.HR = s.HR; mergeTemplateProducts(); }
   }
 
   // Real UUID (not a counter) — required once records may be upserted into Supabase's uuid pk column.

@@ -68,6 +68,7 @@ CompApp.ui = (function () {
 
   // ---- generic modal ----
   function modal(o) {
+    $('genModal').classList.toggle('modal-wide', !!o.wide);
     $('gen-title').textContent = o.title || '';
     var sub = $('gen-sub'); if (o.sub) { sub.textContent = o.sub; sub.style.display = 'block'; } else sub.style.display = 'none';
     $('gen-body').innerHTML = o.bodyHtml || ''; $('gen-err').textContent = ''; wireDateBoxes($('gen-body'));

@@ -420,12 +420,42 @@
   #view-guide .guide-matrix-body{padding:12px 0 0 38px;}
   #view-guide .minitable th.num,#view-guide .minitable td.num{text-align:center;}
 
+  /* 실물 바우처: 170×80mm 전용 용지에 문구만 겹쳐 찍는다 (js/ui/voucherPrint.js) */
+  .modal.modal-wide{max-width:760px;}
+  .pv-card{position:relative;width:170mm;height:80mm;overflow:hidden;background:#fff;color:#000;font-family:'Leelawadee UI','Segoe UI',sans-serif;font-weight:350;}
+  .pv-inner{position:absolute;inset:0;}
+  .pv-line{position:absolute;text-align:center;white-space:pre-line;text-wrap:balance;}
+  .pv-guide{position:absolute;inset:0;border:.2mm dashed #888;}
+  .pv-guide::before,.pv-guide::after{content:"";position:absolute;background:#bbb;}
+  .pv-guide::before{left:50%;top:0;bottom:0;width:.1mm;}
+  .pv-guide::after{top:50%;left:0;right:0;height:.1mm;}
+  .pv-measure{position:fixed;left:-9999px;top:0;height:auto;visibility:hidden;}
+  .pv-group{border:1px solid var(--line-2);border-radius:10px;padding:12px;margin-bottom:12px;}
+  .pv-ghead{display:flex;flex-direction:column;gap:2px;margin-bottom:9px;font-size:13px;}
+  .pv-ghead span{font-size:11.5px;color:var(--ink-3);word-break:break-all;}
+  .pv-prev{overflow-x:auto;margin-bottom:9px;}
+  .pv-prev-card .pv-card{border:1px solid var(--line-2);}
+  .pv-warn{display:none;font-size:12px;line-height:1.5;color:var(--ink-2);background:var(--warn-soft);border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;margin-bottom:9px;}
+  .pv-group textarea{width:100%;font-family:inherit;font-size:12.5px;resize:vertical;}
+  .pv-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;}
+  .pv-remember{display:inline-flex;align-items:center;gap:5px;color:var(--ink-2);margin:0;white-space:nowrap;text-transform:none;letter-spacing:0;}
+  .pv-remember input{width:auto;margin:0;}
+  .pv-offset{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--ink-2);}
+  .pv-offset input{width:64px;}
+  .pv-offset small{flex-basis:100%;color:var(--ink-3);font-size:11px;}
+
   /* E: import/export view + print confirmation slip */
   .ie-result{font-size:13.5px;line-height:1.7;}
   #print-slip{display:none;}
+  #print-vouchers{display:none;}
   @media print{
-    body > *:not(#print-slip){display:none!important;}
-    #print-slip{display:block!important;padding:48px;color:#111;background:#fff;}
+    body:not(.pv-mode) > *:not(#print-slip){display:none!important;}
+    body.pv-mode > *:not(#print-vouchers){display:none!important;}
+    body.pv-mode{margin:0;background:#fff;}
+    body.pv-mode #print-vouchers{display:block!important;}
+    body.pv-mode .pv-card{break-after:page;box-shadow:none;}
+    body.pv-mode .pv-card:last-child{break-after:auto;}
+    body:not(.pv-mode) #print-slip{display:block!important;padding:48px;color:#111;background:#fff;}
     .ps-head{margin-bottom:28px;border-bottom:2px solid #333;padding-bottom:14px;}
     .ps-brand{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#666;}
     .ps-title{font-size:21px;font-weight:700;margin-top:5px;}

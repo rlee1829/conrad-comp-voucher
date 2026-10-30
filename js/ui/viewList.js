@@ -176,7 +176,7 @@ CompApp.viewList = (function () {
       + (canAdmin ? '<button data-bulk="use">' + t('사용처리') + '</button>' : '')
       + (canApprove ? '<button data-bulk="extend">' + t('기간연장') + '</button>' : '')
       + (canAdmin ? '<button data-bulk="void">' + t('발행취소') + '</button>' : '')
-      + (canApprove ? '<button data-bulk="printed">' + t('인쇄완료') + '</button><button data-bulk="notify">' + t('픽업 알림') + '</button><button data-bulk="pickedup">' + t('픽업완료') + '</button>' : '')
+      + (canApprove ? '<button data-bulk="voucher">' + t('바우처 인쇄') + '</button><button data-bulk="printed">' + t('인쇄완료') + '</button><button data-bulk="notify">' + t('픽업 알림') + '</button><button data-bulk="pickedup">' + t('픽업완료') + '</button>' : '')
       + '<button data-bulk="field">' + t('일괄입력') + '</button>'
       + (canAdmin ? '<button data-bulk="delete" class="reject-a">' + t('삭제') + '</button>' : '')
       + '<button data-bulk="clear">' + t('선택해제') + '</button></div>';
